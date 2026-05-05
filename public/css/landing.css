@@ -121,13 +121,26 @@ img { max-width: 100%; }
 
 .hero-tagline {
   font-family: 'Montserrat', sans-serif;
-  font-size: clamp(1rem, 2.5vw, 1.6rem);
+  font-size: clamp(1.2rem, 3vw, 2rem);
   font-weight: 800;
   letter-spacing: 1px;
   text-transform: uppercase;
+  margin-top: 20px; /* Added spacing */
   margin-bottom: 28px;
   color: var(--white);
   line-height: 1.1;
+  min-height: 3.5rem; /* Prevent layout shift */
+}
+
+.type-cursor {
+  color: var(--red);
+  animation: blink 0.7s infinite;
+  margin-left: 5px;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 
 .hero-sub {
@@ -140,33 +153,63 @@ img { max-width: 100%; }
 
 .hero-buttons {
   display: flex;
-  gap: 16px;
-  margin-bottom: 60px;
+  gap: 20px;
+  margin-top: 40px;
 }
 
-.hero .btn-primary {
+.btn-primary, .btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 18px 36px;
+  border-radius: 100px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-primary {
   background: var(--red);
   color: #fff;
-  border: 2px solid var(--red);
+  border: none;
+  box-shadow: 0 4px 15px rgba(229, 9, 20, 0.2);
 }
 
-.hero .btn-primary:hover {
-  background: var(--red-dark);
-  border-color: var(--red-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px var(--red-glow);
+.btn-primary:hover {
+  background: #f40a16;
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(229, 9, 20, 0.4);
 }
 
-.hero .btn-outline {
-  background: transparent;
+.btn-primary i {
+  transition: transform 0.3s;
+}
+
+.btn-primary:hover i {
+  transform: translateX(5px);
+}
+
+.btn-outline {
+  background: rgba(255, 255, 255, 0.05);
   color: #fff;
-  border: 2px solid rgba(255,255,255,0.3);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
 }
 
-.hero .btn-outline:hover {
-  border-color: var(--white);
-  background: rgba(255,255,255,0.05);
-  transform: translateY(-2px);
+.btn-outline:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.btn-outline i {
+  color: var(--red);
 }
 
 .hero-features-row {

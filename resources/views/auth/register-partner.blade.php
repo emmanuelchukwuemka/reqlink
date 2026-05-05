@@ -35,21 +35,7 @@
     <form class="auth-form" action="{{ route('register') }}" method="POST">
         @csrf
         
-        <div class="form-group" style="margin-bottom: 30px;">
-            <label class="field-label" style="font-weight: 700; color: var(--white); font-size: 0.9rem;">
-                Select Partner Type
-            </label>
-            <div style="position: relative;">
-                <select name="role" class="styled-select" required style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; padding: 14px 16px; color: white; font-size: 0.9rem; appearance: none; cursor: pointer;">
-                    <option value="doctor">Doctor</option>
-                    <option value="hospital">Hospital</option>
-                    <option value="ambulance">Ambulance Service</option>
-                    <option value="security">Security Firm</option>
-                    <option value="fire">Fire Unit</option>
-                </select>
-                <i data-lucide="chevron-down" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--grey); width: 18px; height: 18px;"></i>
-            </div>
-        </div>
+
 
         <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             <div class="form-group" style="grid-column: span 2;">
@@ -60,6 +46,20 @@
             <div class="form-group">
                 <label class="field-label"><i data-lucide="phone" class="lucide-icon sm"></i> Contact Phone</label>
                 <input type="tel" name="phone" value="{{ old('phone') }}" placeholder="+234..." required>
+            </div>
+
+            <div class="form-group">
+                <label class="field-label"><i data-lucide="briefcase" class="lucide-icon sm"></i> Partner Type</label>
+                <div style="position: relative;">
+                    <select name="role" class="styled-select" required style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px 16px; color: white; font-size: 0.9rem; appearance: none; cursor: pointer;">
+                        <option value="doctor">Doctor</option>
+                        <option value="hospital">Hospital</option>
+                        <option value="ambulance">Ambulance Service</option>
+                        <option value="security">Security Firm</option>
+                        <option value="fire">Fire Unit</option>
+                    </select>
+                    <i data-lucide="chevron-down" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--grey); width: 18px; height: 18px;"></i>
+                </div>
             </div>
             
             <div class="form-group">

@@ -105,4 +105,44 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 1500);
     });
   }
+  // Typing Animation
+  const typingElement = document.getElementById('typing-text');
+  if (typingElement) {
+    const phrases = [
+      "Saving Lives Through Instant Connection",
+      "Every Second Counts in an Emergency",
+      "Bridging the Gap Between You and Help"
+    ];
+    let phraseIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+    let typeSpeed = 100;
+
+    function type() {
+      const currentPhrase = phrases[phraseIndex];
+      
+      if (isDeleting) {
+        typingElement.textContent = currentPhrase.substring(0, charIndex - 1);
+        charIndex--;
+        typeSpeed = 50;
+      } else {
+        typingElement.textContent = currentPhrase.substring(0, charIndex + 1);
+        charIndex++;
+        typeSpeed = 100;
+      }
+
+      if (!isDeleting && charIndex === currentPhrase.length) {
+        isDeleting = true;
+        typeSpeed = 2000; // Pause at end
+      } else if (isDeleting && charIndex === 0) {
+        isDeleting = false;
+        phraseIndex = (phraseIndex + 1) % phrases.length;
+        typeSpeed = 500; // Pause before next
+      }
+
+      setTimeout(type, typeSpeed);
+    }
+
+    type();
+  }
 });

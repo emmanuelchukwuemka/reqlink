@@ -24,7 +24,6 @@
                 <li><a href="#features">Features</a></li>
                 <li><a href="#how-it-works">How It Works</a></li>
                 <li><a href="{{ route('login') }}" class="login-link">Login</a></li>
-                <li><a href="{{ route('register.partner') }}" class="login-link" style="color: var(--grey);">Partners</a></li>
                 <li><a href="{{ route('register') }}" class="btn-primary btn-sm">Register</a></li>
             </ul>
         <button class="hamburger" id="hamburger" aria-label="Menu">
@@ -37,13 +36,21 @@
 <section class="hero" id="home">
     <div class="container">
         <div class="hero-main-content">
-            <img src="{{ asset('images/hero-logo.png') }}" alt="ResQLink Icon" class="hero-logo-graphic">
             <h1>Res<span class="brand-red">Q</span>Link</h1>
-            <div class="hero-tagline">Saving Lives Through<br>Instant Connection</div>
+            <div class="hero-tagline">
+                <span id="typing-text">Saving Lives Through</span>
+                <span class="type-cursor">|</span>
+            </div>
             <p class="hero-sub">AI-Powered Emergency Response Platform that connects people to help, fast.</p>
             <div class="hero-buttons">
-                <a href="{{ route('register') }}" class="btn-primary">Get Started Now</a>
-                <a href="#solution" class="btn-outline">Watch Demo</a>
+                <a href="{{ route('register') }}" class="btn-primary">
+                    <span>Join the Rescue Network</span>
+                    <i data-lucide="arrow-right"></i>
+                </a>
+                <a href="{{ route('register.partner') }}" class="btn-outline">
+                    <i data-lucide="shield"></i>
+                    <span>Partner Portal</span>
+                </a>
             </div>
         </div>
 
