@@ -1,28 +1,31 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\WebAuthController;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/login', function () {
-    return view('auth.login');
-})->name('login');
+Route::get('/login', [WebAuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [WebAuthController::class, 'login']);
 
-Route::get('/register', function () {
-    return view('auth.register');
-})->name('register');
+Route::get('/register', [WebAuthController::class, 'showRegister'])->name('register');
+Route::get('/register-partner', [WebAuthController::class, 'showPartnerRegister'])->name('register.partner');
+Route::post('/register', [WebAuthController::class, 'register']);
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->name('dashboard');
+// Password Reset Routes
+Route::get('/forgot-password', [WebAuthController::class, 'showForgotPassword'])->name('password.request');
+Route::post('/forgot-password', [WebAuthController::class, 'sendResetLink'])->name('password.email');
+Route::get('/reset-password/{token}', [WebAuthController::class, 'showResetPassword'])->name('password.reset');
+Route::post('/reset-password', [WebAuthController::class, 'resetPassword'])->name('password.update');
 
-// Mock POST routes for UI demonstration
-Route::post('/login', function () {
-    return redirect()->route('dashboard');
-});
+Route::post('/logout', [WebAuthController::class, 'logout'])->name('logout');
 
-Route::post('/register', function () {
-    return redirect()->route('dashboard');
-});
+Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard')->middleware('auth');
+
+Route::get('/settings', [\App\Http\Controllers\SettingsController::class, 'index'])->name('settings')->middleware('auth');
+Route::post('/settings', [\App\Http\Controllers\SettingsController::class, 'update'])->name('settings.update')->middleware('auth');
+
+Route::post('/emergency/trigger', [\App\Http\Controllers\EmergencyController::class, 'trigger'])
+    ->name('emergency.trigger')
+    ->middleware('auth');

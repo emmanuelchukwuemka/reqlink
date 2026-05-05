@@ -109,13 +109,96 @@
 
 .form-group input:focus {
     border-color: var(--red);
+    outline: none;
+    border-color: var(--red);
+    box-shadow: 0 0 0 4px var(--red-glow);
+}
+
+.account-type-selection {
+    margin-bottom: 30px;
+}
+
+.role-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+}
+
+.role-option {
+    cursor: pointer;
+    position: relative;
+}
+
+.role-option input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.option-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 14px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.option-box i {
+    width: 22px;
+    height: 22px;
+    color: var(--grey);
+    transition: all 0.3s;
+}
+
+.option-box span {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: var(--grey);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+.role-option:hover .option-box {
     background: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 0 0 4px rgba(229, 9, 20, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.role-option input:checked + .option-box {
+    background: rgba(229, 9, 20, 0.12);
+    border-color: var(--red);
+    box-shadow: 0 0 20px rgba(229, 9, 20, 0.1);
+}
+
+.role-option input:checked + .option-box i {
+    color: var(--red);
+    transform: scale(1.1);
+}
+
+.role-option input:checked + .option-box span {
+    color: var(--white);
+}
+
+.styled-select option {
+    background: #1a1a1a;
+    color: white;
+}
+
+.styled-select:focus {
+    border-color: var(--red);
+    outline: none;
+    box-shadow: 0 0 0 4px var(--red-glow);
 }
 
 .auth-footer {
+    margin-top: 32px;
     text-align: center;
-    margin-top: 24px;
     font-size: 0.9rem;
     color: var(--grey);
 }

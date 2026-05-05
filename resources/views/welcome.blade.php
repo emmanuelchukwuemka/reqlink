@@ -18,14 +18,15 @@
             <div class="logo-icon">R</div>
             Resq<span style="color:var(--red)">Link</span>
         </a>
-        <div class="nav-links" id="navLinks">
-            <a href="#problem">Problem</a>
-            <a href="#solution">Solution</a>
-            <a href="#features">Features</a>
-            <a href="#how-it-works">How It Works</a>
-            <a href="{{ route('login') }}" style="color:var(--white)">Login</a>
-            <a href="{{ route('register') }}" class="nav-cta">Register</a>
-        </div>
+            <ul class="nav-links">
+                <li><a href="#problem">Problem</a></li>
+                <li><a href="#solution">Solution</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="{{ route('login') }}" class="login-link">Login</a></li>
+                <li><a href="{{ route('register.partner') }}" class="login-link" style="color: var(--grey);">Partners</a></li>
+                <li><a href="{{ route('register') }}" class="btn-primary btn-sm">Register</a></li>
+            </ul>
         <button class="hamburger" id="hamburger" aria-label="Menu">
             <span></span><span></span><span></span>
         </button>
@@ -298,38 +299,7 @@
     </div>
 </section>
 
-<!-- ===== BUSINESS MODEL ===== -->
-<section class="business" id="market">
-    <div class="container">
-        <div class="text-center fade-up">
-            <div class="section-label" style="justify-content:center">Business Model</div>
-            <h2 class="section-title">Sustainable & Scalable</h2>
-            <p class="section-desc center">Multiple revenue streams designed for long-term growth and impact.</p>
-        </div>
-        <div class="biz-grid fade-up">
-            <div class="biz-card">
-                <div class="biz-icon"><i data-lucide="handshake" class="lucide-icon lg"></i></div>
-                <h4>B2B Partnerships</h4>
-                <p>Strategic partnerships with hospitals, security firms, and emergency services.</p>
-            </div>
-            <div class="biz-card">
-                <div class="biz-icon"><i data-lucide="credit-card" class="lucide-icon lg"></i></div>
-                <h4>Subscription Plans</h4>
-                <p>Premium plans for individuals, families, and organizations.</p>
-            </div>
-            <div class="biz-card">
-                <div class="biz-icon"><i data-lucide="banknote" class="lucide-icon lg"></i></div>
-                <h4>Transaction Fees</h4>
-                <p>Per-use fees for emergency dispatches and coordination services.</p>
-            </div>
-            <div class="biz-card">
-                <div class="biz-icon"><i data-lucide="landmark" class="lucide-icon lg"></i></div>
-                <h4>Government Contracts</h4>
-                <p>Public sector partnerships for national emergency infrastructure.</p>
-            </div>
-        </div>
-    </div>
-</section>
+
 
 <!-- ===== IMPACT ===== -->
 <section class="impact" id="impact">

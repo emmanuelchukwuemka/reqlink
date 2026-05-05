@@ -33,6 +33,11 @@ class User extends Authenticatable
         'role',
         'avatar',
         'is_verified',
+        'blood_group',
+        'allergies',
+        'medical_conditions',
+        'emergency_contact_name',
+        'emergency_contact_phone',
     ];
 
     /**

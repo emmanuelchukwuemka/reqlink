@@ -1,0 +1,37 @@
+RESQLINK PLATFORM - REMAINING TASKS & ROADMAP
+
+1. FUNCTIONAL AUTHENTICATION (BACKEND)
+- Implement real user registration and login logic in WebAuthController.
+- Set up database migrations for extended user profiles (medical info, emergency contacts).
+- Implement role-based access control (Civilian, Responder, Admin).
+
+2. REAL-TIME SOS DISPATCH ENGINE
+- Create the SOS trigger logic to capture geolocation (latitude/longitude).
+- Build the matching algorithm to find the nearest responders based on coordinates.
+- Implement an 'Emergencies' table to track every alert from trigger to resolution.
+- Set up real-time notifications (Pusher/WebSockets) for instant responder alerts.
+
+3. RESPONDER DASHBOARD
+- Design and build a dashboard specifically for hospitals, ambulance drivers, and security units.
+- Include a 'Mission Map' and 'Accept/Decline' interface for active emergencies.
+- Implement status updates (En Route, At Scene, Hospital Arrival, Resolved).
+
+4. REAL MAP INTEGRATION
+- Replace current map placeholders with a live Google Maps or Mapbox API.
+- Implement live tracking for responders (showing moving icons on the map).
+- Build the 'Route Optimization' feature to show responders the fastest way to the victim.
+
+5. USER MEDICAL PROFILES
+- Build the interface for users to input critical data: Blood Group, Allergies, Medical History.
+- Ensure this data is shared securely with responders only during an active emergency.
+
+6. MULTI-CHANNEL ALERTS (OFFLINE ACCESS)
+- Integrate SMS API (Twilio/Africa's Talking) for alerts without internet.
+- Build USSD gateway support for simple phone interactions (*555# style).
+
+7. ADMIN COMMAND CENTER
+- Create a high-level monitoring dashboard for national emergency oversight.
+- Implement analytics and reporting for response times and community impact metrics.
+
+8. MOBILE API FINALIZATION
+- Ensure all web features are accessible via API for the future ResQLink mobile application.
