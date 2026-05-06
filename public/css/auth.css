@@ -6,20 +6,23 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: radial-gradient(circle at top right, rgba(229, 9, 20, 0.1), transparent),
-                radial-gradient(circle at bottom left, rgba(229, 9, 20, 0.05), transparent),
-                var(--black);
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.85)), url('/images/hero-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
     padding: 40px 20px;
 }
 
 .auth-card {
     width: 100%;
     max-width: 450px;
-    background: var(--dark);
-    border: 1px solid var(--glass-border);
+    background: rgba(10, 10, 10, 0.65);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 24px;
     padding: 40px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
     position: relative;
     overflow: hidden;
 }

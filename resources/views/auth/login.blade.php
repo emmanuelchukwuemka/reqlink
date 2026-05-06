@@ -6,6 +6,7 @@
     <title>Login | ResQLink</title>
     <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="{{ asset('js/theme.js') }}"></script>
 </head>
 <body class="auth-page">
 
@@ -17,8 +18,7 @@
 <div class="auth-card">
     <div class="auth-header">
         <div class="auth-logo">
-            <div class="logo-icon">R</div>
-            Resq<span style="color:var(--red)">Link</span>
+            <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 80px; width: auto; object-fit: contain;">
         </div>
         @if (session('status'))
             <div style="background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 12px; border-radius: 8px; margin-top: 20px; font-size: 0.85rem; border: 1px solid rgba(34, 197, 94, 0.2);">

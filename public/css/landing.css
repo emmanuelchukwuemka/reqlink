@@ -15,6 +15,17 @@
   --glass-border: rgba(255,255,255,0.08);
 }
 
+:root.light-mode {
+  --black: #F9FAFB;
+  --dark: #FFFFFF;
+  --dark2: #F3F4F6;
+  --white: #111827;
+  --light: #374151;
+  --grey: #6B7280;
+  --glass: rgba(0,0,0,0.02);
+  --glass-border: rgba(0,0,0,0.1);
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html { scroll-behavior: smooth; scroll-padding-top: 80px; }
@@ -113,7 +124,7 @@ img { max-width: 100%; }
   font-weight: 900;
   margin-bottom: 0;
   letter-spacing: -4px;
-  color: var(--white);
+  color: #ffffff;
   line-height: 0.85;
 }
 
@@ -127,7 +138,7 @@ img { max-width: 100%; }
   text-transform: uppercase;
   margin-top: 20px; /* Added spacing */
   margin-bottom: 28px;
-  color: var(--white);
+  color: #ffffff;
   line-height: 1.1;
   min-height: 3.5rem; /* Prevent layout shift */
 }

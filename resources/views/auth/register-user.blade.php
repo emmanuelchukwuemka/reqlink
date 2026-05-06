@@ -6,6 +6,7 @@
     <title>Join ResQLink | Save Lives</title>
     <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="{{ asset('js/theme.js') }}"></script>
 </head>
 <body class="auth-page">
 
@@ -17,8 +18,7 @@
 <div class="auth-card" style="max-width: 500px;">
     <div class="auth-header">
         <div class="auth-logo">
-            <div class="logo-icon">R</div>
-            Resq<span style="color:var(--red)">Link</span>
+            <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 80px; width: auto; object-fit: contain;">
         </div>
         <h2>Create Account</h2>
         <p>Join the network that saves lives</p>
@@ -65,7 +65,34 @@
             <input type="password" name="password_confirmation" placeholder="••••••••" required>
         </div>
 
-        <button type="submit" class="btn-primary" style="width:100%; padding: 16px;">Create Account</button>
+        <!-- OPTIONAL MEDICAL INFO -->
+        <div style="margin-top: 30px; border-top: 1px solid var(--glass-border); padding-top: 20px;">
+            <p style="font-size: 0.8rem; color: var(--grey); margin-bottom: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+                Medical ID (Optional - Life Saving)
+            </p>
+            
+            <div class="form-group">
+                <label class="field-label">Blood Group</label>
+                <select name="blood_group" class="styled-select" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 8px; padding: 12px; color: white;">
+                    <option value="" style="color: #000;">Select Blood Group</option>
+                    @foreach(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as $bg)
+                        <option value="{{ $bg }}" style="color: #000;">{{ $bg }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="field-label">Allergies (if any)</label>
+                <input type="text" name="allergies" placeholder="e.g. Peanuts, Penicillin">
+            </div>
+
+            <div class="form-group">
+                <label class="field-label">Emergency Contact Phone</label>
+                <input type="tel" name="emergency_contact_phone" placeholder="+234...">
+            </div>
+        </div>
+
+        <button type="submit" class="btn-primary" style="width:100%; padding: 16px; margin-top: 20px;">Create Account</button>
     </form>
 
     <div class="auth-footer">

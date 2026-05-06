@@ -58,4 +58,17 @@ class EmergencyController extends Controller
             ]
         ]);
     }
+
+    public function fetchAlerts()
+    {
+        // For now, we'll fetch pending emergencies assigned to this responder
+        // In a real app, we'd use the responder's ID linked to the user
+        $emergencies = Emergency::where('status', 'pending')
+            ->orWhere('status', 'dispatched')
+            ->with('user')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json($emergencies);
+    }
 }

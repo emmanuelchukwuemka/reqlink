@@ -6,6 +6,7 @@
     <title>Partner Registration | ResQLink</title>
     <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="{{ asset('js/theme.js') }}"></script>
 </head>
 <body class="auth-page">
 
@@ -17,8 +18,7 @@
 <div class="auth-card" style="max-width: 600px;">
     <div class="auth-header">
         <div class="auth-logo">
-            <div class="logo-icon">R</div>
-            Resq<span style="color:var(--red)">Link</span>
+            <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 80px; width: auto; object-fit: contain;">
         </div>
         <h2>Partner Registration</h2>
         <p>Join the professional emergency network</p>
@@ -52,11 +52,11 @@
                 <label class="field-label"><i data-lucide="briefcase" class="lucide-icon sm"></i> Partner Type</label>
                 <div style="position: relative;">
                     <select name="role" class="styled-select" required style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px 16px; color: white; font-size: 0.9rem; appearance: none; cursor: pointer;">
-                        <option value="doctor">Doctor</option>
-                        <option value="hospital">Hospital</option>
-                        <option value="ambulance">Ambulance Service</option>
-                        <option value="security">Security Firm</option>
-                        <option value="fire">Fire Unit</option>
+                        <option value="doctor" style="color: #000;">Doctor</option>
+                        <option value="hospital" style="color: #000;">Hospital</option>
+                        <option value="ambulance" style="color: #000;">Ambulance Service</option>
+                        <option value="security" style="color: #000;">Security Firm</option>
+                        <option value="fire" style="color: #000;">Fire Unit</option>
                     </select>
                     <i data-lucide="chevron-down" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--grey); width: 18px; height: 18px;"></i>
                 </div>

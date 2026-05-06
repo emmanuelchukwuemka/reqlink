@@ -51,6 +51,9 @@ class WebAuthController extends Controller
             'email' => 'nullable|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|string|in:civilian,doctor,hospital,ambulance,security,fire',
+            'blood_group' => 'nullable|string|max:10',
+            'allergies' => 'nullable|string|max:255',
+            'emergency_contact_phone' => 'nullable|string|max:20',
         ]);
 
         if ($validator->fails()) {
@@ -63,6 +66,9 @@ class WebAuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
+            'blood_group' => $request->blood_group,
+            'allergies' => $request->allergies,
+            'emergency_contact_phone' => $request->emergency_contact_phone,
         ]);
 
         Auth::login($user);

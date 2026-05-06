@@ -29,3 +29,7 @@ Route::post('/settings', [\App\Http\Controllers\SettingsController::class, 'upda
 Route::post('/emergency/trigger', [\App\Http\Controllers\EmergencyController::class, 'trigger'])
     ->name('emergency.trigger')
     ->middleware('auth');
+
+Route::get('/responder/alerts', [\App\Http\Controllers\EmergencyController::class, 'fetchAlerts'])
+    ->name('responder.alerts')
+    ->middleware('auth');

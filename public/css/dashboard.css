@@ -126,12 +126,16 @@
 /* SOS Panic Button */
 .sos-trigger-card {
     grid-column: span 2;
-    background: linear-gradient(135deg, #1A0000, #050505);
+    background: linear-gradient(135deg, #1A0000, var(--black));
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 40px;
     border-color: rgba(229, 9, 20, 0.3);
+}
+
+:root.light-mode .sos-trigger-card {
+    background: linear-gradient(135deg, #ffe6e6, var(--dark2));
 }
 
 .sos-content h2 {

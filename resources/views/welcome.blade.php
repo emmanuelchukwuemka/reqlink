@@ -5,8 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ResQLink — Saving Lives Through Instant Connection</title>
     <meta name="description" content="ResQLink is an AI-powered emergency response platform that instantly connects people in danger to hospitals, ambulances, security responders, fire services, and disaster response teams.">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/landing.css') }}">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .theme-toggle { background: transparent; border: none; color: var(--grey); cursor: pointer; padding: 8px; border-radius: 50%; transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
+        .theme-toggle:hover { background: var(--glass); color: var(--white); }
+        :root.light-mode .theme-toggle:hover { background: rgba(0,0,0,0.05); color: var(--black); }
+    </style>
+    <script src="{{ asset('js/theme.js') }}"></script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect rx='20' width='100' height='100' fill='%23E50914'/><text y='.88em' x='10' font-size='70' fill='white' font-weight='bold'>R</text></svg>">
 </head>
 <body>
@@ -15,8 +22,7 @@
 <nav class="nav" id="navbar">
     <div class="container">
         <a href="#" class="nav-logo">
-            <div class="logo-icon">R</div>
-            Resq<span style="color:var(--red)">Link</span>
+            <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 60px; width: auto; object-fit: contain;">
         </a>
             <ul class="nav-links">
                 <li><a href="#problem">Problem</a></li>
@@ -25,6 +31,11 @@
                 <li><a href="#how-it-works">How It Works</a></li>
                 <li><a href="{{ route('login') }}" class="login-link">Login</a></li>
                 <li><a href="{{ route('register') }}" class="btn-primary btn-sm">Register</a></li>
+                <li>
+                    <button id="themeToggle" class="theme-toggle" aria-label="Toggle Dark Mode" style="margin-left: 10px;">
+                        <i data-lucide="sun" id="themeIcon"></i>
+                    </button>
+                </li>
             </ul>
         <button class="hamburger" id="hamburger" aria-label="Menu">
             <span></span><span></span><span></span>
@@ -444,7 +455,7 @@
     <div class="container">
         <div class="footer-top">
             <div class="footer-brand">
-                <div class="footer-logo">Resq<span style="color:var(--red)">Link</span></div>
+                <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 60px; width: auto; object-fit: contain; margin-bottom: 15px;">
                 <p class="footer-tagline">Saving Lives Through Instant Connection</p>
             </div>
             <div class="footer-col">

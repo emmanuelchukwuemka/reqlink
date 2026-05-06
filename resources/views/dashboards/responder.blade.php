@@ -27,15 +27,18 @@
             font-weight: 800;
             text-transform: uppercase;
         }
+        .theme-toggle { background: transparent; border: none; color: var(--grey); cursor: pointer; padding: 8px; border-radius: 50%; transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
+        .theme-toggle:hover { background: var(--glass); color: var(--white); }
+        :root.light-mode .theme-toggle:hover { background: rgba(0,0,0,0.05); color: var(--black); }
     </style>
+    <script src="{{ asset('js/theme.js') }}"></script>
 </head>
 <body class="dashboard-layout">
 
 <aside class="sidebar">
     <div class="sidebar-header">
         <div class="auth-logo" style="margin-bottom: 0;">
-            <div class="logo-icon">R</div>
-            Resq<span style="color:var(--red)">Link</span>
+            <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 50px; width: auto; object-fit: contain;">
         </div>
         <div class="responder-badge" style="margin-top: 10px;">{{ strtoupper(Auth::user()->role) }} UNIT</div>
     </div>
@@ -65,9 +68,17 @@
             <p style="color: var(--grey); font-size: 0.9rem;">Responding Unit: {{ Auth::user()->name }}</p>
         </div>
         
-        <div class="user-profile">
-            <span style="font-size: 0.85rem; font-weight: 600; color: #22c55e;">Status: On Duty</span>
-            <div class="avatar-sm" style="background: var(--red);">{{ substr(Auth::user()->name, 0, 1) }}</div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <button id="themeToggle" class="theme-toggle" aria-label="Toggle Dark Mode">
+                <i data-lucide="sun" id="themeIcon"></i>
+            </button>
+            <div class="user-profile">
+                <div class="user-info">
+                    <span>{{ Auth::user()->name }}</span>
+                    <small>Unit: {{ ucfirst(Auth::user()->role) }}</small>
+                </div>
+                <div class="avatar" style="background: #22c55e">{{ substr(Auth::user()->name, 0, 1) }}</div>
+            </div>
         </div>
     </header>
 
@@ -136,8 +147,79 @@
     </div>
 </main>
 
+<!-- EMERGENCY ALERT MODAL -->
+<div id="emergencyModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+    <div style="background: #0a0a0a; border: 1px solid var(--red); width: 100%; max-width: 500px; border-radius: 20px; padding: 40px; text-align: center; box-shadow: 0 0 50px rgba(229, 9, 20, 0.3); animation: pulse-red 2s infinite;">
+        <div style="width: 80px; height: 80px; background: rgba(229, 9, 20, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--red); margin: 0 auto 24px;">
+            <i data-lucide="siren" style="width: 48px; height: 48px;"></i>
+        </div>
+        <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 10px; color: #fff;">CRITICAL ALERT</h2>
+        <p id="alertUser" style="font-size: 1.1rem; color: var(--grey); margin-bottom: 5px;">Patient: John Doe</p>
+        <p id="alertLoc" style="font-size: 0.9rem; color: var(--red); font-weight: 700; margin-bottom: 30px;">LOCATION: 1.2km away</p>
+        
+        <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 20px; margin-bottom: 30px; text-align: left;">
+            <p style="font-size: 0.75rem; color: var(--grey); margin-bottom: 5px; text-transform: uppercase;">Medical ID Summary</p>
+            <p id="alertMedical" style="font-weight: 600;">Blood: O+ | Allergies: None | Asthma</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <button onclick="closeAlert()" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">Decline</button>
+            <button onclick="acceptMission()" style="background: var(--red); color: #fff; border: none; padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 10px 20px rgba(229, 9, 20, 0.3);">Accept Mission</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes pulse-red {
+        0% { box-shadow: 0 0 0 0 rgba(229, 9, 20, 0.4); }
+        70% { box-shadow: 0 0 0 20px rgba(229, 9, 20, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(229, 9, 20, 0); }
+    }
+</style>
+
 <script>
     lucide.createIcons();
+
+    let currentAlertId = null;
+    const siren = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
+    siren.loop = true;
+
+    function pollAlerts() {
+        fetch('{{ route("responder.alerts") }}')
+            .then(res => res.json())
+            .then(data => {
+                if (data.length > 0) {
+                    const alert = data[0];
+                    if (currentAlertId !== alert.uuid) {
+                        showEmergency(alert);
+                    }
+                }
+            });
+    }
+
+    function showEmergency(alert) {
+        currentAlertId = alert.uuid;
+        document.getElementById('alertUser').textContent = `Patient: ${alert.user.name}`;
+        document.getElementById('alertLoc').textContent = `LOCATION: ${alert.latitude}, ${alert.longitude}`;
+        document.getElementById('alertMedical').textContent = `Blood: ${alert.user.blood_group || 'N/A'} | Allergies: ${alert.user.allergies || 'None'}`;
+        
+        document.getElementById('emergencyModal').style.display = 'flex';
+        siren.play().catch(e => console.log('Audio blocked'));
+    }
+
+    function closeAlert() {
+        document.getElementById('emergencyModal').style.display = 'none';
+        siren.pause();
+        siren.currentTime = 0;
+    }
+
+    function acceptMission() {
+        alert('Mission Accepted! Ambulance Dispatched.');
+        closeAlert();
+        // Here we would update the mission status via AJAX
+    }
+
+    setInterval(pollAlerts, 5000);
 </script>
 </body>
 </html>

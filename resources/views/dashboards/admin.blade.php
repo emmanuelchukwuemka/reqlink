@@ -3,27 +3,43 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Government Oversight | ResQLink</title>
+    <title>National Oversight | ResQLink Admin</title>
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .admin-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; margin-top: 20px; }
+        .admin-table th { text-align: left; padding: 15px; color: var(--grey); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        .admin-table tr { background: rgba(255,255,255,0.02); transition: all 0.3s; }
+        .admin-table tr:hover { background: rgba(255,255,255,0.05); transform: scale(1.005); }
+        .admin-table td { padding: 15px; border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border); }
+        .admin-table td:first-child { border-left: 1px solid var(--glass-border); border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+        .admin-table td:last-child { border-right: 1px solid var(--glass-border); border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+        
+        .role-badge { padding: 4px 12px; border-radius: 100px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+        .role-civilian { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .role-responder { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+        .role-admin { background: rgba(229, 9, 20, 0.1); color: var(--red); }
+        .theme-toggle { background: transparent; border: none; color: var(--grey); cursor: pointer; padding: 8px; border-radius: 50%; transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
+        .theme-toggle:hover { background: var(--glass); color: var(--white); }
+        :root.light-mode .theme-toggle:hover { background: rgba(0,0,0,0.05); color: var(--black); }
+    </style>
+    <script src="{{ asset('js/theme.js') }}"></script>
 </head>
 <body class="dashboard-layout">
 
 <aside class="sidebar">
     <div class="sidebar-header">
         <div class="auth-logo" style="margin-bottom: 0;">
-            <div class="logo-icon">R</div>
-            Resq<span style="color:var(--red)">Link</span>
+            <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 50px; width: auto; object-fit: contain;">
         </div>
-        <div style="font-size: 0.65rem; color: var(--red); font-weight: 800; letter-spacing: 1px; margin-top: 5px;">GOVERNMENT PORTAL</div>
+        <div style="font-size: 0.6rem; color: var(--red); font-weight: 900; text-transform: uppercase; margin-top: 5px; letter-spacing: 2px;">Admin Portal</div>
     </div>
     
     <nav class="sidebar-nav">
-        <a href="#" class="nav-item active"><i data-lucide="bar-chart-3"></i> Oversight</a>
-        <a href="#" class="nav-item"><i data-lucide="landmark"></i> Agencies</a>
-        <a href="#" class="nav-item"><i data-lucide="map-pinned"></i> National View</a>
-        <a href="#" class="nav-item"><i data-lucide="file-text"></i> Policy & Reports</a>
-        <a href="#" class="nav-item"><i data-lucide="shield-check"></i> Verification</a>
+        <a href="#" class="nav-item active"><i data-lucide="users"></i> User Management</a>
+        <a href="#" class="nav-item"><i data-lucide="activity"></i> Global Incidents</a>
+        <a href="#" class="nav-item"><i data-lucide="building-2"></i> Agency Oversight</a>
+        <a href="#" class="nav-item"><i data-lucide="bar-chart-3"></i> System Analytics</a>
     </nav>
 
     <div class="sidebar-footer">
@@ -39,66 +55,100 @@
 <main class="main-content">
     <header class="top-bar">
         <div>
-            <h1 style="font-size: 1.5rem; font-weight: 800;">National Oversight</h1>
-            <p style="color: var(--grey); font-size: 0.9rem;">Administrator: {{ Auth::user()->name }}</p>
+            <h1 style="font-size: 1.5rem; font-weight: 800;">National User Registry</h1>
+            <p style="color: var(--grey); font-size: 0.9rem;">Total Registered Accounts: {{ $users->count() }}</p>
         </div>
-        
-        <div class="user-profile">
-            <span style="font-size: 0.85rem; font-weight: 600;">System Health: Optimal</span>
-            <div class="avatar-sm" style="background: #3b82f6;">{{ substr(Auth::user()->name, 0, 1) }}</div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <button id="themeToggle" class="theme-toggle" aria-label="Toggle Dark Mode">
+                <i data-lucide="sun" id="themeIcon"></i>
+            </button>
+            <div class="user-profile">
+                <div class="user-info">
+                    <span>{{ Auth::user()->name }}</span>
+                    <small>System Administrator</small>
+                </div>
+                <div class="avatar" style="background: var(--red)">{{ substr(Auth::user()->name, 0, 1) }}</div>
+            </div>
         </div>
     </header>
 
-    <div class="stats-row" style="margin-bottom: 24px;">
-        <div class="stat-box">
-            <h4>142</h4>
-            <p>Active Nodes</p>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ $users->where('role', 'civilian')->count() }}</div>
+            <div class="stat-label">Total Civilians</div>
         </div>
-        <div class="stat-box">
-            <h4>1,024</h4>
-            <p>Total Rescues</p>
+        <div class="stat-card">
+            <div class="stat-value">{{ $users->whereNotIn('role', ['civilian', 'admin'])->count() }}</div>
+            <div class="stat-label">Verified Responders</div>
         </div>
-        <div class="stat-box">
-            <h4 style="color: #22c55e;">98%</h4>
-            <p>Response Rate</p>
-        </div>
-        <div class="stat-box">
-            <h4 style="color: var(--red);">04:12</h4>
-            <p>Avg Response</p>
+        <div class="stat-card">
+            <div class="stat-value">{{ number_format($users->count() * 1.2, 0) }}</div>
+            <div class="stat-label">System Health</div>
         </div>
     </div>
 
-    <div class="dashboard-grid">
-        <div class="dash-card">
-            <h3><i data-lucide="map"></i> National Live Feed</h3>
-            <div class="map-placeholder" style="height: 400px;">
-                <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 8px; border: 1px solid var(--glass-border); font-size: 0.7rem;">
-                    <p><span style="color: #ef4444">●</span> Critical Event</p>
-                    <p><span style="color: #3b82f6">●</span> Active Agency</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="dash-card">
-            <h3><i data-lucide="shield-check"></i> Pending Verifications</h3>
-            <div class="history-list">
-                <div class="history-item">
-                    <div class="history-info">
-                        <i data-lucide="hospital"></i>
-                        <div>
-                            <p style="font-size: 0.85rem; font-weight: 600;">City Hope Hospital</p>
-                            <p style="font-size: 0.7rem; color: var(--grey);">New Registration Request</p>
+    <div class="dash-card" style="margin-top: 30px;">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>User / Entity</th>
+                    <th>Role</th>
+                    <th>Contact</th>
+                    <th>Medical ID</th>
+                    <th>Joined</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($users as $user)
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div class="avatar sm" style="background: {{ $user->role == 'civilian' ? '#3b82f6' : 'var(--red)' }}">
+                                {{ substr($user->name, 0, 1) }}
+                            </div>
+                            <div>
+                                <div style="font-weight: 700;">{{ $user->name }}</div>
+                                <div style="font-size: 0.75rem; color: var(--grey);">{{ $user->email ?? 'No Email' }}</div>
+                            </div>
                         </div>
-                    </div>
-                    <button style="background: transparent; color: #22c55e; border: 1px solid #22c55e; padding: 4px 12px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; cursor: pointer;">Approve</button>
-                </div>
-            </div>
-        </div>
+                    </td>
+                    <td>
+                        <span class="role-badge role-{{ $user->role == 'civilian' ? 'civilian' : ($user->role == 'admin' ? 'admin' : 'responder') }}">
+                            {{ $user->role }}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="font-size: 0.85rem;">{{ $user->phone }}</div>
+                    </td>
+                    <td>
+                        @if($user->blood_group)
+                            <div style="display: flex; gap: 5px;">
+                                <span style="font-size: 0.7rem; background: rgba(229, 9, 20, 0.1); color: var(--red); padding: 2px 6px; border-radius: 4px;">{{ $user->blood_group }}</span>
+                                @if($user->allergies)
+                                    <i data-lucide="info" style="width: 12px; color: var(--grey);" title="{{ $user->allergies }}"></i>
+                                @endif
+                            </div>
+                        @else
+                            <span style="color: var(--grey); font-size: 0.75rem;">None</span>
+                        @endif
+                    </td>
+                    <td>
+                        <div style="font-size: 0.8rem; color: var(--grey);">{{ $user->created_at->format('M d, Y') }}</div>
+                    </td>
+                    <td>
+                        <span style="color: #22c55e; font-size: 0.75rem; display: flex; align-items: center; gap: 4px;">
+                            <span style="width: 6px; height: 6px; background: #22c55e; border-radius: 50%;"></span>
+                            Active
+                        </span>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
 </main>
 
-<script>
-    lucide.createIcons();
-</script>
+<script>lucide.createIcons();</script>
 </body>
 </html>
