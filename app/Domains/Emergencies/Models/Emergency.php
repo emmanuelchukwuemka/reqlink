@@ -40,4 +40,14 @@ class Emergency extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function emergencyType()
+    {
+        return $this->belongsTo(EmergencyType::class);
+    }
+
+    public function assignedResponder()
+    {
+        return $this->belongsTo(\App\Domains\Responders\Models\Responder::class, 'assigned_responder_id');
+    }
 }

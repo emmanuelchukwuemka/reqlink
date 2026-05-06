@@ -17,23 +17,24 @@
 <div class="auth-card">
     <div class="auth-header">
         <div class="auth-logo">
-            <div class="logo-icon">R</div>
-            Resq<span style="color:var(--red)">Link</span>
+            <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 60px; width: auto; object-fit: contain;">
         </div>
         <h2>Reset Password</h2>
-        <p>Enter your email and we'll send you a reset link</p>
+        <p>Enter your email to receive a secure reset link</p>
 
         @if (session('status'))
-            <div style="background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 12px; border-radius: 8px; margin-top: 20px; font-size: 0.85rem; border: 1px solid rgba(34, 197, 94, 0.2);">
+            <div style="background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 16px; border-radius: 12px; margin-top: 24px; font-size: 0.9rem; border: 1px solid rgba(34, 197, 94, 0.2);">
                 {{ session('status') }}
             </div>
         @endif
 
         @if ($errors->any())
-            <div style="background: rgba(229, 9, 20, 0.1); color: var(--red); padding: 12px; border-radius: 8px; margin-top: 20px; font-size: 0.85rem; border: 1px solid rgba(229, 9, 20, 0.2);">
-                @foreach ($errors->all() as $error)
-                    <p>{{ $error }}</p>
-                @endforeach
+            <div style="background: rgba(229, 9, 20, 0.1); color: var(--red); padding: 16px; border-radius: 12px; margin-top: 24px; font-size: 0.9rem; border: 1px solid rgba(229, 9, 20, 0.2); text-align: left;">
+                <ul style="margin: 0; padding-left: 20px;">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
         @endif
     </div>
@@ -41,15 +42,15 @@
     <form class="auth-form" action="{{ route('password.email') }}" method="POST">
         @csrf
         <div class="form-group">
-            <label><i data-lucide="mail" class="lucide-icon sm"></i> Email Address</label>
-            <input type="email" name="email" value="{{ old('email') }}" placeholder="Enter your email" required autofocus>
+            <label class="field-label"><i data-lucide="mail" class="lucide-icon sm"></i> Email Address</label>
+            <input type="email" name="email" value="{{ old('email') }}" placeholder="admin@organization.com" required autofocus>
         </div>
 
-        <button type="submit" class="btn-primary" style="width:100%; padding: 16px;">Send Reset Link</button>
+        <button type="submit" class="btn-primary" style="width:100%; padding: 18px; margin-top: 10px; border-radius: 16px; font-size: 1rem;">Send Recovery Link</button>
     </form>
 
     <div class="auth-footer">
-        Remember your password? <a href="{{ route('login') }}">Login here</a>
+        Suddenly remembered? <a href="{{ route('login') }}">Back to Login</a>
     </div>
 </div>
 

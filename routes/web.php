@@ -19,6 +19,7 @@ Route::post('/forgot-password', [WebAuthController::class, 'sendResetLink'])->na
 Route::get('/reset-password/{token}', [WebAuthController::class, 'showResetPassword'])->name('password.reset');
 Route::post('/reset-password', [WebAuthController::class, 'resetPassword'])->name('password.update');
 
+Route::get('/logout', [WebAuthController::class, 'logout'])->name('logout.get');
 Route::post('/logout', [WebAuthController::class, 'logout'])->name('logout');
 
 Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard')->middleware('auth');

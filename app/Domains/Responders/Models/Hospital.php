@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Hospital extends Model
 {
     protected $fillable = [
+        'user_id',
         'name',
         'lat',
         'lng',
@@ -20,4 +21,9 @@ class Hospital extends Model
     protected $casts = [
         'specialties' => 'array',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(\App\Domains\Users\Models\User::class);
+    }
 }

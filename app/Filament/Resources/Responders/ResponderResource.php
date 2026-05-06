@@ -61,8 +61,9 @@ class ResponderResource extends Resource
                 IconColumn::make('is_available')
                     ->boolean(),
                 TextColumn::make('last_ping')
-                    ->dateTime(),
+                    ->formatStateUsing(fn ($state): string => $state ? $state->format('M j, Y H:i') : 'Never'),
             ])
+            ->paginated(false)
             ->filters([
                 //
             ])

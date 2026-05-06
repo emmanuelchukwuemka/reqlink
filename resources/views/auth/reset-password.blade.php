@@ -12,17 +12,18 @@
 <div class="auth-card">
     <div class="auth-header">
         <div class="auth-logo">
-            <div class="logo-icon">R</div>
-            Resq<span style="color:var(--red)">Link</span>
+            <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 60px; width: auto; object-fit: contain;">
         </div>
         <h2>New Password</h2>
         <p>Set a secure new password for your account</p>
 
         @if ($errors->any())
-            <div style="background: rgba(229, 9, 20, 0.1); color: var(--red); padding: 12px; border-radius: 8px; margin-top: 20px; font-size: 0.85rem; border: 1px solid rgba(229, 9, 20, 0.2);">
-                @foreach ($errors->all() as $error)
-                    <p>{{ $error }}</p>
-                @endforeach
+            <div style="background: rgba(229, 9, 20, 0.1); color: var(--red); padding: 16px; border-radius: 12px; margin-top: 24px; font-size: 0.9rem; border: 1px solid rgba(229, 9, 20, 0.2); text-align: left;">
+                <ul style="margin: 0; padding-left: 20px;">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
         @endif
     </div>
@@ -32,21 +33,21 @@
         <input type="hidden" name="token" value="{{ $token }}">
 
         <div class="form-group">
-            <label><i data-lucide="mail" class="lucide-icon sm"></i> Email Address</label>
-            <input type="email" name="email" value="{{ old('email', $email) }}" placeholder="Enter your email" required readonly>
+            <label class="field-label"><i data-lucide="mail" class="lucide-icon sm"></i> Email Address</label>
+            <input type="email" name="email" value="{{ old('email', $email) }}" required readonly style="opacity: 0.7; cursor: not-allowed;">
         </div>
 
         <div class="form-group">
-            <label><i data-lucide="lock" class="lucide-icon sm"></i> New Password</label>
+            <label class="field-label"><i data-lucide="lock" class="lucide-icon sm"></i> New Password</label>
             <input type="password" name="password" placeholder="••••••••" required autofocus>
         </div>
 
         <div class="form-group">
-            <label><i data-lucide="shield-check" class="lucide-icon sm"></i> Confirm New Password</label>
+            <label class="field-label"><i data-lucide="shield-check" class="lucide-icon sm"></i> Confirm New Password</label>
             <input type="password" name="password_confirmation" placeholder="••••••••" required>
         </div>
 
-        <button type="submit" class="btn-primary" style="width:100%; padding: 16px;">Reset Password</button>
+        <button type="submit" class="btn-primary" style="width:100%; padding: 18px; margin-top: 10px; border-radius: 16px; font-size: 1rem;">Update Password</button>
     </form>
 </div>
 

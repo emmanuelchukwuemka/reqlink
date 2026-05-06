@@ -18,19 +18,24 @@
 <div class="auth-card">
     <div class="auth-header">
         <div class="auth-logo">
-            <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 80px; width: auto; object-fit: contain;">
+            <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 60px; width: auto; object-fit: contain;">
         </div>
+        <h2>Welcome Back</h2>
+        <p>Log in to access your dashboard</p>
+
         @if (session('status'))
-            <div style="background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 12px; border-radius: 8px; margin-top: 20px; font-size: 0.85rem; border: 1px solid rgba(34, 197, 94, 0.2);">
+            <div style="background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 16px; border-radius: 12px; margin-top: 24px; font-size: 0.9rem; border: 1px solid rgba(34, 197, 94, 0.2);">
                 {{ session('status') }}
             </div>
         @endif
 
         @if ($errors->any())
-            <div style="background: rgba(229, 9, 20, 0.1); color: var(--red); padding: 12px; border-radius: 8px; margin-top: 20px; font-size: 0.85rem; border: 1px solid rgba(229, 9, 20, 0.2);">
-                @foreach ($errors->all() as $error)
-                    <p>{{ $error }}</p>
-                @endforeach
+            <div style="background: rgba(229, 9, 20, 0.1); color: var(--red); padding: 16px; border-radius: 12px; margin-top: 24px; font-size: 0.9rem; border: 1px solid rgba(229, 9, 20, 0.2); text-align: left;">
+                <ul style="margin: 0; padding-left: 20px;">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
         @endif
     </div>
@@ -38,23 +43,26 @@
     <form class="auth-form" action="{{ route('login') }}" method="POST">
         @csrf
         <div class="form-group">
-            <label><i data-lucide="phone" class="lucide-icon sm"></i> Phone Number</label>
-            <input type="tel" name="phone" placeholder="Enter your phone number" required>
+            <label class="field-label"><i data-lucide="phone" class="lucide-icon sm"></i> Mobile Number</label>
+            <input type="tel" name="phone" placeholder="+234 800 000 0000" required>
         </div>
         
         <div class="form-group">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <label><i data-lucide="lock" class="lucide-icon sm"></i> Password</label>
-                <a href="{{ route('password.request') }}" style="font-size: 0.8rem; color: var(--red); font-weight: 600;">Forgot Password?</a>
+                <label class="field-label"><i data-lucide="lock" class="lucide-icon sm"></i> Access Password</label>
+                <a href="{{ route('password.request') }}" style="font-size: 0.8rem; color: var(--red); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Forgot?</a>
             </div>
             <input type="password" name="password" placeholder="••••••••" required>
         </div>
 
-        <button type="submit" class="btn-primary" style="width:100%; padding: 16px;">Login</button>
+        <button type="submit" class="btn-primary" style="width:100%; padding: 18px; margin-top: 10px; border-radius: 16px; font-size: 1rem;">Secure Login</button>
     </form>
 
     <div class="auth-footer">
-        Don't have an account? <a href="{{ route('register') }}">User Signup</a> | <a href="{{ route('register.partner') }}">Partner Signup</a>
+        Don't have an account?<br>
+        <div style="margin-top: 10px;">
+            <a href="{{ route('register') }}">Individual Signup</a> &nbsp;•&nbsp; <a href="{{ route('register.partner') }}">Partner Signup</a>
+        </div>
     </div>
 </div>
 

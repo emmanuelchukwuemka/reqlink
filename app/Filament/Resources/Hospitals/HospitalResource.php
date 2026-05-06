@@ -47,8 +47,10 @@ class HospitalResource extends Resource
                 TextColumn::make('contact_phone'),
                 TextColumn::make('available_beds')
                     ->label('Beds')
+                    ->formatStateUsing(fn ($state): string => (string) $state)
                     ->sortable(),
             ])
+            ->paginated(false)
             ->filters([
                 //
             ])

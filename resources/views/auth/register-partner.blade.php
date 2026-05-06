@@ -15,78 +15,141 @@
     Back to Home
 </a>
 
-<div class="auth-card" style="max-width: 600px;">
+<div class="auth-card" style="max-width: 700px;">
     <div class="auth-header">
         <div class="auth-logo">
-            <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 80px; width: auto; object-fit: contain;">
+            <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 60px; width: auto; object-fit: contain;">
         </div>
-        <h2>Partner Registration</h2>
-        <p>Join the professional emergency network</p>
+        <h2>Partner Network</h2>
+        <p>Register your professional emergency entity</p>
 
         @if ($errors->any())
-            <div style="background: rgba(229, 9, 20, 0.1); color: var(--red); padding: 12px; border-radius: 8px; margin-top: 20px; font-size: 0.85rem; border: 1px solid rgba(229, 9, 20, 0.2);">
-                @foreach ($errors->all() as $error)
-                    <p>{{ $error }}</p>
-                @endforeach
+            <div style="background: rgba(229, 9, 20, 0.1); color: var(--red); padding: 16px; border-radius: 12px; margin-top: 24px; font-size: 0.9rem; border: 1px solid rgba(229, 9, 20, 0.2); text-align: left;">
+                <ul style="margin: 0; padding-left: 20px;">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
         @endif
     </div>
 
-    <form class="auth-form" action="{{ route('register') }}" method="POST">
+    <form class="auth-form" action="{{ route('register') }}" method="POST" enctype="multipart/form-data">
         @csrf
         
+        <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+            <!-- ===== SECTION 1: ENTITY DETAILS ===== -->
+            <div style="grid-column: span 2; margin-bottom: 10px;">
+                <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--red); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; margin-bottom: 20px;">
+                    1. Organization Details
+                </h3>
+            </div>
 
-
-        <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             <div class="form-group" style="grid-column: span 2;">
-                <label class="field-label"><i data-lucide="building" class="lucide-icon sm"></i> Entity Name / Full Name</label>
-                <input type="text" name="name" value="{{ old('name') }}" placeholder="City Central Hospital" required>
+                <label class="field-label"><i data-lucide="building" class="lucide-icon sm"></i> Registered Entity Name</label>
+                <input type="text" name="name" value="{{ old('name') }}" placeholder="e.g. Lagos City Medical Center" required>
             </div>
 
             <div class="form-group">
-                <label class="field-label"><i data-lucide="phone" class="lucide-icon sm"></i> Contact Phone</label>
-                <input type="tel" name="phone" value="{{ old('phone') }}" placeholder="+234..." required>
+                <label class="field-label"><i data-lucide="briefcase" class="lucide-icon sm"></i> Partner Category</label>
+                <select name="role" required>
+                    <option value="" disabled selected>Select Category</option>
+                    <option value="doctor">Private Practitioner (Doctor)</option>
+                    <option value="hospital">Hospital / Clinic</option>
+                    <option value="ambulance">Ambulance Service Provider</option>
+                    <option value="security">Security & Rapid Response</option>
+                    <option value="fire">Fire Service Unit</option>
+                </select>
             </div>
 
             <div class="form-group">
-                <label class="field-label"><i data-lucide="briefcase" class="lucide-icon sm"></i> Partner Type</label>
-                <div style="position: relative;">
-                    <select name="role" class="styled-select" required style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px 16px; color: white; font-size: 0.9rem; appearance: none; cursor: pointer;">
-                        <option value="doctor" style="color: #000;">Doctor</option>
-                        <option value="hospital" style="color: #000;">Hospital</option>
-                        <option value="ambulance" style="color: #000;">Ambulance Service</option>
-                        <option value="security" style="color: #000;">Security Firm</option>
-                        <option value="fire" style="color: #000;">Fire Unit</option>
-                    </select>
-                    <i data-lucide="chevron-down" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--grey); width: 18px; height: 18px;"></i>
+                <label class="field-label"><i data-lucide="phone" class="lucide-icon sm"></i> Operational Phone</label>
+                <input type="tel" name="phone" value="{{ old('phone') }}" placeholder="+234 800 000 0000" required>
+            </div>
+
+            <div class="form-group" style="grid-column: span 2;">
+                <label class="field-label"><i data-lucide="mail" class="lucide-icon sm"></i> Official Email Address</label>
+                <input type="email" name="email" value="{{ old('email') }}" placeholder="admin@organization.com" required>
+            </div>
+
+            <!-- ===== SECTION 2: VERIFICATION ===== -->
+            <div style="grid-column: span 2; margin-top: 20px; margin-bottom: 10px;">
+                <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--red); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; margin-bottom: 20px;">
+                    2. Legal & Licensing
+                </h3>
+            </div>
+
+            <div class="form-group">
+                <label class="field-label"><i data-lucide="file-check" class="lucide-icon sm"></i> Primary License</label>
+                <div class="file-upload-wrapper">
+                    <input type="file" name="license" required onchange="updateFileName(this)">
+                    <div class="file-upload-design">
+                        <i data-lucide="upload-cloud"></i>
+                        <span class="upload-text">Click to Upload License</span>
+                        <span class="upload-hint">PDF, JPG, or PNG (Max 5MB)</span>
+                    </div>
+                    <div class="file-name-display"></div>
                 </div>
             </div>
-            
+
             <div class="form-group">
-                <label class="field-label"><i data-lucide="mail" class="lucide-icon sm"></i> Business Email</label>
-                <input type="email" name="email" value="{{ old('email') }}" placeholder="contact@entity.com">
+                <label class="field-label"><i data-lucide="files" class="lucide-icon sm"></i> Supporting Docs</label>
+                <div class="file-upload-wrapper">
+                    <input type="file" name="additional_docs" required onchange="updateFileName(this)">
+                    <div class="file-upload-design">
+                        <i data-lucide="folder-plus"></i>
+                        <span class="upload-text">Attach Other Files</span>
+                        <span class="upload-hint">CAC, ID, or Certificates</span>
+                    </div>
+                    <div class="file-name-display"></div>
+                </div>
+            </div>
+
+            <!-- ===== SECTION 3: SECURITY ===== -->
+            <div style="grid-column: span 2; margin-top: 20px; margin-bottom: 10px;">
+                <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--red); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; margin-bottom: 20px;">
+                    3. Account Access
+                </h3>
             </div>
 
             <div class="form-group">
-                <label class="field-label"><i data-lucide="lock" class="lucide-icon sm"></i> Password</label>
+                <label class="field-label"><i data-lucide="lock" class="lucide-icon sm"></i> Secure Password</label>
                 <input type="password" name="password" placeholder="••••••••" required>
             </div>
 
             <div class="form-group">
-                <label class="field-label"><i data-lucide="shield-check" class="lucide-icon sm"></i> Confirm Password</label>
+                <label class="field-label"><i data-lucide="shield-check" class="lucide-icon sm"></i> Confirm Access</label>
                 <input type="password" name="password_confirmation" placeholder="••••••••" required>
             </div>
         </div>
 
-        <button type="submit" class="btn-primary" style="width:100%; padding: 16px; margin-top: 20px;">Register Partner</button>
+        <button type="submit" class="btn-primary" style="width:100%; padding: 20px; margin-top: 30px; border-radius: 16px; font-size: 1rem;">Submit Partner Application</button>
     </form>
 
     <div class="auth-footer">
-        Already registered? <a href="{{ route('login') }}">Login here</a><br>
-        Are you an individual user? <a href="{{ route('register') }}">Join as User</a>
+        Looking for individual access? <a href="{{ route('register') }}">Register as User</a><br>
+        Already a partner? <a href="{{ route('login') }}">Partner Login</a>
     </div>
 </div>
 
-<script>lucide.createIcons();</script>
+<script>
+    lucide.createIcons();
+
+    function updateFileName(input) {
+        const display = input.parentElement.querySelector('.file-name-display');
+        const design = input.parentElement.querySelector('.file-upload-design');
+        
+        if (input.files && input.files[0]) {
+            display.textContent = 'Selected: ' + input.files[0].name;
+            display.style.display = 'block';
+            design.style.borderColor = 'var(--red)';
+            design.style.background = 'rgba(229, 9, 20, 0.08)';
+        } else {
+            display.style.display = 'none';
+            design.style.borderColor = '';
+            design.style.background = '';
+        }
+    }
+</script>
 </body>
 </html>

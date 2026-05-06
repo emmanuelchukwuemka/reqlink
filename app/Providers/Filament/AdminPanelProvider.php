@@ -31,6 +31,18 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->navigationItems([
+                \Filament\Navigation\NavigationItem::make('Logout')
+                    ->url(fn (): string => route('logout.get'))
+                    ->icon('heroicon-o-arrow-left-on-rectangle')
+                    ->sort(99),
+            ])
+            ->userMenuItems([
+                'logout' => \Filament\Navigation\MenuItem::make()
+                    ->label('Log Out')
+                    ->url(fn (): string => route('logout.get'))
+                    ->icon('heroicon-o-arrow-left-on-rectangle'),
+            ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
