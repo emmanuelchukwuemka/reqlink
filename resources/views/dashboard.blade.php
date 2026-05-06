@@ -15,6 +15,23 @@
         .theme-toggle { background: transparent; border: none; color: var(--grey); cursor: pointer; padding: 8px; border-radius: 50%; transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
         .theme-toggle:hover { background: var(--glass); color: var(--white); }
         :root.light-mode .theme-toggle:hover { background: rgba(0,0,0,0.05); color: var(--black); }
+
+        /* Live Alert Overlay */
+        .live-alert-overlay {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 350px;
+            background: #0a0a0a;
+            border: 2px solid var(--red);
+            border-radius: 20px;
+            padding: 25px;
+            z-index: 2000;
+            box-shadow: 0 20px 50px rgba(229, 9, 20, 0.4);
+            display: none;
+            animation: slide-up 0.5s ease-out;
+        }
+        @keyframes slide-up { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
     <script src="{{ asset('js/theme.js') }}"></script>
 </head>
@@ -125,8 +142,19 @@
                         </div>
                     </div>
                     <div style="font-size: 0.85rem; color: var(--grey); margin-bottom: 20px;">
-                        <p style="margin: 5px 0;"><i data-lucide="phone" style="width: 14px; vertical-align: middle; margin-right: 8px;"></i> {{ $hospital->phone }}</p>
-                        <p style="margin: 5px 0;"><i data-lucide="map-pin" style="width: 14px; vertical-align: middle; margin-right: 8px;"></i> Victoria Island, Lagos</p>
+                        <p style="margin: 5px 0;"><i data-lucide="phone" style="width: 14px; vertical-align: middle; margin-right: 8px;"></i> {{ $hospital->contact_phone }}</p>
+                        <p style="margin: 5px 0;"><i data-lucide="map-pin" style="width: 14px; vertical-align: middle; margin-right: 8px;"></i> {{ $hospital->lat }}, {{ $hospital->lng }}</p>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <div style="flex: 1; background: rgba(34, 197, 94, 0.05); padding: 10px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 1rem; font-weight: 800; color: #22c55e;">{{ $hospital->available_beds }}</div>
+                            <div style="font-size: 0.65rem; color: var(--grey); text-transform: uppercase;">Gen. Beds</div>
+                        </div>
+                        <div style="flex: 1; background: rgba(229, 9, 20, 0.05); padding: 10px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 1rem; font-weight: 800; color: var(--red);">{{ $hospital->icu_beds }}</div>
+                            <div style="font-size: 0.65rem; color: var(--grey); text-transform: uppercase;">ICU Units</div>
+                        </div>
                     </div>
                     <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 0.85rem; border-radius: 8px;">Request Transfer</button>
                 </div>
@@ -161,6 +189,34 @@
                     @endforeach
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <!-- LIVE ALERT OVERLAY -->
+    <div id="liveAlert" class="live-alert-overlay">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+            <div>
+                <h3 style="color: var(--red); margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                    <span class="pulse-dot"></span> HELP IS EN ROUTE
+                </h3>
+                <p id="emergencyStatus" style="font-size: 0.8rem; color: var(--grey); margin: 5px 0 0;">Responder dispatched...</p>
+            </div>
+            <i data-lucide="siren" style="color: var(--red); width: 24px;"></i>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div id="responderAvatar" style="width: 40px; height: 40px; background: var(--red); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900;">R</div>
+                <div>
+                    <div id="responderName" style="font-weight: 700; font-size: 0.9rem;">Medical Unit 101</div>
+                    <div id="responderETA" style="font-size: 0.75rem; color: #22c55e; font-weight: 700;">ETA: Calculating...</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <button class="btn-primary" style="padding: 10px; font-size: 0.8rem; background: #2563eb;">Call Unit</button>
+            <button onclick="cancelEmergency()" style="padding: 10px; font-size: 0.8rem; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); border-radius: 8px;">Cancel</button>
         </div>
     </div>
 </main>
@@ -240,6 +296,10 @@
         panicBtn.style.transform = 'scale(1)';
     });
 
+    let activeEmergencyUuid = @json($activeEmergency ? $activeEmergency->uuid : null);
+    let responderMarker = null;
+    let pollingInterval = null;
+
     function triggerEmergency() {
         if (!navigator.geolocation) return alert('Geolocation not supported');
         panicBtn.innerHTML = '<span>...</span><small>Locating</small>';
@@ -254,30 +314,83 @@
             .then(res => res.json())
             .then(data => {
                 panicBtn.innerHTML = '<span>SOS</span><small>Dispatched</small>';
-                if(data.hospital) {
-                    const hospitalPos = [data.hospital.lat, data.hospital.lng];
-                    const userPos = [latitude, longitude];
-                    const ambMarker = L.marker(hospitalPos, { 
-                        icon: L.divIcon({ html: '<i data-lucide="truck" style="color:#22c55e"></i>', className: 'custom-div-icon' })
-                    }).addTo(map).bindPopup(`<b>Ambulance En Route</b>`).openPopup();
-                    
-                    const group = new L.featureGroup([userMarker, ambMarker]);
-                    map.fitBounds(group.getBounds().pad(0.5));
-
-                    // Simple move simulation
-                    let step = 0;
-                    const interval = setInterval(() => {
-                        step++;
-                        ambMarker.setLatLng([
-                            hospitalPos[0] + (userPos[0] - hospitalPos[0]) * (step/100),
-                            hospitalPos[1] + (userPos[1] - hospitalPos[1]) * (step/100)
-                        ]);
-                        if(step >= 100) clearInterval(interval);
-                    }, 100);
-                }
-                alert(`🚨 Emergency Triggered! Responder: ${data.hospital.name}`);
+                activeEmergencyUuid = data.uuid;
+                startPollingStatus();
+                document.getElementById('liveAlert').style.display = 'block';
             });
         });
+    }
+
+    function startPollingStatus() {
+        if (!activeEmergencyUuid) return;
+        
+        if (pollingInterval) clearInterval(pollingInterval);
+        
+        pollingInterval = setInterval(() => {
+            fetch(`/emergency/status/${activeEmergencyUuid}`)
+                .then(res => res.json())
+                .then(data => {
+                    updateLiveUI(data);
+                    if (data.status === 'resolved' || data.status === 'cancelled') {
+                        stopPollingStatus();
+                    }
+                });
+        }, 5000);
+    }
+
+    function updateLiveUI(data) {
+        const overlay = document.getElementById('liveAlert');
+        overlay.style.display = 'block';
+        
+        document.getElementById('emergencyStatus').textContent = `Status: ${data.status.toUpperCase()}`;
+        
+        if (data.responder) {
+            document.getElementById('responderName').textContent = data.responder.name;
+            document.getElementById('responderETA').textContent = `ETA: ${data.eta || '5'} mins`;
+            document.getElementById('responderAvatar').textContent = data.responder.name.charAt(0);
+            
+            if (data.responder.lat && data.responder.lng) {
+                const pos = [data.responder.lat, data.responder.lng];
+                if (!responderMarker) {
+                    responderMarker = L.marker(pos, {
+                        icon: L.divIcon({ 
+                            html: '<div style="background:var(--red); border:2px solid white; border-radius:50%; width:15px; height:15px; box-shadow: 0 0 10px rgba(229,9,20,0.5);"></div>', 
+                            className: 'custom-div-icon' 
+                        })
+                    }).addTo(map).bindPopup('Assigned Responder');
+                } else {
+                    responderMarker.setLatLng(pos);
+                }
+                
+                // Adjust map to show both user and responder
+                if (userMarker) {
+                    const group = new L.featureGroup([userMarker, responderMarker]);
+                    map.fitBounds(group.getBounds().pad(0.5));
+                }
+            }
+        }
+    }
+
+    function stopPollingStatus() {
+        clearInterval(pollingInterval);
+        document.getElementById('liveAlert').style.display = 'none';
+        if (responderMarker) {
+            map.removeLayer(responderMarker);
+            responderMarker = null;
+        }
+        activeEmergencyUuid = null;
+    }
+
+    function cancelEmergency() {
+        if (confirm('Are you sure you want to cancel this emergency?')) {
+            stopPollingStatus();
+            alert('Emergency cancelled.');
+        }
+    }
+
+    // Initialize polling if there's an active emergency from page load
+    if (activeEmergencyUuid) {
+        startPollingStatus();
     }
 </script>
 </body>

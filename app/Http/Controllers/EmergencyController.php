@@ -48,6 +48,7 @@ class EmergencyController extends Controller
 
         return response()->json([
             'message' => 'Emergency alert received and responders dispatched.',
+            'uuid' => $emergency->uuid,
             'emergency' => $emergency,
             'hospital' => $nearestHospital,
             'user_metadata' => [
@@ -56,6 +57,31 @@ class EmergencyController extends Controller
                 'medical_conditions' => Auth::user()->medical_conditions,
                 'emergency_contact' => Auth::user()->emergency_contact_phone,
             ]
+        ]);
+    }
+
+    public function getStatus($uuid)
+    {
+        $emergency = Emergency::where('uuid', $uuid)->firstOrFail();
+        
+        $responderData = null;
+        if ($emergency->assigned_responder_id) {
+            // Check if it's a Responder or Hospital
+            $responder = \App\Domains\Responders\Models\Responder::with('user')->find($emergency->assigned_responder_id);
+            if ($responder) {
+                $responderData = [
+                    'name' => $responder->user->name,
+                    'type' => $responder->responder_type,
+                    'lat' => $responder->current_lat,
+                    'lng' => $responder->current_lng,
+                ];
+            }
+        }
+
+        return response()->json([
+            'status' => $emergency->status,
+            'eta' => $emergency->eta_minutes,
+            'responder' => $responderData
         ]);
     }
 

@@ -22,6 +22,8 @@ class HospitalResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice;
 
+    protected static string|\UnitEnum|null $navigationGroup = 'Emergency Services';
+
     public static function form(Schema $schema): Schema
     {
         return $schema

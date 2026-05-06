@@ -23,8 +23,16 @@ class WebAuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
+            $user = Auth::user();
+            
+            if ($user->is_suspended) {
+                Auth::logout();
+                return back()->withErrors([
+                    'phone' => 'This account has been suspended. Please contact support.',
+                ])->onlyInput('phone');
+            }
 
+            $request->session()->regenerate();
             return redirect()->intended('dashboard');
         }
 

@@ -32,10 +32,7 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Amber,
             ])
             ->navigationItems([
-                \Filament\Navigation\NavigationItem::make('Logout')
-                    ->url(fn (): string => route('logout.get'))
-                    ->icon('heroicon-o-arrow-left-on-rectangle')
-                    ->sort(99),
+                //
             ])
             ->userMenuItems([
                 'logout' => \Filament\Navigation\MenuItem::make()
@@ -50,8 +47,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
+                // Removed AccountWidget and FilamentInfoWidget
             ])
             ->middleware([
                 EncryptCookies::class,

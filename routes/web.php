@@ -22,9 +22,18 @@ Route::post('/reset-password', [WebAuthController::class, 'resetPassword'])->nam
 Route::get('/logout', [WebAuthController::class, 'logout'])->name('logout.get');
 Route::post('/logout', [WebAuthController::class, 'logout'])->name('logout');
 
+Route::middleware(['auth'])->group(function () {
+    Route::post('/responder/toggle-duty', [ResponderController::class, 'toggleDuty'])->name('responder.toggle-duty');
+    Route::post('/responder/update-location', [ResponderController::class, 'updateLocation'])->name('responder.update-location');
+    Route::post('/hospital/update', [HospitalController::class, 'update'])->name('hospital.update');
+    Route::get('/emergency/status/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'getStatus'])->name('emergency.status');
+});
+
 Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard')->middleware('auth');
 
 Route::get('/settings', [\App\Http\Controllers\SettingsController::class, 'index'])->name('settings')->middleware('auth');
+Route::get('/admin/command-center', [DashboardController::class, 'commandCenter'])->name('admin.command-center')->middleware('auth');
+Route::post('/admin/user/{id}/toggle-status', [DashboardController::class, 'toggleUserStatus'])->name('admin.user.toggle-status')->middleware('auth');
 Route::post('/settings', [\App\Http\Controllers\SettingsController::class, 'update'])->name('settings.update')->middleware('auth');
 
 Route::post('/emergency/trigger', [\App\Http\Controllers\EmergencyController::class, 'trigger'])

@@ -33,6 +33,7 @@ class User extends Authenticatable
         'role',
         'avatar',
         'is_verified',
+        'is_suspended',
         'blood_group',
         'allergies',
         'medical_conditions',
@@ -61,6 +62,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_verified' => 'boolean',
+            'is_suspended' => 'boolean',
         ];
     }
 }

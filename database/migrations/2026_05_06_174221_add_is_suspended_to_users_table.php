@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('responders', function (Blueprint $table) {
-            $table->boolean('is_on_duty')->default(false)->after('is_available');
+        Schema::table('users', function (Blueprint $table) {
+            $table->boolean('is_suspended')->default(false)->after('is_verified');
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('responders', function (Blueprint $table) {
-            $table->dropColumn('is_on_duty');
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('is_suspended');
         });
     }
 };

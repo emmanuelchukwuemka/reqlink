@@ -35,8 +35,9 @@ class ResponderResource extends Resource
                 Select::make('responder_type')
                     ->options([
                         'ambulance' => 'Ambulance',
-                        'police' => 'Police',
+                        'security' => 'Security',
                         'fire' => 'Fire',
+                        'doctor' => 'Doctor',
                     ])
                     ->required(),
                 TextInput::make('vehicle_reg'),

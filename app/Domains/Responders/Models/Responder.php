@@ -18,11 +18,13 @@ class Responder extends Model
         'current_lat',
         'current_lng',
         'is_available',
+        'is_on_duty',
         'last_ping',
     ];
 
     protected $casts = [
         'is_available' => 'boolean',
+        'is_on_duty' => 'boolean',
         'last_ping' => 'datetime',
     ];
 

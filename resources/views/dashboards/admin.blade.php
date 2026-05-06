@@ -37,6 +37,7 @@
     
     <nav class="sidebar-nav">
         <a href="#" class="nav-item active"><i data-lucide="users"></i> User Management</a>
+        <a href="{{ route('admin.command-center') }}" class="nav-item"><i data-lucide="shield-alert" style="color: var(--red);"></i> Command Center</a>
         <a href="#" class="nav-item"><i data-lucide="activity"></i> Global Incidents</a>
         <a href="#" class="nav-item"><i data-lucide="building-2"></i> Agency Oversight</a>
         <a href="#" class="nav-item"><i data-lucide="bar-chart-3"></i> System Analytics</a>
@@ -59,6 +60,10 @@
             <p style="color: var(--grey); font-size: 0.9rem;">Total Registered Accounts: {{ $users->count() }}</p>
         </div>
         <div style="display: flex; align-items: center; gap: 20px;">
+            <a href="{{ route('admin.command-center') }}" class="btn-primary" style="padding: 10px 20px; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; text-decoration: none;">
+                <i data-lucide="radar" style="width: 18px; height: 18px;"></i>
+                LIVE COMMAND
+            </a>
             <button id="themeToggle" class="theme-toggle" aria-label="Toggle Dark Mode">
                 <i data-lucide="sun" id="themeIcon"></i>
             </button>
@@ -78,12 +83,12 @@
             <div class="stat-label">Total Civilians</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value">{{ $users->whereNotIn('role', ['civilian', 'admin'])->count() }}</div>
-            <div class="stat-label">Verified Responders</div>
+            <div class="stat-value" style="color: #22c55e;">{{ $onDutyRespondersCount }}</div>
+            <div class="stat-label">Units On-Duty</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value">{{ number_format($users->count() * 1.2, 0) }}</div>
-            <div class="stat-label">System Health</div>
+            <div class="stat-value" style="color: var(--red);">{{ $activeEmergenciesCount }}</div>
+            <div class="stat-label">Active Incidents</div>
         </div>
     </div>
 
@@ -97,6 +102,7 @@
                     <th>Medical ID</th>
                     <th>Joined</th>
                     <th>Status</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -137,10 +143,27 @@
                         <div style="font-size: 0.8rem; color: var(--grey);">{{ $user->created_at->format('M d, Y') }}</div>
                     </td>
                     <td>
-                        <span style="color: #22c55e; font-size: 0.75rem; display: flex; align-items: center; gap: 4px;">
-                            <span style="width: 6px; height: 6px; background: #22c55e; border-radius: 50%;"></span>
-                            Active
-                        </span>
+                        @if($user->is_suspended)
+                            <span style="color: var(--red); font-size: 0.75rem; display: flex; align-items: center; gap: 4px;">
+                                <i data-lucide="shield-off" style="width: 14px;"></i>
+                                Suspended
+                            </span>
+                        @else
+                            <span style="color: #22c55e; font-size: 0.75rem; display: flex; align-items: center; gap: 4px;">
+                                <span style="width: 6px; height: 6px; background: #22c55e; border-radius: 50%;"></span>
+                                Active
+                            </span>
+                        @endif
+                    </td>
+                    <td>
+                        @if($user->id !== Auth::id())
+                        <form action="{{ route('admin.user.toggle-status', $user->id) }}" method="POST">
+                            @csrf
+                            <button type="submit" style="background: transparent; border: 1px solid {{ $user->is_suspended ? '#22c55e' : 'var(--red)' }}; color: {{ $user->is_suspended ? '#22c55e' : 'var(--red)' }}; padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; cursor: pointer; transition: all 0.3s;">
+                                {{ $user->is_suspended ? 'RE-ACTIVATE' : 'SUSPEND' }}
+                            </button>
+                        </form>
+                        @endif
                     </td>
                 </tr>
                 @endforeach
