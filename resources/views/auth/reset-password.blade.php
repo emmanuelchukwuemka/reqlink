@@ -6,8 +6,15 @@
     <title>Reset Password | ResQLink</title>
     <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="{{ asset('js/theme.js') }}"></script>
 </head>
 <body class="auth-page">
+
+<div class="theme-toggle-floating">
+    <button id="themeToggle" class="theme-toggle-btn" title="Toggle Theme">
+        <i id="themeIcon" data-lucide="sun"></i>
+    </button>
+</div>
 
 <div class="auth-card">
     <div class="auth-header">

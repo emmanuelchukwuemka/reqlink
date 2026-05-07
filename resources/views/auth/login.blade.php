@@ -15,6 +15,12 @@
     Back to Home
 </a>
 
+<div class="theme-toggle-floating">
+    <button id="themeToggle" class="theme-toggle-btn" title="Toggle Theme">
+        <i id="themeIcon" data-lucide="sun"></i>
+    </button>
+</div>
+
 <div class="auth-card">
     <div class="auth-header">
         <div class="auth-logo">

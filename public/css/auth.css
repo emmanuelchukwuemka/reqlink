@@ -6,13 +6,27 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: radial-gradient(circle at top right, rgba(229, 9, 20, 0.15), transparent 40%),
-                radial-gradient(circle at bottom left, rgba(229, 9, 20, 0.1), transparent 40%),
-                var(--black);
+    background: url('../images/hero-bg.png') no-repeat center center;
+    background-size: cover;
     background-attachment: fixed;
     padding: 60px 20px;
     position: relative;
     overflow-x: hidden;
+}
+
+.auth-page::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, rgba(229, 9, 20, 0.15), transparent 40%),
+                radial-gradient(circle at bottom left, rgba(229, 9, 20, 0.1), transparent 40%),
+                rgba(5, 5, 5, 0.85);
+    z-index: 1;
+}
+
+:root.light-mode .auth-page::before {
+    background: radial-gradient(circle at top right, rgba(229, 9, 20, 0.05), transparent 40%),
+                rgba(255, 255, 255, 0.92);
 }
 
 /* Background decorative elements */
@@ -24,7 +38,7 @@
     background: radial-gradient(circle, rgba(229, 9, 20, 0.05) 0%, transparent 70%);
     top: -500px;
     right: -300px;
-    z-index: 0;
+    z-index: 2;
 }
 
 .auth-card {
@@ -318,6 +332,44 @@
 .back-home:hover {
     color: var(--text-main);
     transform: translateX(-5px);
+}
+
+.theme-toggle-floating {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    z-index: 100;
+}
+
+.theme-toggle-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-main);
+}
+
+:root.light-mode .theme-toggle-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+.theme-toggle-btn:hover {
+    background: rgba(229, 9, 20, 0.1);
+    border-color: var(--red);
+    transform: translateY(-2px);
+    color: var(--red);
+}
+
+.theme-toggle-btn i {
+    width: 20px;
+    height: 20px;
 }
 
 @media (max-width: 600px) {
