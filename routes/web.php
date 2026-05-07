@@ -42,6 +42,18 @@ Route::post('/emergency/trigger', [\App\Http\Controllers\EmergencyController::cl
     ->name('emergency.trigger')
     ->middleware('auth');
 
+Route::get('/debug-mail', function () {
+    return [
+        'mailer' => config('mail.default'),
+        'host' => config('mail.mailers.smtp.host'),
+        'port' => config('mail.mailers.smtp.port'),
+        'username' => config('mail.mailers.smtp.username'),
+        'password' => config('mail.mailers.smtp.password'),
+        'encryption' => config('mail.mailers.smtp.encryption'),
+        'scheme' => config('mail.mailers.smtp.scheme'),
+    ];
+});
+
 Route::get('/responder/alerts', [\App\Http\Controllers\EmergencyController::class, 'fetchAlerts'])
     ->name('responder.alerts')
     ->middleware('auth');
