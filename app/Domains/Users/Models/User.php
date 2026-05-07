@@ -39,6 +39,11 @@ class User extends Authenticatable
         'medical_conditions',
         'emergency_contact_name',
         'emergency_contact_phone',
+        'is_good_samaritan',
+        'samaritan_profession',
+        'samaritan_active',
+        'last_known_lat',
+        'last_known_lng',
     ];
 
     /**

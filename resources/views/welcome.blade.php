@@ -7,6 +7,7 @@
     <meta name="description" content="ResQLink is an AI-powered emergency response platform that instantly connects people in danger to hospitals, ambulances, security responders, fire services, and disaster response teams.">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/landing.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/chat.css') }}">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .theme-toggle { background: transparent; border: none; color: var(--grey); cursor: pointer; padding: 8px; border-radius: 50%; transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
@@ -487,6 +488,7 @@
 </footer>
 
 <script src="{{ asset('js/landing.js') }}"></script>
+<script src="{{ asset('js/chat.js') }}"></script>
 <script>lucide.createIcons();</script>
 </body>
 </html>

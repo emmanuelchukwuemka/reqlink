@@ -1,0 +1,110 @@
+/* Floating Chat Assistant Styles */
+.resq-chat-trigger {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background: var(--red);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(229, 9, 20, 0.4);
+    z-index: 5000;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.resq-chat-trigger:hover {
+    transform: scale(1.1);
+}
+
+.resq-chat-window {
+    position: fixed;
+    bottom: 100px;
+    right: 30px;
+    width: 380px;
+    height: 500px;
+    background: #0a0a0a;
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 5000;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    backdrop-filter: blur(20px);
+    animation: slide-in-chat 0.4s ease-out;
+}
+
+@keyframes slide-in-chat {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.chat-header {
+    background: rgba(229, 9, 20, 0.1);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.chat-body {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.chat-footer {
+    padding: 15px;
+    border-top: 1px solid var(--glass-border);
+    display: flex;
+    gap: 10px;
+}
+
+.chat-input {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.chat-send {
+    background: var(--red);
+    border: none;
+    color: white;
+    width: 45px;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.msg {
+    max-width: 80%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.msg.bot {
+    background: rgba(255,255,255,0.05);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+}
+
+.msg.user {
+    background: var(--red);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+}

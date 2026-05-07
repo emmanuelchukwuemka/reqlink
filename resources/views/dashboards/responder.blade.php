@@ -6,6 +6,7 @@
     <title>Mission Control | ResQLink</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/chat.css') }}">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .mission-grid { display: grid; grid-template-columns: 1fr 350px; gap: 24px; }
@@ -57,11 +58,12 @@
     </div>
     
     <nav class="sidebar-nav">
-        <a href="#" class="nav-item active"><i data-lucide="layout-dashboard"></i> Missions</a>
-        <a href="#" class="nav-item"><i data-lucide="map"></i> Live Map</a>
-        <a href="#" class="nav-item"><i data-lucide="users"></i> Team</a>
-        <a href="#" class="nav-item"><i data-lucide="history"></i> Archive</a>
-        <a href="#" class="nav-item"><i data-lucide="settings"></i> System</a>
+        <a class="nav-item active" data-tab="missions"><i data-lucide="layout-dashboard"></i> Missions</a>
+        <a class="nav-item" data-tab="ambulance"><i data-lucide="truck"></i> Ambulance</a>
+        <a class="nav-item" data-tab="security"><i data-lucide="shield-alert"></i> Security</a>
+        <a class="nav-item" data-tab="fire"><i data-lucide="flame"></i> Fire Services</a>
+        <a class="nav-item" data-tab="hospitals"><i data-lucide="hospital"></i> Hospitals</a>
+        <a href="{{ route('settings') }}" class="nav-item"><i data-lucide="settings"></i> Settings</a>
     </nav>
 
     <div class="sidebar-footer">
@@ -77,7 +79,7 @@
 <main class="main-content">
     <header class="top-bar">
         <div>
-            <h1 style="font-size: 1.5rem; font-weight: 800;">Mission Control</h1>
+            <h1 id="pageTitle" style="font-size: 1.5rem; font-weight: 800;">Mission Control</h1>
             <p style="color: var(--grey); font-size: 0.9rem;">Responding Unit: {{ Auth::user()->name }}</p>
         </div>
         
@@ -105,66 +107,162 @@
         </div>
     </header>
 
-    <div class="mission-grid">
-        <div class="dash-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3><i data-lucide="siren" style="color: var(--red);"></i> Active Emergencies</h3>
-                <span style="font-size: 0.8rem; color: var(--red); font-weight: 700; background: rgba(229, 9, 20, 0.1); padding: 4px 10px; border-radius: 4px;">LIVE UPDATES</span>
-            </div>
-
-            <div class="history-list" id="activeMissions">
-                <!-- Sample Active Mission -->
-                <div class="alert-item">
-                    <div style="display: flex; gap: 16px; align-items: center;">
-                        <div style="width: 40px; height: 40px; background: rgba(229, 9, 20, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--red);">
-                            <i data-lucide="heart-pulse"></i>
-                        </div>
-                        <div>
-                            <p style="font-weight: 700; margin: 0;">Critical Medical Alert</p>
-                            <p style="font-size: 0.75rem; color: var(--grey); margin: 0;">Location: 2.4km away • Ikoyi, Lagos</p>
-                        </div>
-                    </div>
-                    <button class="btn-primary" style="padding: 8px 16px; font-size: 0.8rem;">Accept Mission</button>
+    <!-- MISSIONS TAB -->
+    <div id="missions" class="tab-pane active">
+        <div class="mission-grid">
+            <div class="dash-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3><i data-lucide="siren" style="color: var(--red);"></i> Active Emergencies</h3>
+                    <span style="font-size: 0.8rem; color: var(--red); font-weight: 700; background: rgba(229, 9, 20, 0.1); padding: 4px 10px; border-radius: 4px;">LIVE UPDATES</span>
                 </div>
 
-                <div class="alert-item" style="background: rgba(255, 255, 255, 0.02); border-left-color: var(--grey);">
-                    <div style="display: flex; gap: 16px; align-items: center;">
-                        <div style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--grey);">
-                            <i data-lucide="shield"></i>
+                <div class="history-list" id="activeMissions">
+                    <!-- Sample Active Mission -->
+                    <div class="alert-item">
+                        <div style="display: flex; gap: 16px; align-items: center;">
+                            <div style="width: 40px; height: 40px; background: rgba(229, 9, 20, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--red);">
+                                <i data-lucide="heart-pulse"></i>
+                            </div>
+                            <div>
+                                <p style="font-weight: 700; margin: 0;">Critical Medical Alert</p>
+                                <p style="font-size: 0.75rem; color: var(--grey); margin: 0;">Location: 2.4km away • Ikoyi, Lagos</p>
+                            </div>
                         </div>
-                        <div>
-                            <p style="font-weight: 700; margin: 0; color: var(--grey);">Security Ping</p>
-                            <p style="font-size: 0.75rem; color: var(--grey); margin: 0;">Location: 0.8km away • Victoria Island</p>
+                        <button class="btn-primary" style="padding: 8px 16px; font-size: 0.8rem;">Accept Mission</button>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="dash-card" style="margin-bottom: 24px;">
+                    <h3><i data-lucide="activity"></i> Station Stats</h3>
+                    <div class="stats-row" style="margin-top: 15px;">
+                        <div class="stat-box">
+                            <h4 style="color: var(--red);">12</h4>
+                            <p>Saved</p>
+                        </div>
+                        <div class="stat-box">
+                            <h4>04</h4>
+                            <p>Units</p>
                         </div>
                     </div>
-                    <span style="font-size: 0.75rem; color: var(--grey); font-weight: 700;">Waitlisted</span>
+                </div>
+
+                <div class="dash-card">
+                    <h3><i data-lucide="map-pin"></i> Coverage Area</h3>
+                    <div class="map-placeholder" style="height: 250px;">
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                            <i data-lucide="radar" style="width: 48px; height: 48px; color: var(--red); opacity: 0.3;"></i>
+                            <p style="font-size: 0.7rem; color: var(--grey); margin-top: 10px;">Monitoring coverage...</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div>
-            <div class="dash-card" style="margin-bottom: 24px;">
-                <h3><i data-lucide="activity"></i> Station Stats</h3>
-                <div class="stats-row" style="margin-top: 15px;">
-                    <div class="stat-box">
-                        <h4 style="color: var(--red);">12</h4>
-                        <p>Saved</p>
+    <!-- AMBULANCE TAB -->
+    <div id="ambulance" class="tab-pane">
+        <div class="dash-card">
+            <h3><i data-lucide="truck"></i> Active Ambulance Units</h3>
+            <div class="hospitals-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+                @forelse($ambulances as $unit)
+                <div class="sub-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <div style="width: 45px; height: 45px; background: rgba(229, 9, 20, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--red);">
+                            <i data-lucide="truck"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0;">{{ $unit->user->name }}</h4>
+                            <small style="color: {{ $unit->is_on_duty ? '#22c55e' : 'var(--grey)' }};">
+                                {{ $unit->is_on_duty ? '● On Duty' : '○ Off Duty' }}
+                            </small>
+                        </div>
                     </div>
-                    <div class="stat-box">
-                        <h4>04</h4>
-                        <p>Units</p>
-                    </div>
+                    <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 0.85rem; border-radius: 8px;">View Profile</button>
                 </div>
+                @empty
+                <p>No active ambulance units.</p>
+                @endforelse
             </div>
+        </div>
+    </div>
 
-            <div class="dash-card">
-                <h3><i data-lucide="map-pin"></i> Coverage Area</h3>
-                <div class="map-placeholder" style="height: 250px;">
-                     <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
-                         <i data-lucide="radar" style="width: 48px; height: 48px; color: var(--red); opacity: 0.3;"></i>
-                         <p style="font-size: 0.7rem; color: var(--grey); margin-top: 10px;">Monitoring coverage...</p>
-                     </div>
+    <!-- SECURITY TAB -->
+    <div id="security" class="tab-pane">
+        <div class="dash-card">
+            <h3><i data-lucide="shield-alert"></i> Rapid Security Response</h3>
+            <div class="hospitals-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+                @forelse($securityUnits as $unit)
+                <div class="sub-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <div style="width: 45px; height: 45px; background: rgba(37, 99, 235, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #2563eb;">
+                            <i data-lucide="shield-alert"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0;">{{ $unit->user->name }}</h4>
+                            <small style="color: {{ $unit->is_on_duty ? '#22c55e' : 'var(--grey)' }};">
+                                {{ $unit->is_on_duty ? '● Active' : '○ Offline' }}
+                            </small>
+                        </div>
+                    </div>
+                    <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 0.85rem; border-radius: 8px; background: #2563eb;">View Profile</button>
                 </div>
+                @empty
+                <p>No security units found.</p>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
+    <!-- FIRE TAB -->
+    <div id="fire" class="tab-pane">
+        <div class="dash-card">
+            <h3><i data-lucide="flame"></i> Fire & Rescue Services</h3>
+            <div class="hospitals-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+                @forelse($fireUnits as $unit)
+                <div class="sub-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <div style="width: 45px; height: 45px; background: rgba(249, 115, 22, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #f97316;">
+                            <i data-lucide="flame"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0;">{{ $unit->user->name }}</h4>
+                            <small style="color: {{ $unit->is_on_duty ? '#22c55e' : 'var(--grey)' }};">
+                                {{ $unit->is_on_duty ? '● Station Ready' : '○ Offline' }}
+                            </small>
+                        </div>
+                    </div>
+                    <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 0.85rem; border-radius: 8px; background: #f97316;">View Profile</button>
+                </div>
+                @empty
+                <p>No fire stations found.</p>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
+    <!-- HOSPITALS TAB -->
+    <div id="hospitals" class="tab-pane">
+        <div class="dash-card">
+            <h3><i data-lucide="hospital"></i> Medical Facilities</h3>
+            <div class="hospitals-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+                @forelse($hospitals as $hospital)
+                <div class="sub-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <div style="width: 45px; height: 45px; background: rgba(34, 197, 94, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #22c55e;">
+                            <i data-lucide="hospital"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0;">{{ $hospital->name }}</h4>
+                            <small style="color: var(--grey);">Verified Hospital</small>
+                        </div>
+                    </div>
+                    <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 0.85rem; border-radius: 8px;">View Details</button>
+                </div>
+                @empty
+                <p>No hospitals registered yet.</p>
+                @endforelse
             </div>
         </div>
     </div>
@@ -208,6 +306,24 @@
 <script>
     lucide.createIcons();
 
+    // Tab Switching
+    document.querySelectorAll('.nav-item[data-tab]').forEach(item => {
+        item.addEventListener('click', () => {
+            // Update UI
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+
+            // Switch Panes
+            const tabId = item.getAttribute('data-tab');
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            const pane = document.getElementById(tabId);
+            if (pane) pane.classList.add('active');
+
+            // Update Title
+            document.getElementById('pageTitle').textContent = item.textContent.trim();
+        });
+    });
+
     let currentAlertId = null;
     const siren = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
     siren.loop = true;
@@ -243,7 +359,7 @@
     }
 
     function closeAlert() {
-        document.getElementById('emergencyModal').style.display = 'none';
+        document.getElementById('liveAlert').classList.remove('active');
         siren.pause();
         siren.currentTime = 0;
     }
@@ -310,5 +426,6 @@
 
     setInterval(pollAlerts, 5000);
 </script>
+<script src="{{ asset('js/chat.js') }}"></script>
 </body>
 </html>

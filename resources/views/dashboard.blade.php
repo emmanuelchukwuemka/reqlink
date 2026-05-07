@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Dashboard | ResQLink</title>
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/chat.css') }}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -15,6 +16,22 @@
         .theme-toggle { background: transparent; border: none; color: var(--grey); cursor: pointer; padding: 8px; border-radius: 50%; transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
         .theme-toggle:hover { background: var(--glass); color: var(--white); }
         :root.light-mode .theme-toggle:hover { background: rgba(0,0,0,0.05); color: var(--black); }
+        
+        /* Voice SOS Styles */
+        .voice-toggle { background: transparent; border: none; color: var(--grey); cursor: pointer; padding: 8px; border-radius: 50%; transition: all 0.3s; display: flex; align-items: center; justify-content: center; position: relative; }
+        .voice-toggle.active { color: var(--red); background: rgba(229, 9, 20, 0.1); }
+        .voice-toggle.active::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 2px solid var(--red);
+            animation: pulse-voice 1.5s infinite;
+        }
+        @keyframes pulse-voice {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.8); opacity: 0; }
+        }
 
         /* Live Alert Overlay */
         .live-alert-overlay {
@@ -46,8 +63,10 @@
     
     <nav class="sidebar-nav">
         <a class="nav-item active" data-tab="overview"><i data-lucide="layout-grid"></i> Overview</a>
+        <a class="nav-item" data-tab="ambulance"><i data-lucide="truck"></i> Ambulance</a>
+        <a class="nav-item" data-tab="security"><i data-lucide="shield-alert"></i> Security</a>
+        <a class="nav-item" data-tab="fire"><i data-lucide="flame"></i> Fire Services</a>
         <a class="nav-item" data-tab="hospitals"><i data-lucide="hospital"></i> Hospitals</a>
-        <a class="nav-item" data-tab="responders"><i data-lucide="shield"></i> Responders</a>
         <a class="nav-item" data-tab="history"><i data-lucide="history"></i> Incident History</a>
         <a href="{{ route('settings') }}" class="nav-item"><i data-lucide="settings"></i> Settings</a>
     </nav>
@@ -68,7 +87,18 @@
             <h1 id="pageTitle" style="font-size: 1.5rem; font-weight: 800;">Command Center</h1>
             <p style="color: var(--grey); font-size: 0.9rem;">Welcome back, {{ Auth::user()->name }}</p>
         </div>
-        <div style="display: flex; align-items: center; gap: 20px;">
+            @if(Auth::user()->is_good_samaritan)
+            <div class="duty-status-container" style="padding: 4px 12px; background: rgba(34, 197, 94, 0.05);">
+                <span class="duty-label" id="samaritanText" style="font-size: 0.65rem;">{{ Auth::user()->samaritan_active ? 'ACTIVE SAMARITAN' : 'SAMARITAN OFF' }}</span>
+                <label class="duty-toggle" style="width: 36px; height: 18px;">
+                    <input type="checkbox" id="samaritanSwitch" {{ Auth::user()->samaritan_active ? 'checked' : '' }} onchange="toggleSamaritan(this)">
+                    <span class="duty-slider" style="border-radius: 20px;"></span>
+                </label>
+            </div>
+            @endif
+            <button id="voiceToggle" class="voice-toggle" title="AI Voice SOS Mode">
+                <i data-lucide="mic" id="voiceIcon"></i>
+            </button>
             <button id="themeToggle" class="theme-toggle" aria-label="Toggle Dark Mode">
                 <i data-lucide="sun" id="themeIcon"></i>
             </button>
@@ -121,6 +151,26 @@
                         @endforelse
                     </div>
                 </div>
+
+                @if(Auth::user()->is_good_samaritan && Auth::user()->samaritan_active)
+                <div class="dash-card" style="margin-top: 24px; border: 1px solid #22c55e; background: rgba(34, 197, 94, 0.05);">
+                    <h3 style="color: #22c55e;"><i data-lucide="heart"></i> Nearby Samaritan Missions</h3>
+                    <div class="history-list">
+                        @forelse($samaritanMissions as $mission)
+                        <div style="padding: 15px; background: rgba(255,255,255,0.03); border-radius: 12px; margin-bottom: 12px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <span style="font-size: 0.75rem; font-weight: 800; color: #22c55e;">MEDICAL FIRST AID</span>
+                                <small style="color: var(--grey);">{{ $mission->created_at->diffForHumans() }}</small>
+                            </div>
+                            <p style="font-size: 0.85rem; margin-bottom: 15px;">A user nearby needs assistance. You are a verified <strong>{{ Auth::user()->samaritan_profession }}</strong>.</p>
+                            <button class="btn-primary" style="width: 100%; background: #22c55e; font-size: 0.8rem; padding: 10px;">Accept & Provide Aid</button>
+                        </div>
+                        @empty
+                        <p style="color: var(--grey); font-size: 0.8rem; text-align: center;">No active emergencies nearby.</p>
+                        @endforelse
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
     </div>
@@ -128,10 +178,10 @@
     <!-- HOSPITALS TAB -->
     <div id="hospitals" class="tab-pane">
         <div class="dash-card">
-            <h3><i data-lucide="hospital"></i> Nearby Medical Facilities</h3>
+            <h3><i data-lucide="hospital"></i> Medical Facilities</h3>
             <div class="hospitals-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
                 @forelse($hospitals as $hospital)
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px;">
+                <div class="sub-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px;">
                     <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
                         <div style="width: 45px; height: 45px; background: rgba(34, 197, 94, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #22c55e;">
                             <i data-lucide="hospital"></i>
@@ -141,25 +191,101 @@
                             <small style="color: var(--grey);">Verified Hospital</small>
                         </div>
                     </div>
-                    <div style="font-size: 0.85rem; color: var(--grey); margin-bottom: 20px;">
-                        <p style="margin: 5px 0;"><i data-lucide="phone" style="width: 14px; vertical-align: middle; margin-right: 8px;"></i> {{ $hospital->contact_phone }}</p>
-                        <p style="margin: 5px 0;"><i data-lucide="map-pin" style="width: 14px; vertical-align: middle; margin-right: 8px;"></i> {{ $hospital->lat }}, {{ $hospital->lng }}</p>
-                    </div>
-
-                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                        <div style="flex: 1; background: rgba(34, 197, 94, 0.05); padding: 10px; border-radius: 8px; text-align: center;">
-                            <div style="font-size: 1rem; font-weight: 800; color: #22c55e;">{{ $hospital->available_beds }}</div>
-                            <div style="font-size: 0.65rem; color: var(--grey); text-transform: uppercase;">Gen. Beds</div>
-                        </div>
-                        <div style="flex: 1; background: rgba(229, 9, 20, 0.05); padding: 10px; border-radius: 8px; text-align: center;">
-                            <div style="font-size: 1rem; font-weight: 800; color: var(--red);">{{ $hospital->icu_beds }}</div>
-                            <div style="font-size: 0.65rem; color: var(--grey); text-transform: uppercase;">ICU Units</div>
-                        </div>
-                    </div>
-                    <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 0.85rem; border-radius: 8px;">Request Transfer</button>
+                    <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 0.85rem; border-radius: 8px;">View Details</button>
                 </div>
                 @empty
                 <p>No hospitals registered yet.</p>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
+    <!-- AMBULANCE TAB -->
+    <div id="ambulance" class="tab-pane">
+        <div class="dash-card">
+            <h3><i data-lucide="truck"></i> Active Ambulance Units</h3>
+            <div class="hospitals-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+                @forelse($ambulances as $unit)
+                <div class="sub-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <div style="width: 45px; height: 45px; background: rgba(229, 9, 20, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--red);">
+                            <i data-lucide="truck"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0;">{{ $unit->user->name }}</h4>
+                            <small style="color: {{ $unit->is_on_duty ? '#22c55e' : 'var(--grey)' }};">
+                                {{ $unit->is_on_duty ? '● On Duty' : '○ Off Duty' }}
+                            </small>
+                        </div>
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--grey); margin-bottom: 15px;">
+                        <p style="margin: 4px 0;">Reg: {{ $unit->vehicle_reg ?? 'N/A' }}</p>
+                        <p style="margin: 4px 0;">Capacity: {{ $unit->capacity ?? 'Standard' }}</p>
+                    </div>
+                    <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 0.85rem; border-radius: 8px;">Request Unit</button>
+                </div>
+                @empty
+                <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                    <p style="color: var(--grey);">No active ambulance units in your area.</p>
+                </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
+    <!-- SECURITY TAB -->
+    <div id="security" class="tab-pane">
+        <div class="dash-card">
+            <h3><i data-lucide="shield-alert"></i> Rapid Security Response</h3>
+            <div class="hospitals-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+                @forelse($securityUnits as $unit)
+                <div class="sub-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <div style="width: 45px; height: 45px; background: rgba(37, 99, 235, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #2563eb;">
+                            <i data-lucide="shield-alert"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0;">{{ $unit->user->name }}</h4>
+                            <small style="color: {{ $unit->is_on_duty ? '#22c55e' : 'var(--grey)' }};">
+                                {{ $unit->is_on_duty ? '● Active Patrol' : '○ Standby' }}
+                            </small>
+                        </div>
+                    </div>
+                    <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 0.85rem; border-radius: 8px; background: #2563eb;">Request Response</button>
+                </div>
+                @empty
+                <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                    <p style="color: var(--grey);">No security units currently patrolling.</p>
+                </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
+    <!-- FIRE TAB -->
+    <div id="fire" class="tab-pane">
+        <div class="dash-card">
+            <h3><i data-lucide="flame"></i> Fire & Rescue Services</h3>
+            <div class="hospitals-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+                @forelse($fireUnits as $unit)
+                <div class="sub-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <div style="width: 45px; height: 45px; background: rgba(249, 115, 22, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #f97316;">
+                            <i data-lucide="flame"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0;">{{ $unit->user->name }}</h4>
+                            <small style="color: {{ $unit->is_on_duty ? '#22c55e' : 'var(--grey)' }};">
+                                {{ $unit->is_on_duty ? '● Station Ready' : '○ Offline' }}
+                            </small>
+                        </div>
+                    </div>
+                    <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 0.85rem; border-radius: 8px; background: #f97316;">Report Fire</button>
+                </div>
+                @empty
+                <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                    <p style="color: var(--grey);">No fire stations registered in this sector.</p>
+                </div>
                 @endforelse
             </div>
         </div>
@@ -388,10 +514,101 @@
         }
     }
 
+    // AI Voice SOS Implementation
+    const voiceToggle = document.getElementById('voiceToggle');
+    const voiceIcon = document.getElementById('voiceIcon');
+    let recognition = null;
+    let isListening = false;
+
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+
+        recognition.onresult = (event) => {
+            const transcript = Array.from(event.results)
+                .map(result => result[0])
+                .map(result => result.transcript)
+                .join('')
+                .toLowerCase();
+
+            console.log('Transcript:', transcript);
+
+            if (transcript.includes('emergency resqlink') || transcript.includes('help me resqlink')) {
+                speak("Emergency detected. Triggering SOS. Help is on the way.");
+                triggerEmergency();
+                stopVoiceSOS();
+            }
+        };
+
+        recognition.onend = () => {
+            if (isListening) recognition.start(); // Keep listening if active
+        };
+    }
+
+    voiceToggle.addEventListener('click', () => {
+        if (!recognition) return alert('Voice recognition not supported in this browser.');
+        
+        if (!isListening) {
+            startVoiceSOS();
+        } else {
+            stopVoiceSOS();
+        }
+    });
+
+    function startVoiceSOS() {
+        isListening = true;
+        voiceToggle.classList.add('active');
+        voiceIcon.setAttribute('data-lucide', 'mic-off');
+        lucide.createIcons();
+        recognition.start();
+        speak("Voice mode active. I am listening for your help command.");
+        console.log('Voice SOS Active: Listening for "Emergency ResQLink"');
+    }
+
+    function stopVoiceSOS() {
+        isListening = false;
+        voiceToggle.classList.remove('active');
+        voiceIcon.setAttribute('data-lucide', 'mic');
+        lucide.createIcons();
+        recognition.stop();
+        speak("Voice mode deactivated.");
+    }
+
+    function speak(text) {
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    // Samaritan Toggle Logic
+    function toggleSamaritan(checkbox) {
+        const isActive = checkbox.checked;
+        const text = document.getElementById('samaritanText');
+        text.textContent = isActive ? 'ACTIVE SAMARITAN' : 'SAMARITAN OFF';
+
+        fetch('/user/toggle-samaritan', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ active: isActive })
+        }).then(() => {
+            window.location.reload(); // Reload to show/hide missions
+        });
+    }
+
     // Initialize polling if there's an active emergency from page load
     if (activeEmergencyUuid) {
         startPollingStatus();
     }
 </script>
+<script src="{{ asset('js/chat.js') }}"></script>
 </body>
 </html>

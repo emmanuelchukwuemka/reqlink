@@ -26,6 +26,7 @@ class Emergency extends Model
         'assigned_responder_id',
         'eta_minutes',
         'resolved_at',
+        'triggered_via',
     ];
 
     protected static function boot()

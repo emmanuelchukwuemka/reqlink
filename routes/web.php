@@ -35,6 +35,8 @@ Route::get('/settings', [\App\Http\Controllers\SettingsController::class, 'index
 Route::get('/admin/command-center', [DashboardController::class, 'commandCenter'])->name('admin.command-center')->middleware('auth');
 Route::post('/admin/user/{id}/toggle-status', [DashboardController::class, 'toggleUserStatus'])->name('admin.user.toggle-status')->middleware('auth');
 Route::post('/settings', [\App\Http\Controllers\SettingsController::class, 'update'])->name('settings.update')->middleware('auth');
+Route::post('/user/toggle-samaritan', [DashboardController::class, 'toggleSamaritan'])->middleware('auth');
+Route::post('/api/chat/openai', [\App\Http\Controllers\OpenAiController::class, 'chat'])->middleware('auth');
 
 Route::post('/emergency/trigger', [\App\Http\Controllers\EmergencyController::class, 'trigger'])
     ->name('emergency.trigger')

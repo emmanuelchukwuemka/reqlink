@@ -15,3 +15,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/sos', [SosController::class, 'trigger']);
 });
+
+// USSD & SMS Bridge (External Gateways)
+Route::post('/bridge/sms', [\App\Http\Controllers\UssdBridgeController::class, 'handleSms']);
+Route::post('/bridge/ussd', [\App\Http\Controllers\UssdBridgeController::class, 'handleUssd']);

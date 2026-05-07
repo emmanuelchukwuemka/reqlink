@@ -24,9 +24,17 @@ class DashboardController extends Controller
             case 'security':
             case 'fire':
                 $responder = \App\Domains\Responders\Models\Responder::where('user_id', Auth::id())->first();
-                return view('dashboards.responder', compact('responder'));
+                $hospitals = \App\Domains\Responders\Models\Hospital::all();
+                $ambulances = \App\Domains\Responders\Models\Responder::where('responder_type', 'ambulance')->with('user')->get();
+                $securityUnits = \App\Domains\Responders\Models\Responder::where('responder_type', 'security')->with('user')->get();
+                $fireUnits = \App\Domains\Responders\Models\Responder::where('responder_type', 'fire')->with('user')->get();
+                return view('dashboards.responder', compact('responder', 'hospitals', 'ambulances', 'securityUnits', 'fireUnits'));
             default:
                 $hospitals = \App\Domains\Responders\Models\Hospital::all();
+                $ambulances = \App\Domains\Responders\Models\Responder::where('responder_type', 'ambulance')->with('user')->get();
+                $securityUnits = \App\Domains\Responders\Models\Responder::where('responder_type', 'security')->with('user')->get();
+                $fireUnits = \App\Domains\Responders\Models\Responder::where('responder_type', 'fire')->with('user')->get();
+                
                 $history = \App\Domains\Emergencies\Models\Emergency::where('user_id', Auth::id())
                     ->orderBy('created_at', 'desc')
                     ->limit(5)
@@ -37,7 +45,17 @@ class DashboardController extends Controller
                     ->latest()
                     ->first();
 
-                return view('dashboard', compact('hospitals', 'history', 'activeEmergency')); // Civilian/User dashboard
+                // Good Samaritan Missions
+                $samaritanMissions = [];
+                if (Auth::user()->is_good_samaritan && Auth::user()->samaritan_active) {
+                    $samaritanMissions = \App\Domains\Emergencies\Models\Emergency::where('status', 'pending')
+                        ->where('user_id', '!=', Auth::id()) // Don't respond to own emergency
+                        ->latest()
+                        ->limit(3)
+                        ->get();
+                }
+
+                return view('dashboard', compact('hospitals', 'ambulances', 'securityUnits', 'fireUnits', 'history', 'activeEmergency', 'samaritanMissions')); // Civilian/User dashboard
         }
     }
     public function commandCenter()
@@ -62,5 +80,19 @@ class DashboardController extends Controller
 
         $status = $user->is_suspended ? 'suspended' : 're-activated';
         return redirect()->back()->with('success', "User {$user->name} has been {$status}.");
+    }
+
+    public function toggleSamaritan(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user->is_good_samaritan) {
+            return response()->json(['error' => 'Not a Good Samaritan'], 403);
+        }
+
+        $user->update([
+            'samaritan_active' => $request->input('active', false)
+        ]);
+
+        return response()->json(['success' => true]);
     }
 }
