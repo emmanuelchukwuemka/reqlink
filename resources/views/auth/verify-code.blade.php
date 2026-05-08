@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Forgot Password | ResQLink</title>
+    <title>Verify Code | ResQLink</title>
     <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="{{ asset('js/theme.js') }}"></script>
@@ -26,8 +26,8 @@
         <div class="auth-logo">
             <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 60px; width: auto; object-fit: contain;">
         </div>
-        <h2>Reset Password</h2>
-        <p>Enter your email to receive a secure 6-digit reset code</p>
+        <h2>Verify Code</h2>
+        <p>Enter the 6-digit code sent to your email</p>
 
         @if (session('status'))
             <div style="background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 16px; border-radius: 12px; margin-top: 24px; font-size: 0.9rem; border: 1px solid rgba(34, 197, 94, 0.2);">
@@ -46,18 +46,20 @@
         @endif
     </div>
 
-    <form class="auth-form" action="{{ route('password.email') }}" method="POST">
+    <form class="auth-form" action="{{ route('password.verify.code.post') }}" method="POST">
         @csrf
+        <input type="hidden" name="email" value="{{ $email }}">
+
         <div class="form-group">
-            <label class="field-label"><i data-lucide="mail" class="lucide-icon sm"></i> Email Address</label>
-            <input type="email" name="email" value="{{ old('email') }}" placeholder="admin@organization.com" required autofocus>
+            <label class="field-label"><i data-lucide="key" class="lucide-icon sm"></i> 6-Digit Code</label>
+            <input type="text" name="code" value="{{ old('code') }}" placeholder="123456" required autofocus maxlength="6" pattern="\d{6}" style="letter-spacing: 5px; font-size: 1.5rem; text-align: center;">
         </div>
 
-        <button type="submit" class="btn-primary" style="width:100%; padding: 18px; margin-top: 10px; border-radius: 16px; font-size: 1rem;">Send Recovery Link</button>
+        <button type="submit" class="btn-primary" style="width:100%; padding: 18px; margin-top: 10px; border-radius: 16px; font-size: 1rem;">Verify Code</button>
     </form>
 
     <div class="auth-footer">
-        Suddenly remembered? <a href="{{ route('login') }}">Back to Login</a>
+        Didn't receive it? <a href="{{ route('password.request') }}">Try again</a>
     </div>
 </div>
 

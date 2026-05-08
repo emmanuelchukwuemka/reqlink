@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class WebAuthController extends Controller
 {
@@ -114,13 +116,59 @@ class WebAuthController extends Controller
     {
         $request->validate(['email' => 'required|email']);
 
-        $status = \Illuminate\Support\Facades\Password::sendResetLink(
-            $request->only('email')
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return back()->withErrors(['email' => 'We can\'t find a user with that email address.']);
+        }
+
+        // Generate 6-digit code
+        $code = str_pad(mt_rand(100000, 999999), 6, '0', STR_PAD_LEFT);
+
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $request->email],
+            ['token' => $code, 'created_at' => now()]
         );
 
-        return $status === \Illuminate\Support\Facades\Password::RESET_LINK_SENT
-            ? back()->with(['status' => __($status)])
-            : back()->withErrors(['email' => __($status)]);
+        try {
+            $user->sendPasswordResetNotification($code);
+        } catch (\Symfony\Component\Mailer\Exception\TransportExceptionInterface $e) {
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+            return back()->withErrors(['email' => 'Failed to send email. Gmail rejected your password. Please ensure your Google App Password is exactly 16 characters and correct in the .env file.']);
+        } catch (\Exception $e) {
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+            return back()->withErrors(['email' => 'Failed to send email due to a server error.']);
+        }
+
+        return redirect()->route('password.verify.code')->with('email', $request->email)->with('status', 'We have emailed your 6-digit password reset code!');
+    }
+
+    public function showVerifyCode(Request $request)
+    {
+        $email = session('email') ?? old('email');
+        if (!$email) {
+            return redirect()->route('password.request');
+        }
+        return view('auth.verify-code', ['email' => $email]);
+    }
+
+    public function verifyCode(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'code' => 'required|string|size:6'
+        ]);
+
+        $tokenRecord = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->where('token', $request->code)
+            ->first();
+
+        if (!$tokenRecord) {
+            return back()->withErrors(['code' => 'Invalid or expired code.'])->withInput();
+        }
+
+        return redirect()->route('password.reset', ['token' => $request->code])->with('email', $request->email);
     }
 
     public function showResetPassword(Request $request, $token)
@@ -136,22 +184,30 @@ class WebAuthController extends Controller
             'password' => 'required|min:8|confirmed',
         ]);
 
-        $status = \Illuminate\Support\Facades\Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user, $password) {
-                $user->forceFill([
-                    'password' => Hash::make($password)
-                ])->setRememberToken(\Illuminate\Support\Str::random(60));
+        $tokenRecord = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->where('token', $request->token)
+            ->first();
 
-                $user->save();
+        if (!$tokenRecord) {
+            return back()->withErrors(['email' => 'Invalid or expired code.']);
+        }
 
-                \Illuminate\Support\Facades\Event::dispatch(new \Illuminate\Auth\Events\PasswordReset($user));
-            }
-        );
+        $user = User::where('email', $request->email)->first();
 
-        return $status === \Illuminate\Support\Facades\Password::PASSWORD_RESET
-            ? redirect()->route('login')->with('status', __($status))
-            : back()->withErrors(['email' => [__($status)]]);
+        if (!$user) {
+            return back()->withErrors(['email' => 'We can\'t find a user with that email address.']);
+        }
+
+        $user->forceFill([
+            'password' => Hash::make($request->password)
+        ])->setRememberToken(Str::random(60));
+
+        $user->save();
+
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+        return redirect()->route('login')->with('status', 'Your password has been reset!');
     }
 
     public function logout(Request $request)

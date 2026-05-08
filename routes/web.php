@@ -16,6 +16,8 @@ Route::post('/register', [WebAuthController::class, 'register']);
 // Password Reset Routes
 Route::get('/forgot-password', [WebAuthController::class, 'showForgotPassword'])->name('password.request');
 Route::post('/forgot-password', [WebAuthController::class, 'sendResetLink'])->name('password.email');
+Route::get('/verify-code', [WebAuthController::class, 'showVerifyCode'])->name('password.verify.code');
+Route::post('/verify-code', [WebAuthController::class, 'verifyCode'])->name('password.verify.code.post');
 Route::get('/reset-password/{token}', [WebAuthController::class, 'showResetPassword'])->name('password.reset');
 Route::post('/reset-password', [WebAuthController::class, 'resetPassword'])->name('password.update');
 
