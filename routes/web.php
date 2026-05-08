@@ -23,12 +23,17 @@ Route::post('/reset-password', [WebAuthController::class, 'resetPassword'])->nam
 
 Route::get('/logout', [WebAuthController::class, 'logout'])->name('logout.get');
 Route::post('/logout', [WebAuthController::class, 'logout'])->name('logout');
+Route::post('/support-message', [\App\Http\Controllers\SupportMessageController::class, 'store'])->name('support.message');
 
 Route::middleware(['auth'])->group(function () {
     Route::post('/responder/toggle-duty', [ResponderController::class, 'toggleDuty'])->name('responder.toggle-duty');
     Route::post('/responder/update-location', [ResponderController::class, 'updateLocation'])->name('responder.update-location');
     Route::post('/hospital/update', [HospitalController::class, 'update'])->name('hospital.update');
     Route::get('/emergency/status/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'getStatus'])->name('emergency.status');
+    Route::post('/emergency/update-location/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'updateUserLocation'])->name('emergency.update-location');
+    Route::post('/emergency/accept/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'acceptMission'])->name('emergency.accept');
+    Route::post('/emergency/resolve/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'resolveEmergency'])->name('emergency.resolve');
+    Route::post('/reviews', [\App\Http\Controllers\ReviewController::class, 'store'])->name('reviews.store');
 });
 
 Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard')->middleware('auth');

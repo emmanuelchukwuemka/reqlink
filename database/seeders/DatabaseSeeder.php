@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'ResQLink Admin',
             'email' => 'admin@resqlink.com',
             'phone' => '+2348009990000',
-            'password' => Hash::make('password'),
+            'password' => 'password',
             'role' => 'admin',
             'is_verified' => true,
         ]);

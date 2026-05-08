@@ -20,18 +20,20 @@ class WebAuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'phone' => ['required', 'string'],
+            'login' => ['required', 'string'],
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials)) {
+        $fieldType = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+
+        if (Auth::attempt([$fieldType => $request->login, 'password' => $request->password])) {
             $user = Auth::user();
             
             if ($user->is_suspended) {
                 Auth::logout();
                 return back()->withErrors([
-                    'phone' => 'This account has been suspended. Please contact support.',
-                ])->onlyInput('phone');
+                    'login' => 'This account has been suspended. Please contact support.',
+                ])->onlyInput('login');
             }
 
             $request->session()->regenerate();
@@ -39,8 +41,8 @@ class WebAuthController extends Controller
         }
 
         return back()->withErrors([
-            'phone' => 'The provided credentials do not match our records.',
-        ])->onlyInput('phone');
+            'login' => 'The provided credentials do not match our records.',
+        ])->onlyInput('login');
     }
 
     public function showRegister()
@@ -76,7 +78,7 @@ class WebAuthController extends Controller
             'name' => $request->name,
             'phone' => $request->phone,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => $request->password,
             'role' => $request->role,
             'blood_group' => $request->blood_group,
             'allergies' => $request->allergies,
@@ -168,12 +170,18 @@ class WebAuthController extends Controller
             return back()->withErrors(['code' => 'Invalid or expired code.'])->withInput();
         }
 
-        return redirect()->route('password.reset', ['token' => $request->code])->with('email', $request->email);
+        return redirect()->route('password.reset', ['token' => $request->code, 'email' => $request->email]);
     }
 
     public function showResetPassword(Request $request, $token)
     {
-        return view('auth.reset-password', ['token' => $token, 'email' => $request->email]);
+        $email = $request->email ?? session('email');
+        
+        if (!$email) {
+            return redirect()->route('password.request')->withErrors(['email' => 'Please enter your email to reset your password.']);
+        }
+        
+        return view('auth.reset-password', ['token' => $token, 'email' => $email]);
     }
 
     public function resetPassword(Request $request)
@@ -200,7 +208,7 @@ class WebAuthController extends Controller
         }
 
         $user->forceFill([
-            'password' => Hash::make($request->password)
+            'password' => $request->password
         ])->setRememberToken(Str::random(60));
 
         $user->save();

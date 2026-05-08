@@ -49,8 +49,8 @@
     <form class="auth-form" action="{{ route('login') }}" method="POST">
         @csrf
         <div class="form-group">
-            <label class="field-label"><i data-lucide="phone" class="lucide-icon sm"></i> Mobile Number</label>
-            <input type="tel" name="phone" placeholder="+234 800 000 0000" required>
+            <label class="field-label"><i data-lucide="user" class="lucide-icon sm"></i> Email or Phone Number</label>
+            <input type="text" name="login" placeholder="Email or Phone Number" value="{{ old('login') }}" required>
         </div>
         
         <div class="form-group">

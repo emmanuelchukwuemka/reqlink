@@ -7,6 +7,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
     <link rel="stylesheet" href="{{ asset('css/chat.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .mission-grid { display: grid; grid-template-columns: 1fr 350px; gap: 24px; }
@@ -150,12 +152,7 @@
 
                 <div class="dash-card">
                     <h3><i data-lucide="map-pin"></i> Coverage Area</h3>
-                    <div class="map-placeholder" style="height: 250px;">
-                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
-                            <i data-lucide="radar" style="width: 48px; height: 48px; color: var(--red); opacity: 0.3;"></i>
-                            <p style="font-size: 0.7rem; color: var(--grey); margin-top: 10px;">Monitoring coverage...</p>
-                        </div>
-                    </div>
+                    <div id="responderMap" style="height: 350px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--dark2);"></div>
                 </div>
             </div>
         </div>
@@ -365,11 +362,105 @@
     }
 
     function acceptMission() {
-        alert('Mission Accepted! Opening Navigation...');
-        const navLink = document.getElementById('navLink');
-        window.open(navLink.href, '_blank');
-        closeAlert();
-        // Here we would update the mission status via AJAX
+        if (!currentAlertId) return;
+
+        fetch(`/emergency/accept/${currentAlertId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Mission Accepted! Tracking user location...');
+                const navLink = document.getElementById('navLink');
+                window.open(navLink.href, '_blank');
+                closeAlert();
+                startMissionTracking(currentAlertId);
+            }
+        });
+    }
+
+    let missionPolling = null;
+    let userMarker = null;
+    let responderMarker = null;
+
+    function startMissionTracking(uuid) {
+        if (missionPolling) clearInterval(missionPolling);
+        
+        missionPolling = setInterval(() => {
+            fetch(`/emergency/status/${uuid}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.user_location) {
+                        const userPos = [data.user_location.lat, data.user_location.lng];
+                        
+                        if (!userMarker) {
+                            userMarker = L.marker(userPos, {
+                                icon: L.divIcon({ 
+                                    html: '<div style="background:var(--red); border:2px solid white; border-radius:50%; width:15px; height:15px; box-shadow: 0 0 10px rgba(229,9,20,0.5);"></div>', 
+                                    className: 'custom-div-icon' 
+                                })
+                            }).addTo(responderMap).bindPopup('Patient Location').openPopup();
+                        } else {
+                            userMarker.setLatLng(userPos);
+                        }
+
+                        // Fit map to show both if responder location is known
+                        if (responderMarker) {
+                            const group = new L.featureGroup([userMarker, responderMarker]);
+                            responderMap.fitBounds(group.getBounds().pad(0.2));
+                        } else {
+                            responderMap.setView(userPos, 15);
+                        }
+                    }
+
+                    if (data.status === 'resolved' || data.status === 'cancelled') {
+                        clearInterval(missionPolling);
+                        if (userMarker) responderMap.removeLayer(userMarker);
+                        userMarker = null;
+                        alert('Mission ended: ' + data.status);
+                    }
+                });
+        }, 5000);
+    }
+
+    // Initialize Map
+    let responderMap = L.map('responderMap').setView([6.5244, 3.3792], 13);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; CartoDB'
+    }).addTo(responderMap);
+
+    function startTracking() {
+        if ("geolocation" in navigator) {
+            trackingInterval = setInterval(() => {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const { latitude, longitude } = position.coords;
+                    
+                    // Update local marker
+                    if (!responderMarker) {
+                        responderMarker = L.marker([latitude, longitude]).addTo(responderMap).bindPopup('Your Location');
+                    } else {
+                        responderMarker.setLatLng([latitude, longitude]);
+                    }
+
+                    fetch('{{ route("responder.update-location") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({ latitude, longitude })
+                    });
+                });
+            }, 10000);
+        }
+    }
+
+    function stopTracking() {
+        if (trackingInterval) clearInterval(trackingInterval);
     }
 
     // Duty & Location Logic
@@ -392,30 +483,6 @@
         } else {
             stopTracking();
         }
-    }
-
-    let trackingInterval = null;
-
-    function startTracking() {
-        if ("geolocation" in navigator) {
-            trackingInterval = setInterval(() => {
-                navigator.geolocation.getCurrentPosition(position => {
-                    const { latitude, longitude } = position.coords;
-                    fetch('{{ route("responder.update-location") }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        },
-                        body: JSON.stringify({ latitude, longitude })
-                    });
-                });
-            }, 10000); // Update location every 10 seconds
-        }
-    }
-
-    function stopTracking() {
-        if (trackingInterval) clearInterval(trackingInterval);
     }
 
     // Auto-start tracking if already on duty

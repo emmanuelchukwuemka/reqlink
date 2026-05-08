@@ -43,7 +43,7 @@ class ResponderSeeder extends Seeder
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'phone' => $data['phone'],
-                'password' => Hash::make('password'),
+                'password' => 'password',
                 'role' => 'responder',
                 'is_verified' => true,
             ]);

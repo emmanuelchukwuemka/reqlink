@@ -439,13 +439,29 @@
             })
             .then(res => res.json())
             .then(data => {
-                panicBtn.innerHTML = '<span>SOS</span><small>Dispatched</small>';
                 activeEmergencyUuid = data.uuid;
                 startPollingStatus();
+                
+                if (data.status === 'dispatched') {
+                    panicBtn.innerHTML = '<span>SOS</span><small>Help En-Route</small>';
+                    document.getElementById('emergencyStatus').textContent = data.message;
+                    if (data.responder) {
+                        document.getElementById('responderName').textContent = data.responder.name;
+                    }
+                } else if (data.no_responders) {
+                    panicBtn.innerHTML = '<span>...</span><small>Searching</small>';
+                    document.getElementById('emergencyStatus').textContent = 'Searching for nearest help...';
+                } else {
+                    panicBtn.innerHTML = '<span>SOS</span><small>Alert Sent</small>';
+                    document.getElementById('emergencyStatus').textContent = data.message;
+                }
+
                 document.getElementById('liveAlert').style.display = 'block';
             });
         });
     }
+
+    let userLocationWatcher = null;
 
     function startPollingStatus() {
         if (!activeEmergencyUuid) return;
@@ -462,6 +478,34 @@
                     }
                 });
         }, 5000);
+
+        // Start watching user location to share with responder
+        if (navigator.geolocation && !userLocationWatcher) {
+            userLocationWatcher = navigator.geolocation.watchPosition((position) => {
+                const { latitude, longitude } = position.coords;
+                
+                // Update marker on local map
+                if (userMarker) {
+                    userMarker.setLatLng([latitude, longitude]);
+                } else {
+                    userMarker = L.marker([latitude, longitude]).addTo(map).bindPopup('Your Current Location').openPopup();
+                }
+
+                // Send update to server for responder to see
+                fetch(`/emergency/update-location/${activeEmergencyUuid}`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+                    },
+                    body: JSON.stringify({ latitude, longitude })
+                });
+            }, (error) => console.error('Location Watch Error:', error), {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
+            });
+        }
     }
 
     function updateLiveUI(data) {
@@ -499,6 +543,10 @@
 
     function stopPollingStatus() {
         clearInterval(pollingInterval);
+        if (userLocationWatcher) {
+            navigator.geolocation.clearWatch(userLocationWatcher);
+            userLocationWatcher = null;
+        }
         document.getElementById('liveAlert').style.display = 'none';
         if (responderMarker) {
             map.removeLayer(responderMarker);
@@ -608,6 +656,41 @@
     if (activeEmergencyUuid) {
         startPollingStatus();
     }
+</script>
+<!-- Support Widget -->
+<div class="support-trigger" id="supportTrigger" style="position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; background: var(--black); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 5000; transition: transform 0.3s; border: 1px solid var(--glass-border);">
+    <i data-lucide="mail"></i>
+</div>
+
+<div class="support-window" id="supportWindow" style="position: fixed; bottom: 100px; left: 30px; width: 350px; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 20px; display: none; flex-direction: column; overflow: hidden; z-index: 5000; box-shadow: 0 20px 50px rgba(0,0,0,0.5); backdrop-filter: blur(20px);">
+    <div style="background: rgba(0,0,0,0.5); padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--glass-border);">
+        <h4 style="margin: 0; color: white;">Contact Admin</h4>
+        <button onclick="toggleSupport()" style="background: transparent; border: none; color: var(--grey); cursor: pointer;"><i data-lucide="x" style="width: 20px;"></i></button>
+    </div>
+    <div style="padding: 20px;">
+        @if(session('success'))
+            <div style="color: #22c55e; margin-bottom: 15px; font-size: 0.9rem;">{{ session('success') }}</div>
+        @endif
+        <form action="{{ route('support.message') }}" method="POST">
+            @csrf
+            <textarea name="message" placeholder="How can we help you?" required rows="4" style="width: 100%; margin-bottom: 10px; padding: 10px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: white; resize: none;"></textarea>
+            <button type="submit" class="btn-primary" style="width: 100%; border: none; padding: 12px; border-radius: 8px; cursor: pointer;">Send Message</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById('supportTrigger').addEventListener('click', toggleSupport);
+    function toggleSupport() {
+        const w = document.getElementById('supportWindow');
+        w.style.display = w.style.display === 'flex' ? 'none' : 'flex';
+    }
+    
+    @if(session('success'))
+        toggleSupport();
+    @endif
+    
+    lucide.createIcons();
 </script>
 <script src="{{ asset('js/chat.js') }}"></script>
 </body>
