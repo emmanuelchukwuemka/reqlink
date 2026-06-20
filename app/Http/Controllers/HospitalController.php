@@ -36,4 +36,18 @@ class HospitalController extends Controller
 
         return redirect()->back()->with('success', 'Facility profile updated successfully.');
     }
+
+    public function acceptPatient($uuid)
+    {
+        $hospital = Hospital::where('user_id', Auth::id())->firstOrFail();
+        $emergency = \App\Domains\Emergencies\Models\Emergency::where('uuid', $uuid)
+            ->where('target_hospital_id', $hospital->id)
+            ->firstOrFail();
+
+        $emergency->update([
+            'hospital_accepted_at' => now(),
+        ]);
+
+        return redirect()->back()->with('success', 'Patient admission acknowledged. Emergency team notified.');
+    }
 }

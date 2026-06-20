@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Dashboard | ResQLink</title>
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
     <link rel="stylesheet" href="{{ asset('css/chat.css') }}">
@@ -49,10 +50,30 @@
             animation: slide-up 0.5s ease-out;
         }
         @keyframes slide-up { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        @media (max-width: 600px) {
+            .live-alert-overlay {
+                width: calc(100vw - 40px) !important;
+                right: 20px !important;
+                left: 20px !important;
+                bottom: 20px !important;
+            }
+            #supportWindow {
+                width: calc(100vw - 40px) !important;
+                left: 20px !important;
+                right: 20px !important;
+            }
+            #supportTrigger {
+                bottom: 20px !important;
+                left: 20px !important;
+            }
+        }
     </style>
     <script src="{{ asset('js/theme.js') }}"></script>
 </head>
 <body class="dashboard-layout">
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <aside class="sidebar">
     <div class="sidebar-header">
@@ -83,7 +104,10 @@
 
 <main class="main-content">
     <header class="top-bar">
-        <div>
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle Menu">
+            <i data-lucide="menu"></i>
+        </button>
+        <div class="topbar-title">
             <h1 id="pageTitle" style="font-size: 1.5rem; font-weight: 800;">Command Center</h1>
             <p style="color: var(--grey); font-size: 0.9rem;">Welcome back, {{ Auth::user()->name }}</p>
         </div>
@@ -295,7 +319,8 @@
     <div id="history" class="tab-pane">
         <div class="dash-card">
             <h3><i data-lucide="history"></i> Complete Incident Logs</h3>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <div class="table-scroll">
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px; min-width: 480px;">
                 <thead>
                     <tr style="text-align: left; color: var(--grey); font-size: 0.8rem; text-transform: uppercase;">
                         <th style="padding: 15px;">Date</th>
@@ -315,6 +340,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 
@@ -422,6 +448,17 @@
         panicBtn.style.transform = 'scale(1)';
     });
 
+    panicBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        panicBtn.style.transform = 'scale(0.9)';
+        pressTimer = setTimeout(() => triggerEmergency(), 1500);
+    }, { passive: false });
+
+    panicBtn.addEventListener('touchend', () => {
+        clearTimeout(pressTimer);
+        panicBtn.style.transform = 'scale(1)';
+    });
+
     let activeEmergencyUuid = @json($activeEmergency ? $activeEmergency->uuid : null);
     let responderMarker = null;
     let pollingInterval = null;
@@ -441,6 +478,7 @@
             .then(data => {
                 activeEmergencyUuid = data.uuid;
                 startPollingStatus();
+                startPanicRecording(data.uuid); // Start recording evidence
                 
                 if (data.status === 'dispatched') {
                     panicBtn.innerHTML = '<span>SOS</span><small>Help En-Route</small>';
@@ -459,6 +497,60 @@
                 document.getElementById('liveAlert').style.display = 'block';
             });
         });
+    }
+
+    function startPanicRecording(uuid) {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            console.warn('Media recording not supported');
+            return;
+        }
+
+        navigator.mediaDevices.getUserMedia({ audio: true, video: { facingMode: 'user' } })
+            .then(stream => {
+                const mediaRecorder = new MediaRecorder(stream);
+                const chunks = [];
+
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) chunks.push(e.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(chunks, { type: 'video/webm' });
+                    const formData = new FormData();
+                    formData.append('evidence', blob, 'panic_capture.webm');
+                    formData.append('_token', '{{ csrf_token() }}');
+
+                    fetch(`/emergency/evidence/${uuid}`, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => console.log('Evidence uploaded:', data.path))
+                    .catch(err => console.error('Evidence upload failed:', err))
+                    .finally(() => {
+                        // Stop all tracks to release camera/mic
+                        stream.getTracks().forEach(track => track.stop());
+                    });
+                };
+
+                mediaRecorder.start();
+                console.log('Panic recording started...');
+
+                // Record for 30 seconds
+                setTimeout(() => {
+                    if (mediaRecorder.state === 'recording') {
+                        mediaRecorder.stop();
+                        console.log('Panic recording stopped.');
+                    }
+                }, 30000);
+            })
+            .catch(err => {
+                console.error('Recording access denied:', err);
+                // Fallback to audio only if video is denied
+                if (err.name === 'NotAllowedError' || err.name === 'NotFoundError') {
+                     // Could retry with audio only here
+                }
+            });
     }
 
     let userLocationWatcher = null;
@@ -656,6 +748,28 @@
     if (activeEmergencyUuid) {
         startPollingStatus();
     }
+
+    // Mobile sidebar toggle
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    hamburgerBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+        sidebarOverlay.classList.toggle('active');
+    });
+    sidebarOverlay.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+        sidebarOverlay.classList.remove('active');
+    });
+    document.querySelectorAll('.nav-item[data-tab]').forEach(item => {
+        item.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('open');
+                sidebarOverlay.classList.remove('active');
+            }
+        });
+    });
 </script>
 <!-- Support Widget -->
 <div class="support-trigger" id="supportTrigger" style="position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; background: var(--black); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 5000; transition: transform 0.3s; border: 1px solid var(--glass-border);">

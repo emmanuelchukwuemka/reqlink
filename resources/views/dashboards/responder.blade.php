@@ -12,6 +12,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .mission-grid { display: grid; grid-template-columns: 1fr 350px; gap: 24px; }
+        @media (max-width: 900px) { .mission-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .top-bar { flex-wrap: wrap; gap: 8px; } .duty-status-container { order: 3; } }
         .alert-item { 
             background: rgba(229, 9, 20, 0.05); 
             border-left: 4px solid var(--red);
@@ -51,6 +53,8 @@
 </head>
 <body class="dashboard-layout">
 
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
 <aside class="sidebar">
     <div class="sidebar-header">
         <div class="auth-logo" style="margin-bottom: 0;">
@@ -80,7 +84,10 @@
 
 <main class="main-content">
     <header class="top-bar">
-        <div>
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle Menu">
+            <i data-lucide="menu"></i>
+        </button>
+        <div class="topbar-title">
             <h1 id="pageTitle" style="font-size: 1.5rem; font-weight: 800;">Mission Control</h1>
             <p style="color: var(--grey); font-size: 0.9rem;">Responding Unit: {{ Auth::user()->name }}</p>
         </div>
@@ -302,6 +309,29 @@
 
 <script>
     lucide.createIcons();
+
+    // Mobile sidebar toggle
+    (function() {
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        hamburgerBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            sidebarOverlay.classList.toggle('active');
+        });
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('active');
+        });
+        document.querySelectorAll('.nav-item[data-tab]').forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('open');
+                    sidebarOverlay.classList.remove('active');
+                }
+            });
+        });
+    })();
 
     // Tab Switching
     document.querySelectorAll('.nav-item[data-tab]').forEach(item => {

@@ -19,7 +19,12 @@ class DashboardController extends Controller
                 return view('dashboards.admin', compact('users', 'activeEmergenciesCount', 'onDutyRespondersCount'));
             case 'hospital':
                 $hospital = \App\Domains\Responders\Models\Hospital::where('user_id', Auth::id())->first();
-                return view('dashboards.hospital', compact('hospital'));
+                $incomingEmergencies = \App\Domains\Emergencies\Models\Emergency::where('target_hospital_id', $hospital->id)
+                    ->whereIn('status', ['pending', 'dispatched', 'enroute', 'arrived'])
+                    ->with('user', 'emergencyType')
+                    ->latest()
+                    ->get();
+                return view('dashboards.hospital', compact('hospital', 'incomingEmergencies'));
             case 'ambulance':
             case 'security':
             case 'fire':

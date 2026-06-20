@@ -22,10 +22,13 @@
         .theme-toggle { background: transparent; border: none; color: var(--grey); cursor: pointer; padding: 8px; border-radius: 50%; transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
         .theme-toggle:hover { background: var(--glass); color: var(--white); }
         :root.light-mode .theme-toggle:hover { background: rgba(0,0,0,0.05); color: var(--black); }
+        @media (max-width: 768px) { .top-bar { flex-wrap: wrap; gap: 8px; } }
     </style>
     <script src="{{ asset('js/theme.js') }}"></script>
 </head>
 <body class="dashboard-layout">
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <aside class="sidebar">
     <div class="sidebar-header">
@@ -55,7 +58,10 @@
 
 <main class="main-content">
     <header class="top-bar">
-        <div>
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle Menu">
+            <i data-lucide="menu"></i>
+        </button>
+        <div class="topbar-title">
             <h1 style="font-size: 1.5rem; font-weight: 800;">National User Registry</h1>
             <p style="color: var(--grey); font-size: 0.9rem;">Total Registered Accounts: {{ $users->count() }}</p>
         </div>
@@ -93,7 +99,8 @@
     </div>
 
     <div class="dash-card" style="margin-top: 30px;">
-        <table class="admin-table">
+        <div class="table-scroll">
+        <table class="admin-table" style="min-width: 700px;">
             <thead>
                 <tr>
                     <th>User / Entity</th>
@@ -169,9 +176,27 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
     </div>
 </main>
 
-<script>lucide.createIcons();</script>
+<script>
+    lucide.createIcons();
+
+    // Mobile sidebar toggle
+    (function() {
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        hamburgerBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            sidebarOverlay.classList.toggle('active');
+        });
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('active');
+        });
+    })();
+</script>
 </body>
 </html>

@@ -13,10 +13,25 @@
         .counter-controls { display: flex; align-items: center; gap: 15px; }
         .count-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .count-value { font-size: 1.2rem; font-weight: 800; min-width: 30px; text-align: center; }
+
+        @media (max-width: 900px) {
+            .management-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .facility-card { padding: 20px; border-radius: 16px; }
+            .form-grid { grid-template-columns: 1fr !important; }
+            .form-grid .form-group[style*="grid-column"] { grid-column: span 1 !important; }
+            .top-bar { flex-wrap: wrap; gap: 8px; }
+        }
+        @media (max-width: 480px) {
+            .facility-card { padding: 16px; }
+        }
     </style>
     <script src="{{ asset('js/theme.js') }}"></script>
 </head>
 <body class="dashboard-layout">
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <aside class="sidebar">
     <div class="sidebar-header">
@@ -45,7 +60,10 @@
 
 <main class="main-content">
     <header class="top-bar">
-        <div>
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle Menu">
+            <i data-lucide="menu"></i>
+        </button>
+        <div class="topbar-title">
             <h1 style="font-size: 1.5rem; font-weight: 800;">Facility Overview</h1>
             <p style="color: var(--grey); font-size: 0.9rem;">{{ $hospital->name }}</p>
         </div>
@@ -68,77 +86,131 @@
     @endif
 
     <div class="management-grid">
-        <div class="facility-card">
-            <h3><i data-lucide="edit-3"></i> Profile Details</h3>
-            <form action="{{ route('hospital.update') }}" method="POST" style="margin-top: 25px;">
-                @csrf
-                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div class="form-group" style="grid-column: span 2;">
-                        <label class="field-label">Official Facility Name</label>
-                        <input type="text" name="name" value="{{ $hospital->name }}" required>
+        <div style="display: flex; flex-direction: column; gap: 25px;">
+            <!-- INBOUND EMERGENCIES -->
+            <div class="facility-card" style="border-left: 4px solid #ef4444;">
+                <h3 style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="display: flex; align-items: center; gap: 10px;"><i data-lucide="siren" style="color: #ef4444;"></i> Inbound Alerts</span>
+                    <span style="background: rgba(239, 68, 68, 0.1); color: #ef4444; font-size: 0.7rem; padding: 2px 10px; border-radius: 12px; font-weight: 800;">{{ $incomingEmergencies->count() }} ACTIVE</span>
+                </h3>
+                
+                <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px;">
+                    @forelse($incomingEmergencies as $emergency)
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 15px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-size: 0.7rem; font-weight: 800; color: {{ $emergency->priority >= 4 ? '#ef4444' : '#f59e0b' }}; text-transform: uppercase;">{{ $emergency->emergencyType->name }}</span>
+                                <span style="font-size: 0.6rem; opacity: 0.6;">{{ $emergency->created_at->diffForHumans() }}</span>
+                            </div>
+                            <h4 style="margin: 5px 0 0 0; font-size: 1rem;">Patient: {{ $emergency->user->name }}</h4>
+                            <p style="margin: 3px 0 0 0; font-size: 0.75rem; color: var(--grey);">ETA: {{ $emergency->eta_minutes ?? '--' }} mins | Status: {{ strtoupper($emergency->status) }}</p>
+                        </div>
+                        
+                        @if(!$emergency->hospital_accepted_at)
+                        <form action="{{ route('hospital.accept', $emergency->uuid) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn-primary" style="padding: 10px 20px; font-size: 0.8rem; border-radius: 10px; background: #22c55e; border-color: #22c55e;">Accept Patient</button>
+                        </form>
+                        @else
+                        <div style="display: flex; align-items: center; gap: 8px; color: #22c55e; font-size: 0.8rem; font-weight: 700;">
+                            <i data-lucide="check-circle" style="width: 16px;"></i> ACCEPTED
+                        </div>
+                        @endif
                     </div>
-
-                    <div class="form-group">
-                        <label class="field-label">Contact Phone</label>
-                        <input type="tel" name="contact_phone" value="{{ $hospital->contact_phone }}" required>
+                    @empty
+                    <div style="text-align: center; padding: 30px; opacity: 0.5;">
+                        <i data-lucide="shield-check" style="width: 40px; height: 40px; margin-bottom: 10px;"></i>
+                        <p>No active inbound emergencies.</p>
                     </div>
-
-                    <div class="form-group">
-                        <label class="field-label">Emergency Hotline</label>
-                        <input type="tel" name="hotline" value="{{ $hospital->contact_phone }}" placeholder="Optional">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="field-label">Location Latitude</label>
-                        <input type="text" name="lat" value="{{ $hospital->lat }}" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="field-label">Location Longitude</label>
-                        <input type="text" name="lng" value="{{ $hospital->lng }}" required>
-                    </div>
+                    @endforelse
                 </div>
+            </div>
 
-                <div style="margin-top: 30px;">
-                    <h4 style="margin-bottom: 15px; font-size: 0.9rem; color: var(--grey); text-transform: uppercase;">Resource Management</h4>
-                    
-                    <div class="bed-counter">
-                        <span>General Admission Beds</span>
-                        <div class="counter-controls">
-                            <input type="number" name="available_beds" value="{{ $hospital->available_beds }}" style="width: 80px; text-align: center;">
+            <!-- PROFILE & RESOURCES -->
+            <div class="facility-card">
+                <h3><i data-lucide="edit-3"></i> Resource Management</h3>
+                <form action="{{ route('hospital.update') }}" method="POST" style="margin-top: 25px;">
+                    @csrf
+                    <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label class="field-label">Official Facility Name</label>
+                            <input type="text" name="name" value="{{ $hospital->name }}" required style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 12px; border-radius: 8px; color: white;">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="field-label">General Beds (Available)</label>
+                            <div class="bed-counter" style="margin-bottom: 0; padding: 5px 15px;">
+                                <input type="number" name="available_beds" value="{{ $hospital->available_beds }}" style="background: transparent; border: none; color: white; font-size: 1.2rem; font-weight: 800; width: 60px; text-align: center;">
+                                <span style="font-size: 0.7rem; opacity: 0.5;">/ {{ $hospital->total_beds }}</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="field-label">ICU Units (Available)</label>
+                            <div class="bed-counter" style="margin-bottom: 0; padding: 5px 15px;">
+                                <input type="number" name="icu_beds" value="{{ $hospital->icu_beds }}" style="background: transparent; border: none; color: white; font-size: 1.2rem; font-weight: 800; width: 60px; text-align: center;">
+                                <span style="font-size: 0.7rem; opacity: 0.5;">Active</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="field-label">Contact Phone</label>
+                            <input type="tel" name="contact_phone" value="{{ $hospital->contact_phone }}" required style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 12px; border-radius: 8px; color: white;">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="field-label">Latitude/Longitude</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" name="lat" value="{{ $hospital->lat }}" required style="width: 50%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 12px; border-radius: 8px; color: white; font-size: 0.8rem;">
+                                <input type="text" name="lng" value="{{ $hospital->lng }}" required style="width: 50%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 12px; border-radius: 8px; color: white; font-size: 0.8rem;">
+                            </div>
                         </div>
                     </div>
 
-                    <div class="bed-counter">
-                        <span>ICU / Critical Care Units</span>
-                        <div class="counter-controls">
-                            <input type="number" name="icu_beds" value="{{ $hospital->icu_beds }}" style="width: 80px; text-align: center;">
-                        </div>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-primary" style="margin-top: 30px; width: 100%; padding: 18px; border-radius: 12px;">Save Facility Updates</button>
-            </form>
+                    <button type="submit" class="btn-primary" style="margin-top: 30px; width: 100%; padding: 15px; border-radius: 12px; font-weight: 700;">UPDATE CAPACITY</button>
+                </form>
+            </div>
         </div>
 
-        <div>
-            <div class="facility-card" style="margin-bottom: 30px;">
-                <h3><i data-lucide="map-pin"></i> Live Location</h3>
+        <div style="display: flex; flex-direction: column; gap: 25px;">
+            <div class="facility-card">
+                <h3><i data-lucide="map-pin"></i> Facility Location</h3>
                 <div id="map" style="height: 250px; border-radius: 15px; margin-top: 20px; border: 1px solid var(--glass-border);"></div>
-                <p style="font-size: 0.75rem; color: var(--grey); margin-top: 15px;">Tip: Ensure your coordinates are accurate so patients can find you.</p>
             </div>
 
             <div class="facility-card">
-                <h3><i data-lucide="activity"></i> Current Load</h3>
-                <div style="margin-top: 20px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                        <span style="font-size: 0.85rem;">Bed Occupancy</span>
-                        <span style="font-size: 0.85rem; font-weight: 700;">65%</span>
+                <h3><i data-lucide="activity"></i> Capacity Analysis</h3>
+                <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 20px;">
+                    @php
+                        $occupancy = $hospital->total_beds > 0 ? round((($hospital->total_beds - $hospital->available_beds) / $hospital->total_beds) * 100) : 0;
+                        $color = $occupancy > 80 ? '#ef4444' : ($occupancy > 50 ? '#f59e0b' : '#22c55e');
+                    @endphp
+                    <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span style="font-size: 0.85rem; opacity: 0.7;">General Bed Occupancy</span>
+                            <span style="font-size: 0.85rem; font-weight: 800; color: {{ $color }};">{{ $occupancy }}%</span>
+                        </div>
+                        <div style="width: 100%; height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; overflow: hidden;">
+                            <div style="width: {{ $occupancy }}%; height: 100%; background: {{ $color }}; transition: width 0.5s ease;"></div>
+                        </div>
                     </div>
-                    <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden;">
-                        <div style="width: 65%; height: 100%; background: #22c55e;"></div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px;">
+                        <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; text-align: center; border: 1px solid var(--glass-border);">
+                            <span style="font-size: 0.65rem; opacity: 0.6; text-transform: uppercase;">Total Patients</span>
+                            <div style="font-size: 1.5rem; font-weight: 800; margin-top: 5px;">{{ $hospital->total_beds - $hospital->available_beds }}</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; text-align: center; border: 1px solid var(--glass-border);">
+                            <span style="font-size: 0.65rem; opacity: 0.6; text-transform: uppercase;">Available ICU</span>
+                            <div style="font-size: 1.5rem; font-weight: 800; margin-top: 5px; color: #3b82f6;">{{ $hospital->icu_beds }}</div>
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            <div class="facility-card" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(15, 23, 42, 0.1) 100%);">
+                <h4 style="margin: 0; font-size: 0.9rem; color: #22c55e;">Status: ACTIVE</h4>
+                <p style="font-size: 0.75rem; opacity: 0.7; margin-top: 5px;">Your facility is currently receiving emergency routing from the ResQLink dispatch engine.</p>
             </div>
         </div>
     </div>
@@ -148,7 +220,22 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script>
     lucide.createIcons();
-    
+
+    // Mobile sidebar toggle
+    (function() {
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        hamburgerBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            sidebarOverlay.classList.toggle('active');
+        });
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('active');
+        });
+    })();
+
     const lat = {{ $hospital->lat }};
     const lng = {{ $hospital->lng }};
     

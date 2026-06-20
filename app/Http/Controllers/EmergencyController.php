@@ -179,4 +179,36 @@ class EmergencyController extends Controller
 
         return response()->json($emergencies);
     }
+
+    public function uploadEvidence(Request $request, $uuid)
+    {
+        $request->validate([
+            'evidence' => 'required|file|max:10240', // 10MB max
+        ]);
+
+        $emergency = Emergency::where('uuid', $uuid)->firstOrFail();
+        
+        $path = $request->file('evidence')->store('evidence', 'public');
+        
+        $emergency->update([
+            'evidence_file' => $path,
+        ]);
+
+        return response()->json(['success' => true, 'path' => $path]);
+    }
+
+    public function updateTriage(Request $request, $uuid)
+    {
+        $request->validate([
+            'triage_data' => 'required|array',
+        ]);
+
+        $emergency = Emergency::where('uuid', $uuid)->firstOrFail();
+        
+        $emergency->update([
+            'triage_data' => $request->triage_data,
+        ]);
+
+        return response()->json(['success' => true]);
+    }
 }

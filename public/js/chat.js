@@ -48,7 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // State Management for Triage
     let chatState = {
         activeProtocol: null,
-        triageStep: 0
+        triageStep: 0,
+        answers: []
     };
 
     const medicalBrain = {
@@ -57,61 +58,43 @@ document.addEventListener('DOMContentLoaded', () => {
             keywords: ["heart attack", "chest pain", "chest tightness", "arm pain"],
             empathy: "I understand. Chest pain is a priority one emergency.",
             triage: ["Is there crushing pain or pressure?", "Is the pain spreading to the arm or jaw?", "Are they sweating or nauseous?"],
-            steps: "1. **Trigger SOS NOW**.\n2. Have them sit down and stay calm.\n3. Loosen tight clothing.\n4. If conscious, ask if they have aspirin."
+            steps: "1. **Trigger SOS NOW**.\n2. Have them sit down and stay calm.\n3. Loosen tight clothing.\n4. If conscious, ask if they have aspirin.",
+            visual: "activity"
         },
         "stroke": {
             keywords: ["stroke", "slurred speech", "face drooping", "arm weakness", "numbness"],
             empathy: "Stroke detected. Time is brain. We must act quickly.",
             triage: ["Is one side of the face drooping?", "Can they lift both arms?", "Is their speech garbled?"],
-            steps: "1. **Trigger SOS IMMEDIATELY**.\n2. Note the time symptoms started.\n3. Do not give food or water.\n4. Keep them lying on their side if vomiting."
-        },
-        "blood pressure": {
-            keywords: ["blood pressure", "hypertension", "high bp"],
-            empathy: "Managing blood pressure is vital for your long-term health.",
-            triage: ["Is your reading over 180/120?", "Do you have a severe headache or blurred vision?", "Is there chest pain?"],
-            steps: "1. If symptoms are present, this is a **hypertensive crisis**. Trigger SOS.\n2. Otherwise, sit in a quiet place and rest.\n3. Contact your doctor to adjust medication."
+            steps: "1. **Trigger SOS IMMEDIATELY**.\n2. Use **F.A.S.T**: Face drooping? Arm weakness? Speech difficulty? Time to call SOS.\n3. Note the time symptoms started.",
+            visual: "brain"
         },
         "choking": {
             keywords: ["choking", "swallowed", "cant breathe"],
             empathy: "I'm with you. Choking is terrifying but we can act.",
             triage: ["Can they cough or speak at all?", "Are their lips turning blue?", "Are they conscious?"],
-            steps: "1. Perform the **Heimlich maneuver**.\n2. Wrap arms around waist, make a fist above navel.\n3. Perform quick upward thrusts.\n4. If they collapse, begin CPR."
-        },
-        "asthma": {
-            keywords: ["asthma", "wheezing", "shortness of breath", "trouble breathing"],
-            empathy: "I understand. Breathing difficulty needs immediate attention.",
-            triage: ["Do they have their rescue inhaler?", "Can they speak in full sentences?", "Are their lips/fingernails blue?"],
-            steps: "1. Sit them upright.\n2. Use the blue rescue inhaler (2 puffs every 2 mins, up to 10).\n3. If no improvement in 5 mins, **trigger SOS**."
+            steps: "1. Perform **Heimlich maneuver**.\n2. Wrap arms around waist, make a fist above navel.\n3. Perform quick upward thrusts.",
+            visual: "user-round"
         },
         "bleeding": {
             keywords: ["bleeding", "cut", "wound", "hemorrhage"],
             empathy: "Let's stop that bleeding right now.",
             triage: ["Is the blood spurting or flowing fast?", "Is the wound deep?", "Is there an object stuck in it?"],
-            steps: "1. Apply firm, direct pressure with a clean cloth.\n2. **Do not remove the cloth** even if soaked; add more.\n3. Elevate the area above the heart."
+            steps: "1. Apply firm, direct pressure.\n2. **Do not remove the cloth**.\n3. Elevate above the heart.",
+            visual: "droplets"
         },
-        "fracture": {
-            keywords: ["broken bone", "fracture", "broken leg", "broken arm", "dislocation", "sprain"],
-            empathy: "I'm sorry about the injury. Let's stabilize it.",
-            triage: ["Is the bone protruding through the skin?", "Is the limb deformed?", "Is there loss of feeling?"],
-            steps: "1. **Do not try to realign the bone**.\n2. Splint the joint above and below the injury.\n3. Apply ice (not directly on skin) to reduce swelling."
-        },
-        "burn": {
-            keywords: ["burn", "scalded", "fire"],
-            empathy: "Let's treat that burn and stop the pain.",
-            triage: ["Is it charred or white (3rd degree)?", "Are there blisters?", "Is the area larger than your palm?"],
-            steps: "1. Run **cool water** (not cold) for 20 mins.\n2. Remove jewelry before swelling.\n3. Cover loosely with plastic wrap or a sterile pad."
-        },
-        "head injury": {
-            keywords: ["head injury", "concussion", "hit head", "collapsed"],
-            empathy: "Head injuries need careful monitoring.",
-            triage: ["Did they lose consciousness?", "Are they vomiting?", "Is there a severe headache or confusion?"],
-            steps: "1. Keep the person still.\n2. Apply ice to any swelling.\n3. If they are drowsy or confused, **trigger SOS** for a CT scan."
+        "cpr": {
+            keywords: ["cpr", "not breathing", "unconscious", "no pulse"],
+            empathy: "Stay calm. We are starting CPR protocols now.",
+            triage: ["Are they breathing?", "Do they have a pulse?", "Are they responsive?"],
+            steps: "1. Push hard and fast in the center of the chest.\n2. 100-120 compressions per minute.\n3. Allow chest to recoil completely.",
+            visual: "heart-handshake"
         },
         "pregnancy": {
             keywords: ["pregnancy", "pregnant", "contractions", "water broke"],
-            empathy: "I'm here for you and the baby. Let's check your safety.",
+            empathy: "I'm here for you and the baby.",
             triage: ["Is there any vaginal bleeding?", "Are you having severe abdominal pain?", "How far apart are the contractions?"],
-            steps: "1. If bleeding or severe pain occurs, **trigger SOS immediately**.\n2. Lie on your **left side**.\n3. Track contraction frequency. If under 5 mins apart, head to the hospital."
+            steps: "1. If bleeding occurs, **trigger SOS**.\n2. Lie on your **left side**.",
+            visual: "baby"
         },
         "child": {
             keywords: ["child", "baby", "infant", "pediatric"],
@@ -142,6 +125,13 @@ document.addEventListener('DOMContentLoaded', () => {
             empathy: "Dehydration can happen fast. Let's get you hydrated.",
             triage: ["Are you dizzy or confused?", "Is your urine very dark or absent?", "Are you vomiting?"],
             steps: "1. Drink small sips of water or ORS.\n2. Move to a cool, shaded area.\n3. If you can't keep fluids down, you need an IV—see a doctor."
+        },
+        "general": {
+            keywords: ["sick", "unwell", "not feeling well", "ill"],
+            empathy: "I'm sorry you're not feeling well. Let's try to figure out what's going on.",
+            triage: ["Do you have a fever?", "Are you experiencing any pain?", "Do you have any other symptoms like cough or nausea?"],
+            steps: "1. Rest and stay hydrated.\n2. Monitor your temperature.\n3. If symptoms worsen or you develop difficulty breathing, **trigger SOS**.",
+            visual: "thermometer"
         }
     };
 
@@ -211,7 +201,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
             loadingDiv.remove();
 
-            if (data.error) throw new Error(data.error);
+            if (data.error) {
+                const errMsg = typeof data.error === 'object' ? (data.error.message || JSON.stringify(data.error)) : data.error;
+                throw new Error(errMsg);
+            }
+
+            if (!data.choices || !data.choices[0]) {
+                throw new Error("Invalid AI response format");
+            }
 
             const aiResponse = data.choices[0].message.content;
             appendMessage('bot', aiResponse);
@@ -220,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             if (loadingDiv) loadingDiv.remove();
             console.error('OpenAI Error:', error);
-            const fallback = "I'm having trouble connecting to my advanced brain. Please describe your symptoms specifically (e.g. 'chest pain') or use the Red SOS button.";
+            const fallback = `I'm having trouble connecting to my advanced brain (Error: ${error.message}). Please ensure your API key is valid and you have an active internet connection.`;
             appendMessage('bot', fallback);
         }
     }
@@ -229,24 +226,66 @@ document.addEventListener('DOMContentLoaded', () => {
         const p = medicalBrain[protocolKey];
         chatState.activeProtocol = protocolKey;
         chatState.triageStep = 0;
+        chatState.answers = [];
 
         appendMessage('bot', `<em>${p.empathy}</em><br><br>${p.triage[0]}`);
         if (typeof speak === 'function') speak(p.empathy + ". " + p.triage[0]);
     }
 
-    function processTriage(input) {
+    function processTriage(userInput) {
         const p = medicalBrain[chatState.activeProtocol];
+        
+        // Save the answer to the previous question
+        chatState.answers.push({
+            question: p.triage[chatState.triageStep],
+            answer: userInput
+        });
+
         chatState.triageStep++;
+
+        // Sync with server if an emergency is active
+        syncTriageWithServer();
 
         if (chatState.triageStep < p.triage.length) {
             appendMessage('bot', p.triage[chatState.triageStep]);
             if (typeof speak === 'function') speak(p.triage[chatState.triageStep]);
         } else {
-            appendMessage('bot', `<strong>Recommendation:</strong><br>${p.steps}<br><br>I am monitoring your status. If things worsen, hit the Red SOS button.`);
+            let message = `<strong>Recommendation:</strong><br>${p.steps}`;
+            
+            if (p.visual) {
+                message = `<div class="visual-aid">
+                    <div class="visual-icon"><i data-lucide="${p.visual}"></i></div>
+                    <div class="visual-text">${p.steps}</div>
+                </div>`;
+            }
+
+            appendMessage('bot', message + `<br><br>I am monitoring your status. If things worsen, hit the Red SOS button.`);
             if (typeof speak === 'function') speak("Based on your situation, here are the steps. " + p.steps.replace(/\*\*/g, ''));
             chatState.activeProtocol = null;
             chatState.triageStep = 0;
+            lucide.createIcons();
         }
+    }
+
+    function syncTriageWithServer() {
+        if (typeof activeEmergencyUuid === 'undefined' || !activeEmergencyUuid) return;
+
+        fetch(`/emergency/triage/${activeEmergencyUuid}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                triage_data: {
+                    protocol: chatState.activeProtocol,
+                    diagnostics: chatState.answers
+                }
+            })
+        })
+        .then(res => res.json())
+        .then(data => console.log('Triage synced:', data))
+        .catch(err => console.error('Triage sync failed:', err));
     }
 
     function appendMessage(type, text) {
@@ -256,6 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             .replace(/\n/g, '<br>');
         body.appendChild(div);
         body.scrollTop = body.scrollHeight;
+        lucide.createIcons();
     }
 
     if (typeof speak !== 'function') {

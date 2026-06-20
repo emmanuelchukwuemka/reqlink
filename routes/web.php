@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\WebAuthController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ResponderController;
+use App\Http\Controllers\HospitalController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -29,9 +32,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/responder/toggle-duty', [ResponderController::class, 'toggleDuty'])->name('responder.toggle-duty');
     Route::post('/responder/update-location', [ResponderController::class, 'updateLocation'])->name('responder.update-location');
     Route::post('/hospital/update', [HospitalController::class, 'update'])->name('hospital.update');
+    Route::post('/hospital/accept/{uuid}', [HospitalController::class, 'acceptPatient'])->name('hospital.accept');
     Route::get('/emergency/status/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'getStatus'])->name('emergency.status');
     Route::post('/emergency/update-location/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'updateUserLocation'])->name('emergency.update-location');
     Route::post('/emergency/accept/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'acceptMission'])->name('emergency.accept');
+    Route::post('/emergency/evidence/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'uploadEvidence'])->name('emergency.evidence');
+    Route::post('/emergency/triage/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'updateTriage'])->name('emergency.triage');
     Route::post('/emergency/resolve/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'resolveEmergency'])->name('emergency.resolve');
     Route::post('/reviews', [\App\Http\Controllers\ReviewController::class, 'store'])->name('reviews.store');
 });

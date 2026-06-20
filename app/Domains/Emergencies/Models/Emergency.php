@@ -51,4 +51,9 @@ class Emergency extends Model
     {
         return $this->belongsTo(\App\Domains\Responders\Models\Responder::class, 'assigned_responder_id');
     }
+
+    public function targetHospital()
+    {
+        return $this->belongsTo(\App\Domains\Responders\Models\Hospital::class, 'target_hospital_id');
+    }
 }
