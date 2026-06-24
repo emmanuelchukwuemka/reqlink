@@ -6,7 +6,7 @@
     <title>ResQLink — Saving Lives Through Instant Connection</title>
     <meta name="description" content="ResQLink is an AI-powered emergency response platform that instantly connects people in danger to hospitals, ambulances, security responders, fire services, and disaster response teams.">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/landing.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/landing.css') }}?v={{ filemtime(public_path('css/landing.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/chat.css') }}">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -25,15 +25,100 @@
         <a href="#" class="nav-logo">
             <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 60px; width: auto; object-fit: contain;">
         </a>
-            <ul class="nav-links">
-                <li><a href="#problem">Problem</a></li>
-                <li><a href="#solution">Solution</a></li>
-                <li><a href="#features">Features</a></li>
-                <li><a href="#how-it-works">How It Works</a></li>
-                <li><a href="{{ route('login') }}" class="login-link">Login</a></li>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#home" class="nav-link-item">Home</a></li>
+
+                <li class="nav-divider-line"></li>
+
+                <li class="nav-dropdown">
+                    <a href="#categories" class="nav-dropdown-trigger nav-link-item nav-emergency-link">
+                        <i data-lucide="heart-pulse" class="nav-em-icon"></i>
+                        Medical
+                        <i data-lucide="chevron-down" class="dropdown-arrow"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{{ route('register') }}"><i data-lucide="baby" class="drop-icon"></i>Labor &amp; Delivery Emergency</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="heart" class="drop-icon"></i>Pregnancy Complications</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="droplets" class="drop-icon"></i>Excessive Bleeding</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="users" class="drop-icon"></i>Child Care</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="heart-crack" class="drop-icon"></i>Heart Attack</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="brain" class="drop-icon"></i>Stroke</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="zap" class="drop-icon"></i>Seizure</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="user-x" class="drop-icon"></i>Unconscious Person</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="wind" class="drop-icon"></i>Severe Breathing Difficulty</a></li>
+                    </ul>
+                </li>
+                <li class="nav-dropdown">
+                    <a href="#categories" class="nav-dropdown-trigger nav-link-item nav-emergency-link">
+                        <i data-lucide="shield-alert" class="nav-em-icon"></i>
+                        Security
+                        <i data-lucide="chevron-down" class="dropdown-arrow"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{{ route('register') }}"><i data-lucide="alert-triangle" class="drop-icon"></i>Armed Robbery</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="user-x" class="drop-icon"></i>Kidnapping</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="shield-off" class="drop-icon"></i>Assault</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="home" class="drop-icon"></i>Home Invasion</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="car" class="drop-icon"></i>Car Theft</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="eye" class="drop-icon"></i>Suspicious Activity</a></li>
+                    </ul>
+                </li>
+                <li class="nav-dropdown">
+                    <a href="#accident" class="nav-dropdown-trigger nav-link-item nav-emergency-link">
+                        <i data-lucide="car-front" class="nav-em-icon"></i>
+                        Accident
+                        <i data-lucide="chevron-down" class="dropdown-arrow"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{{ route('register') }}"><i data-lucide="truck" class="drop-icon"></i>Road Traffic Accident</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="person-standing" class="drop-icon"></i>Fall Injury</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="droplets" class="drop-icon"></i>Severe Bleeding</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="bone" class="drop-icon"></i>Fracture/Broken Bone</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="brain" class="drop-icon"></i>Head Injury</a></li>
+                    </ul>
+                </li>
+                <li class="nav-dropdown">
+                    <a href="#categories" class="nav-dropdown-trigger nav-link-item nav-emergency-link">
+                        <i data-lucide="flame" class="nav-em-icon"></i>
+                        Fire
+                        <i data-lucide="chevron-down" class="dropdown-arrow"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{{ route('register') }}"><i data-lucide="home" class="drop-icon"></i>Residential Fire</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="building-2" class="drop-icon"></i>Commercial Building Fire</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="store" class="drop-icon"></i>Market Fire</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="zap" class="drop-icon"></i>Electrical Fire</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="car" class="drop-icon"></i>Vehicle Fire</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="circle-alert" class="drop-icon"></i>Gas Explosion</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="factory" class="drop-icon"></i>Industrial Fire</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="trees" class="drop-icon"></i>Bush Fire</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="help-circle" class="drop-icon"></i>Other Fire Incident</a></li>
+                    </ul>
+                </li>
+                <li class="nav-dropdown">
+                    <a href="#categories" class="nav-dropdown-trigger nav-link-item nav-emergency-link">
+                        <i data-lucide="tornado" class="nav-em-icon"></i>
+                        Disaster
+                        <i data-lucide="chevron-down" class="dropdown-arrow"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{{ route('register') }}"><i data-lucide="waves" class="drop-icon"></i>Flooding</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="building-2" class="drop-icon"></i>Building Collapse</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="mountain" class="drop-icon"></i>Landslide</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="cloud-lightning" class="drop-icon"></i>Storm Damage</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="users" class="drop-icon"></i>Community Disaster</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="alert-octagon" class="drop-icon"></i>Mass Casualty Incident</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="leaf" class="drop-icon"></i>Environmental Hazard</a></li>
+                        <li><a href="{{ route('register') }}"><i data-lucide="help-circle" class="drop-icon"></i>Other Disaster</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-divider-line"></li>
+
+                <li><a href="{{ route('login') }}" class="nav-link-item">Login</a></li>
                 <li><a href="{{ route('register') }}" class="btn-primary btn-sm">Register</a></li>
                 <li>
-                    <button id="themeToggle" class="theme-toggle" aria-label="Toggle Dark Mode" style="margin-left: 10px;">
+                    <button id="themeToggle" class="theme-toggle" aria-label="Toggle Dark Mode" style="margin-left: 8px;">
                         <i data-lucide="sun" id="themeIcon"></i>
                     </button>
                 </li>
@@ -56,12 +141,12 @@
             <p class="hero-sub">AI-Powered Emergency Response Platform that connects people to help, fast.</p>
             <div class="hero-buttons">
                 <a href="{{ route('register') }}" class="btn-primary">
-                    <span>Join the Rescue Network</span>
+                    <span>Get Help Now</span>
                     <i data-lucide="arrow-right"></i>
                 </a>
-                <a href="{{ route('register.partner') }}" class="btn-outline">
-                    <i data-lucide="shield"></i>
-                    <span>Partner Portal</span>
+                <a href="{{ route('register') }}" class="btn-outline">
+                    <i data-lucide="user-plus"></i>
+                    <span>Join Now</span>
                 </a>
             </div>
         </div>
@@ -82,6 +167,93 @@
             <div class="hero-feature-item">
                 <i data-lucide="wifi"></i>
                 <span>Always Connected</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== FEATURE STRIP ===== -->
+<div class="feature-strip">
+    <div class="feature-strip-inner">
+        <div class="strip-item">
+            <i data-lucide="zap" class="strip-icon"></i>
+            <div><strong>Instant SOS</strong><span>One-tap emergency alert</span></div>
+        </div>
+        <div class="strip-divider"></div>
+        <div class="strip-item">
+            <i data-lucide="truck" class="strip-icon"></i>
+            <div><strong>Fast Dispatch</strong><span>Nearest responder sent</span></div>
+        </div>
+        <div class="strip-divider"></div>
+        <div class="strip-item">
+            <i data-lucide="map-pin" class="strip-icon"></i>
+            <div><strong>GPS Tracking</strong><span>Real-time location</span></div>
+        </div>
+        <div class="strip-divider"></div>
+        <div class="strip-item">
+            <i data-lucide="hospital" class="strip-icon"></i>
+            <div><strong>Hospital Routing</strong><span>Live bed availability</span></div>
+        </div>
+        <div class="strip-divider"></div>
+        <div class="strip-item">
+            <i data-lucide="brain-circuit" class="strip-icon"></i>
+            <div><strong>AI-Powered</strong><span>Smart emergency routing</span></div>
+        </div>
+        <div class="strip-divider"></div>
+        <div class="strip-item">
+            <i data-lucide="shield-check" class="strip-icon"></i>
+            <div><strong>24/7 Coverage</strong><span>Always on, always ready</span></div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== STRIP SOS CTA ===== -->
+<div class="strip-sos-wrap">
+    <a href="{{ route('register') }}" class="strip-sos-btn">
+        <span class="strip-sos-ring"></span>
+        <span class="strip-sos-ring strip-sos-ring2"></span>
+        <span class="strip-sos-label">SOS</span>
+    </a>
+    <p class="strip-sos-hint">Tap to trigger emergency alert</p>
+</div>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section class="how-it-works" id="how-it-works">
+    <div class="container">
+        <div class="text-center fade-up">
+            <div class="section-label" style="justify-content:center">Process</div>
+            <h2 class="section-title">How ResQLink Works</h2>
+            <p class="section-desc center">From alert to resolution in five seamless steps.</p>
+        </div>
+        <div class="steps-flow fade-up">
+            <div class="flow-step">
+                <div class="flow-icon"><i data-lucide="bell-ring"></i></div>
+                <h4>Alert</h4>
+                <p>User triggers SOS through app, USSD, or SMS</p>
+            </div>
+            <div class="flow-arrow"><i data-lucide="arrow-right"></i></div>
+            <div class="flow-step">
+                <div class="flow-icon"><i data-lucide="scan-search"></i></div>
+                <h4>Analyze</h4>
+                <p>AI detects location, emergency type, and urgency</p>
+            </div>
+            <div class="flow-arrow"><i data-lucide="arrow-right"></i></div>
+            <div class="flow-step">
+                <div class="flow-icon"><i data-lucide="send"></i></div>
+                <h4>Dispatch</h4>
+                <p>System alerts nearest available responders</p>
+            </div>
+            <div class="flow-arrow"><i data-lucide="arrow-right"></i></div>
+            <div class="flow-step">
+                <div class="flow-icon"><i data-lucide="truck"></i></div>
+                <h4>Respond</h4>
+                <p>Ambulance, police, fire, or health facility responds</p>
+            </div>
+            <div class="flow-arrow"><i data-lucide="arrow-right"></i></div>
+            <div class="flow-step">
+                <div class="flow-icon"><i data-lucide="shield-check"></i></div>
+                <h4>Resolve</h4>
+                <p>Case tracked until help arrives and incident is closed</p>
             </div>
         </div>
     </div>
@@ -172,98 +344,6 @@
     </div>
 </section>
 
-<!-- ===== EMERGENCY CATEGORIES ===== -->
-<section class="categories" id="categories">
-    <div class="container">
-        <div class="text-center fade-up">
-            <div class="section-label" style="justify-content:center">Coverage</div>
-            <h2 class="section-title">Complete Emergency Coverage</h2>
-            <p class="section-desc center">From medical emergencies to natural disasters, ResQLink covers every critical situation.</p>
-        </div>
-        <div class="cat-grid">
-            <div class="cat-card fade-up">
-                <div class="cat-icon"><i data-lucide="heart-pulse" class="lucide-icon lg"></i></div>
-                <h3>Health Emergencies</h3>
-                <ul>
-                    <li>Medical emergencies</li>
-                    <li>Accidents & trauma</li>
-                    <li>Childbirth complications</li>
-                    <li>Sick person support</li>
-                    <li>Hospital access & routing</li>
-                </ul>
-            </div>
-            <div class="cat-card fade-up">
-                <div class="cat-icon"><i data-lucide="shield-alert" class="lucide-icon lg"></i></div>
-                <h3>Security Emergencies</h3>
-                <ul>
-                    <li>Armed robbery</li>
-                    <li>Kidnapping / abduction</li>
-                    <li>Home invasion</li>
-                    <li>Assault / physical attack</li>
-                    <li>Suspicious activity</li>
-                </ul>
-            </div>
-            <div class="cat-card fade-up">
-                <div class="cat-icon"><i data-lucide="flame" class="lucide-icon lg"></i></div>
-                <h3>Fire Emergencies</h3>
-                <ul>
-                    <li>Building fire</li>
-                    <li>Electrical fire</li>
-                    <li>Market fire</li>
-                    <li>Industrial fire</li>
-                </ul>
-            </div>
-            <div class="cat-card fade-up">
-                <div class="cat-icon"><i data-lucide="cloud-lightning" class="lucide-icon lg"></i></div>
-                <h3>Disasters & Hazards</h3>
-                <ul>
-                    <li>Flooding</li>
-                    <li>Building collapse</li>
-                    <li>Road accidents</li>
-                    <li>Community hazards</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ===== HOW IT WORKS ===== -->
-<section class="how-it-works" id="how-it-works">
-    <div class="container">
-        <div class="text-center fade-up">
-            <div class="section-label" style="justify-content:center">Process</div>
-            <h2 class="section-title">How ResQLink Works</h2>
-            <p class="section-desc center">From alert to resolution in five seamless steps.</p>
-        </div>
-        <div class="steps fade-up">
-            <div class="step">
-                <div class="step-num">1</div>
-                <h4>Alert</h4>
-                <p>User triggers SOS through app, USSD, or SMS</p>
-            </div>
-            <div class="step">
-                <div class="step-num">2</div>
-                <h4>Analyze</h4>
-                <p>AI detects location, emergency type, and urgency</p>
-            </div>
-            <div class="step">
-                <div class="step-num">3</div>
-                <h4>Dispatch</h4>
-                <p>System alerts nearest available responders</p>
-            </div>
-            <div class="step">
-                <div class="step-num">4</div>
-                <h4>Respond</h4>
-                <p>Ambulance, police, fire, or health facility responds</p>
-            </div>
-            <div class="step">
-                <div class="step-num">5</div>
-                <h4>Resolve</h4>
-                <p>Case tracked until help arrives and incident is closed</p>
-            </div>
-        </div>
-    </div>
-</section>
 
 <!-- ===== KEY FEATURES ===== -->
 <section class="features" id="features">
@@ -273,48 +353,61 @@
             <h2 class="section-title">Built for Real Emergencies</h2>
             <p class="section-desc center">Every feature is designed to save lives faster.</p>
         </div>
-        <div class="feat-grid">
-            <div class="feat-card fade-up">
-                <div class="f-icon"><i data-lucide="siren" class="lucide-icon"></i></div>
-                <h4>One-Tap SOS</h4>
-                <p>Instantly send an emergency alert with your precise location in one tap.</p>
+        <!-- Carousel -->
+        <div class="feat-carousel-wrapper fade-up">
+            <button class="carousel-btn carousel-prev" id="featPrev" aria-label="Previous">
+                <i data-lucide="arrow-left"></i>
+            </button>
+            <div class="feat-carousel-track-outer">
+                <div class="feat-carousel-track" id="featTrack">
+                    <div class="feat-card">
+                        <div class="f-icon"><i data-lucide="siren" class="lucide-icon"></i></div>
+                        <h4>One-Tap SOS</h4>
+                        <p>Instantly send an emergency alert with your precise location in one tap.</p>
+                    </div>
+                    <div class="feat-card">
+                        <div class="f-icon"><i data-lucide="map-pin" class="lucide-icon"></i></div>
+                        <h4>Live Tracking</h4>
+                        <p>Track ambulance or responder movement in real time on the map.</p>
+                    </div>
+                    <div class="feat-card">
+                        <div class="f-icon"><i data-lucide="hospital" class="lucide-icon"></i></div>
+                        <h4>Smart Hospital Finder</h4>
+                        <p>Route patients to hospitals with available beds and emergency capacity.</p>
+                    </div>
+                    <div class="feat-card">
+                        <div class="f-icon"><i data-lucide="volume-x" class="lucide-icon"></i></div>
+                        <h4>Security Silent SOS</h4>
+                        <p>Quietly send your location during robbery, kidnapping, or dangerous situations.</p>
+                    </div>
+                    <div class="feat-card">
+                        <div class="f-icon"><i data-lucide="bell-ring" class="lucide-icon"></i></div>
+                        <h4>Multi-Channel Alerts</h4>
+                        <p>Reach help through App, SMS, USSD, and emergency contact notifications.</p>
+                    </div>
+                    <div class="feat-card">
+                        <div class="f-icon"><i data-lucide="brain-circuit" class="lucide-icon"></i></div>
+                        <h4>AI-Powered Routing</h4>
+                        <p>Match each emergency to the best available responder automatically.</p>
+                    </div>
+                    <div class="feat-card">
+                        <div class="f-icon"><i data-lucide="clipboard-list" class="lucide-icon"></i></div>
+                        <h4>Emergency History</h4>
+                        <p>Keep complete records of past alerts, responses, and resolution status.</p>
+                    </div>
+                    <div class="feat-card">
+                        <div class="f-icon"><i data-lucide="layout-dashboard" class="lucide-icon"></i></div>
+                        <h4>Responder Dashboard</h4>
+                        <p>Help hospitals, ambulances, police, and fire services manage requests efficiently.</p>
+                    </div>
+                </div>
             </div>
-            <div class="feat-card fade-up">
-                <div class="f-icon"><i data-lucide="map-pin" class="lucide-icon"></i></div>
-                <h4>Live Tracking</h4>
-                <p>Track ambulance or responder movement in real time on the map.</p>
-            </div>
-            <div class="feat-card fade-up">
-                <div class="f-icon"><i data-lucide="hospital" class="lucide-icon"></i></div>
-                <h4>Smart Hospital Finder</h4>
-                <p>Route patients to hospitals with available beds and emergency capacity.</p>
-            </div>
-            <div class="feat-card fade-up">
-                <div class="f-icon"><i data-lucide="volume-x" class="lucide-icon"></i></div>
-                <h4>Security Silent SOS</h4>
-                <p>Quietly send your location during robbery, kidnapping, or dangerous situations.</p>
-            </div>
-            <div class="feat-card fade-up">
-                <div class="f-icon"><i data-lucide="bell-ring" class="lucide-icon"></i></div>
-                <h4>Multi-Channel Alerts</h4>
-                <p>Reach help through App, SMS, USSD, and emergency contact notifications.</p>
-            </div>
-            <div class="feat-card fade-up">
-                <div class="f-icon"><i data-lucide="brain-circuit" class="lucide-icon"></i></div>
-                <h4>AI-Powered Routing</h4>
-                <p>Match each emergency to the best available responder automatically.</p>
-            </div>
-            <div class="feat-card fade-up">
-                <div class="f-icon"><i data-lucide="clipboard-list" class="lucide-icon"></i></div>
-                <h4>Emergency History</h4>
-                <p>Keep complete records of past alerts, responses, and resolution status.</p>
-            </div>
-            <div class="feat-card fade-up">
-                <div class="f-icon"><i data-lucide="layout-dashboard" class="lucide-icon"></i></div>
-                <h4>Responder Dashboard</h4>
-                <p>Help hospitals, ambulances, police, and fire services manage requests efficiently.</p>
-            </div>
+            <button class="carousel-btn carousel-next" id="featNext" aria-label="Next">
+                <i data-lucide="arrow-right"></i>
+            </button>
         </div>
+        <!-- Dots -->
+        <div class="carousel-dots" id="featDots"></div>
     </div>
 </section>
 
@@ -327,7 +420,7 @@
             <div class="section-label" style="justify-content:center">Impact</div>
             <h2 class="section-title">Building Safer Communities</h2>
         </div>
-        <div class="impact-grid fade-up">
+        <div class="impact-grid fade-up" style="grid-template-columns: repeat(4, 1fr);">
             <div class="impact-item">
                 <div class="imp-icon"><i data-lucide="zap" class="lucide-icon"></i></div>
                 <p>Faster Emergency Response</p>
@@ -344,78 +437,11 @@
                 <div class="imp-icon"><i data-lucide="shield-check" class="lucide-icon"></i></div>
                 <p>Safer Communities</p>
             </div>
-            <div class="impact-item">
-                <div class="imp-icon"><i data-lucide="link" class="lucide-icon"></i></div>
-                <p>Improved Coordination</p>
-            </div>
-            <div class="impact-item">
-                <div class="imp-icon"><i data-lucide="trending-up" class="lucide-icon"></i></div>
-                <p>Smarter Planning</p>
-            </div>
-            <div class="impact-item">
-                <div class="imp-icon"><i data-lucide="globe" class="lucide-icon"></i></div>
-                <p>Disaster Preparedness</p>
-            </div>
         </div>
     </div>
 </section>
 
-<!-- ===== TEAM ===== -->
-<section class="team" id="team">
-    <div class="container">
-        <div class="text-center fade-up">
-            <div class="section-label" style="justify-content:center">Team</div>
-            <h2 class="section-title">Meet the Team</h2>
-            <p class="section-desc center">Passionate founders committed to saving lives through technology.</p>
-        </div>
-        <div class="team-grid fade-up">
-            <div class="team-card">
-                <div class="avatar">AK</div>
-                <h4>Amamihechukwu K. O.</h4>
-                <p class="role">Founder & CEO</p>
-            </div>
-            <div class="team-card">
-                <div class="avatar">EN</div>
-                <h4>Emmanuel N.</h4>
-                <p class="role">Chief Technology Officer</p>
-            </div>
-            <div class="team-card">
-                <div class="avatar">EO</div>
-                <h4>Elizabeth O.</h4>
-                <p class="role">COO — Data Analyst Expert</p>
-            </div>
-        </div>
-    </div>
-</section>
 
-<!-- ===== FUNDING ===== -->
-<section class="funding" id="funding">
-    <div class="container">
-        <div class="text-center fade-up">
-            <div class="section-label" style="justify-content:center">Investment</div>
-            <h2 class="section-title">Funding Ask</h2>
-            <div class="funding-amount">₦70,000,000 Seed Round</div>
-        </div>
-        <div class="funding-bars fade-up">
-            <div class="fund-item">
-                <label>Technology Development <span>40%</span></label>
-                <div class="fund-bar"><div class="fund-bar-fill" data-width="40%" style="width:0"></div></div>
-            </div>
-            <div class="fund-item">
-                <label>Operations & Partnerships <span>30%</span></label>
-                <div class="fund-bar"><div class="fund-bar-fill" data-width="30%" style="width:0"></div></div>
-            </div>
-            <div class="fund-item">
-                <label>Marketing & Growth <span>20%</span></label>
-                <div class="fund-bar"><div class="fund-bar-fill" data-width="20%" style="width:0"></div></div>
-            </div>
-            <div class="fund-item">
-                <label>Team Expansion <span>10%</span></label>
-                <div class="fund-bar"><div class="fund-bar-fill" data-width="10%" style="width:0"></div></div>
-            </div>
-        </div>
-    </div>
-</section>
 
 <!-- ===== CONTACT ===== -->
 <section class="contact" id="contact">
@@ -425,17 +451,8 @@
             <h2 class="section-title">Let's Build a Safer Future Together</h2>
             <p class="section-desc center">Interested in partnering, investing, or learning more? Reach out.</p>
         </div>
-        <div class="contact-wrapper fade-up">
-            <div class="contact-info">
-                <h3>Get Involved</h3>
-                <p>Whether you're an investor, government agency, hospital, or emergency responder — we'd love to hear from you.</p>
-                <div class="contact-ctas">
-                    <a href="#contact"><i data-lucide="presentation" class="lucide-icon sm"></i> Request Demo</a>
-                    <a href="#contact"><i data-lucide="handshake" class="lucide-icon sm"></i> Partner With Us</a>
-                    <a href="#contact"><i data-lucide="briefcase" class="lucide-icon sm"></i> Invest in ResQLink</a>
-                </div>
-            </div>
-            <form class="contact-form" id="contact-form">
+        <div class="contact-wrapper fade-up" style="grid-template-columns: 1fr;">
+            <form class="contact-form" id="contact-form" style="max-width: 680px; margin: 0 auto; width: 100%;">
                 <div class="form-row">
                     <input type="text" placeholder="Your Name" required id="contact-name">
                     <input type="email" placeholder="Email Address" required id="contact-email">
@@ -468,17 +485,12 @@
             </div>
             <div class="footer-col">
                 <h5>Company</h5>
-                <a href="#team">Team</a>
-                <a href="#market">Business Model</a>
-                <a href="#funding">Funding</a>
+<a href="#market">Business Model</a>
                 <a href="#impact">Impact</a>
             </div>
             <div class="footer-col">
                 <h5>Connect</h5>
                 <a href="#contact">Contact Us</a>
-                <a href="#contact">Request Demo</a>
-                <a href="#contact">Partner With Us</a>
-                <a href="#contact">Invest</a>
             </div>
         </div>
         <div class="footer-bottom">
