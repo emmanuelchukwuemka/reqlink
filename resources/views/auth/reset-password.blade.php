@@ -46,18 +46,38 @@
 
         <div class="form-group">
             <label class="field-label"><i data-lucide="lock" class="lucide-icon sm"></i> New Password</label>
-            <input type="password" name="password" placeholder="••••••••" required autofocus>
+            <div class="auth-input-wrap">
+                <input type="password" name="password" id="resetPwd" placeholder="••••••••" required autofocus>
+                <button type="button" class="auth-eye-btn" onclick="togglePwd('resetPwd','eyeR1')">
+                    <i data-lucide="eye" id="eyeR1"></i>
+                </button>
+            </div>
         </div>
 
         <div class="form-group">
             <label class="field-label"><i data-lucide="shield-check" class="lucide-icon sm"></i> Confirm New Password</label>
-            <input type="password" name="password_confirmation" placeholder="••••••••" required>
+            <div class="auth-input-wrap">
+                <input type="password" name="password_confirmation" id="resetPwdConfirm" placeholder="••••••••" required>
+                <button type="button" class="auth-eye-btn" onclick="togglePwd('resetPwdConfirm','eyeR2')">
+                    <i data-lucide="eye" id="eyeR2"></i>
+                </button>
+            </div>
         </div>
 
         <button type="submit" class="btn-primary" style="width:100%; padding: 18px; margin-top: 10px; border-radius: 16px; font-size: 1rem;">Update Password</button>
     </form>
 </div>
 
-<script>lucide.createIcons();</script>
+<script>
+    lucide.createIcons();
+    function togglePwd(id, iconId) {
+        const input = document.getElementById(id);
+        const icon  = document.getElementById(iconId);
+        const show  = input.type === 'password';
+        input.type  = show ? 'text' : 'password';
+        icon.setAttribute('data-lucide', show ? 'eye-off' : 'eye');
+        lucide.createIcons();
+    }
+</script>
 </body>
 </html>

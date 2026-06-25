@@ -120,12 +120,22 @@
 
             <div class="form-group">
                 <label class="field-label"><i data-lucide="lock" class="lucide-icon sm"></i> Secure Password</label>
-                <input type="password" name="password" placeholder="••••••••" required>
+                <div class="auth-input-wrap">
+                    <input type="password" name="password" id="partnerPwd" placeholder="••••••••" required>
+                    <button type="button" class="auth-eye-btn" onclick="togglePwd('partnerPwd','eyeP1')">
+                        <i data-lucide="eye" id="eyeP1"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="form-group">
                 <label class="field-label"><i data-lucide="shield-check" class="lucide-icon sm"></i> Confirm Access</label>
-                <input type="password" name="password_confirmation" placeholder="••••••••" required>
+                <div class="auth-input-wrap">
+                    <input type="password" name="password_confirmation" id="partnerPwdConfirm" placeholder="••••••••" required>
+                    <button type="button" class="auth-eye-btn" onclick="togglePwd('partnerPwdConfirm','eyeP2')">
+                        <i data-lucide="eye" id="eyeP2"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -140,6 +150,14 @@
 
 <script>
     lucide.createIcons();
+    function togglePwd(id, iconId) {
+        const input = document.getElementById(id);
+        const icon  = document.getElementById(iconId);
+        const show  = input.type === 'password';
+        input.type  = show ? 'text' : 'password';
+        icon.setAttribute('data-lucide', show ? 'eye-off' : 'eye');
+        lucide.createIcons();
+    }
 
     function updateFileName(input) {
         const display = input.parentElement.querySelector('.file-name-display');

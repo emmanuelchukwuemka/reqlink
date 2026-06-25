@@ -58,7 +58,12 @@
                 <label class="field-label"><i data-lucide="lock" class="lucide-icon sm"></i> Access Password</label>
                 <a href="{{ route('password.request') }}" style="font-size: 0.8rem; color: var(--red); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Forgot?</a>
             </div>
-            <input type="password" name="password" placeholder="••••••••" required>
+            <div class="auth-input-wrap">
+                <input type="password" name="password" id="loginPassword" placeholder="••••••••" required>
+                <button type="button" class="auth-eye-btn" onclick="togglePwd('loginPassword','eyeLogin')">
+                    <i data-lucide="eye" id="eyeLogin"></i>
+                </button>
+            </div>
         </div>
 
         <button type="submit" class="btn-primary" style="width:100%; padding: 18px; margin-top: 10px; border-radius: 16px; font-size: 1rem;">Secure Login</button>
@@ -72,6 +77,16 @@
     </div>
 </div>
 
-<script>lucide.createIcons();</script>
+<script>
+    lucide.createIcons();
+    function togglePwd(id, iconId) {
+        const input = document.getElementById(id);
+        const icon  = document.getElementById(iconId);
+        const show  = input.type === 'password';
+        input.type  = show ? 'text' : 'password';
+        icon.setAttribute('data-lucide', show ? 'eye-off' : 'eye');
+        lucide.createIcons();
+    }
+</script>
 </body>
 </html>
