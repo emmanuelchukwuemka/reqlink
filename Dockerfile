@@ -45,4 +45,4 @@ RUN chown -R www-data:www-data storage bootstrap/cache \
 
 EXPOSE 80
 
-CMD bash -c "php artisan migrate --force && php artisan storage:link --force && php artisan config:cache && php artisan route:cache && apache2-foreground"
+CMD bash -c "php artisan config:clear && php artisan migrate --force && php artisan storage:link --force && apache2-foreground"
