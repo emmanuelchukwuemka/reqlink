@@ -26,11 +26,26 @@ EOF
 # Clear any cached config so fresh .env is used
 php artisan config:clear
 
+# Generate APP_KEY if not set
+if [ -z "$APP_KEY" ]; then
+    php artisan key:generate --force
+fi
+
 # Drop all tables and re-run migrations cleanly
 php artisan migrate:fresh --force
 
 # Storage link
 php artisan storage:link --force 2>/dev/null || true
+
+# Optimize for production
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# Render sets PORT env var — configure Apache to listen on it
+PORT="${PORT:-80}"
+sed -i "s/Listen 80/Listen ${PORT}/" /etc/apache2/ports.conf
+sed -i "s/<VirtualHost \*:80>/<VirtualHost *:${PORT}>/" /etc/apache2/sites-available/000-default.conf
 
 # Start Apache
 exec apache2-foreground
