@@ -33,6 +33,13 @@ WORKDIR /var/www/html
 # Copy app
 COPY . .
 
+# Create required storage directories Laravel needs at build time
+RUN mkdir -p storage/framework/views \
+             storage/framework/cache/data \
+             storage/framework/sessions \
+             storage/logs \
+             bootstrap/cache
+
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
