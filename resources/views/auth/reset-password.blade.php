@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Reset Password | ResQLink</title>
-    <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
+    <link rel="stylesheet" href="/css/auth.css">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="{{ asset('js/theme.js') }}"></script>
+    <script src="/js/theme.js"></script>
 </head>
 <body class="auth-page">
 

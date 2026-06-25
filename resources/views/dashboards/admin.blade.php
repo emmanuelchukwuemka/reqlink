@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>National Oversight | ResQLink Admin</title>
-    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+    <link rel="stylesheet" href="/css/dashboard.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .admin-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; margin-top: 20px; }
@@ -24,7 +24,7 @@
         :root.light-mode .theme-toggle:hover { background: rgba(0,0,0,0.05); color: var(--black); }
         @media (max-width: 768px) { .top-bar { flex-wrap: wrap; gap: 8px; } }
     </style>
-    <script src="{{ asset('js/theme.js') }}"></script>
+    <script src="/js/theme.js"></script>
 </head>
 <body class="dashboard-layout">
 

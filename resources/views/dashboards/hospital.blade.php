@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Hospital Management | ResQLink</title>
-    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+    <link rel="stylesheet" href="/css/dashboard.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .management-grid { display: grid; grid-template-columns: 1fr 400px; gap: 30px; }
@@ -27,7 +27,7 @@
             .facility-card { padding: 16px; }
         }
     </style>
-    <script src="{{ asset('js/theme.js') }}"></script>
+    <script src="/js/theme.js"></script>
 </head>
 <body class="dashboard-layout">
 

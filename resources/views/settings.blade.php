@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Profile Settings | ResQLink</title>
-    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+    <link rel="stylesheet" href="/css/dashboard.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .settings-container { max-width: 800px; margin-top: 30px; }
@@ -41,7 +41,7 @@
         .theme-toggle:hover { background: var(--glass); color: var(--white); }
         :root.light-mode .theme-toggle:hover { background: rgba(0,0,0,0.05); color: var(--black); }
     </style>
-    <script src="{{ asset('js/theme.js') }}"></script>
+    <script src="/js/theme.js"></script>
 </head>
 <body class="dashboard-layout">
 
