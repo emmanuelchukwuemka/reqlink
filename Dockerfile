@@ -52,4 +52,7 @@ RUN chown -R www-data:www-data storage bootstrap/cache \
 
 EXPOSE 80
 
-CMD bash -c "php artisan config:clear && php artisan migrate --force && php artisan storage:link --force && apache2-foreground"
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+CMD ["/usr/local/bin/docker-entrypoint.sh"]
