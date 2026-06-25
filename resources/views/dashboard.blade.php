@@ -143,11 +143,11 @@
                     Emergency Panic Mode
                 </div>
                 <h2>Need Immediate Help?</h2>
-                <p>Press and hold the SOS button for 1.5 seconds. Your location will be captured and responders dispatched instantly.</p>
+                <p>Tap the SOS button once. Your location will be captured and responders dispatched instantly.</p>
             </div>
             <div class="panic-btn" id="panicBtn">
                 <span>SOS</span>
-                <small>Hold to Alert</small>
+                <small>Tap to Alert</small>
             </div>
         </div>
 
@@ -429,34 +429,11 @@
         });
     }
     
-    // Panic Button Interaction
+    // Panic Button — single tap/click triggers immediately
     const panicBtn = document.getElementById('panicBtn');
-    let pressTimer;
 
-    panicBtn.addEventListener('mousedown', () => {
-        panicBtn.style.transform = 'scale(0.9)';
-        pressTimer = setTimeout(() => triggerEmergency(), 1500);
-    });
-
-    panicBtn.addEventListener('mouseup', () => {
-        clearTimeout(pressTimer);
-        panicBtn.style.transform = 'scale(1)';
-    });
-
-    panicBtn.addEventListener('mouseleave', () => {
-        clearTimeout(pressTimer);
-        panicBtn.style.transform = 'scale(1)';
-    });
-
-    panicBtn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        panicBtn.style.transform = 'scale(0.9)';
-        pressTimer = setTimeout(() => triggerEmergency(), 1500);
-    }, { passive: false });
-
-    panicBtn.addEventListener('touchend', () => {
-        clearTimeout(pressTimer);
-        panicBtn.style.transform = 'scale(1)';
+    panicBtn.addEventListener('click', () => {
+        triggerEmergency();
     });
 
     let activeEmergencyUuid = @json($activeEmergency ? $activeEmergency->uuid : null);
