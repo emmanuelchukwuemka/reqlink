@@ -30,6 +30,16 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-av
 
 WORKDIR /var/www/html
 
+# Safe defaults — Render env vars override these at runtime
+ENV APP_ENV=production \
+    APP_DEBUG=false \
+    DB_CONNECTION=pgsql \
+    DB_PORT=5432 \
+    DB_SSLMODE=require \
+    CACHE_DRIVER=database \
+    SESSION_DRIVER=database \
+    LOG_CHANNEL=stderr
+
 # Copy app
 COPY . .
 
