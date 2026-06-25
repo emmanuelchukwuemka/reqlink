@@ -36,8 +36,9 @@ ENV APP_ENV=production \
     DB_CONNECTION=pgsql \
     DB_PORT=5432 \
     DB_SSLMODE=require \
-    CACHE_DRIVER=database \
-    SESSION_DRIVER=database \
+    CACHE_DRIVER=file \
+    SESSION_DRIVER=cookie \
+    SESSION_LIFETIME=120 \
     LOG_CHANNEL=stderr
 
 # Copy app
