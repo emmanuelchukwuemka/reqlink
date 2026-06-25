@@ -26,8 +26,8 @@ EOF
 # Clear any cached config so fresh .env is used
 php artisan config:clear
 
-# Run migrations — continue even if some tables already exist
-php artisan migrate --force 2>&1 || echo "Migration warning (tables may already exist)"
+# Drop all tables and re-run migrations cleanly
+php artisan migrate:fresh --force
 
 # Storage link
 php artisan storage:link --force 2>/dev/null || true
