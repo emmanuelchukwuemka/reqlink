@@ -32,7 +32,7 @@ fi
 
 # Use direct (non-pooler) Neon endpoint for DDL migrations
 DB_HOST_DIRECT=$(echo "${DB_HOST}" | sed 's/-pooler\././g')
-DB_HOST="${DB_HOST_DIRECT}" php artisan migrate:fresh --force
+DB_HOST="${DB_HOST_DIRECT}" php artisan migrate --force
 
 php artisan storage:link --force 2>/dev/null || true
 php artisan config:cache
