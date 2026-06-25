@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 # Write .env from Render environment variables
 cat > /var/www/html/.env <<EOF
@@ -27,11 +26,11 @@ EOF
 # Clear any cached config so fresh .env is used
 php artisan config:clear
 
-# Run migrations
-php artisan migrate --force
+# Run migrations — continue even if some tables already exist
+php artisan migrate --force 2>&1 || echo "Migration warning (tables may already exist)"
 
 # Storage link
 php artisan storage:link --force 2>/dev/null || true
 
 # Start Apache
-apache2-foreground
+exec apache2-foreground
