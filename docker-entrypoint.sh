@@ -32,8 +32,10 @@ if [ -z "$APP_KEY" ]; then
     php artisan key:generate --force
 fi
 
-# Drop all tables and re-run migrations cleanly
-php artisan migrate:fresh --force
+# Neon pooler (-pooler. hostname) doesn't support DDL in transactions.
+# Strip -pooler from host so migrations use the direct connection endpoint.
+DB_HOST_DIRECT=$(echo "${DB_HOST}" | sed 's/-pooler\././g')
+DB_HOST="${DB_HOST_DIRECT}" php artisan migrate:fresh --force
 
 # Storage link
 php artisan storage:link --force 2>/dev/null || true
