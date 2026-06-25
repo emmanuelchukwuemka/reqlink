@@ -10,13 +10,14 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     libzip-dev \
     libonig-dev \
+    libicu-dev \
     zip unzip curl git \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# PHP extensions (pdo_pgsql for Neon)
-RUN docker-php-ext-install pdo pdo_pgsql pgsql mbstring bcmath gd zip pcntl opcache
+# PHP extensions (pdo_pgsql for Neon, intl for Filament)
+RUN docker-php-ext-install pdo pdo_pgsql pgsql mbstring bcmath gd zip pcntl opcache intl
 
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
