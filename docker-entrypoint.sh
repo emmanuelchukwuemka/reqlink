@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 # Write .env from Render environment variables
 cat > /var/www/html/.env <<EOF
@@ -20,7 +19,7 @@ DB_PASSWORD=${DB_PASSWORD}
 DB_SSLMODE=${DB_SSLMODE:-require}
 
 CACHE_DRIVER=${CACHE_DRIVER:-file}
-SESSION_DRIVER=${SESSION_DRIVER:-cookie}
+SESSION_DRIVER=${SESSION_DRIVER:-file}
 SESSION_LIFETIME=${SESSION_LIFETIME:-120}
 QUEUE_CONNECTION=${QUEUE_CONNECTION:-sync}
 EOF

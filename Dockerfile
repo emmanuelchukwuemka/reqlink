@@ -41,7 +41,7 @@ ENV APP_ENV=production \
     DB_PORT=5432 \
     DB_SSLMODE=require \
     CACHE_DRIVER=file \
-    SESSION_DRIVER=cookie \
+    SESSION_DRIVER=file \
     SESSION_LIFETIME=120 \
     LOG_CHANNEL=stderr
 

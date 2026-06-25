@@ -13,6 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Trust all proxies — required for Render (SSL terminated at load balancer)
+        $middleware->trustProxies(at: '*');
         $middleware->web(append: [
             \App\Http\Middleware\CheckSuspension::class,
         ]);
