@@ -6,15 +6,15 @@
     <title>ResQLink — Saving Lives Through Instant Connection</title>
     <meta name="description" content="ResQLink is an AI-powered emergency response platform that instantly connects people in danger to hospitals, ambulances, security responders, fire services, and disaster response teams.">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/landing.css') }}?v={{ filemtime(public_path('css/landing.css')) }}">
-    <link rel="stylesheet" href="{{ asset('css/chat.css') }}">
+    <link rel="stylesheet" href="/css/landing.css">
+    <link rel="stylesheet" href="/css/chat.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .theme-toggle { background: transparent; border: none; color: var(--grey); cursor: pointer; padding: 8px; border-radius: 50%; transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
         .theme-toggle:hover { background: var(--glass); color: var(--white); }
         :root.light-mode .theme-toggle:hover { background: rgba(0,0,0,0.05); color: var(--black); }
     </style>
-    <script src="{{ asset('js/theme.js') }}"></script>
+    <script src="/js/theme.js"></script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect rx='20' width='100' height='100' fill='%23E50914'/><text y='.88em' x='10' font-size='70' fill='white' font-weight='bold'>R</text></svg>">
 </head>
 <body>
