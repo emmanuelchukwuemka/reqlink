@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Write .env from Render environment variables
 cat > /var/www/html/.env <<EOF
@@ -24,31 +25,35 @@ SESSION_LIFETIME=${SESSION_LIFETIME:-120}
 QUEUE_CONNECTION=${QUEUE_CONNECTION:-sync}
 EOF
 
-# Clear any cached config so fresh .env is used
 php artisan config:clear
 
-# Generate APP_KEY if not set
 if [ -z "$APP_KEY" ]; then
     php artisan key:generate --force
 fi
 
-# Neon pooler (-pooler. hostname) doesn't support DDL in transactions.
-# Strip -pooler from host so migrations use the direct connection endpoint.
+# Use direct (non-pooler) Neon endpoint for DDL migrations
 DB_HOST_DIRECT=$(echo "${DB_HOST}" | sed 's/-pooler\././g')
 DB_HOST="${DB_HOST_DIRECT}" php artisan migrate:fresh --force
 
-# Storage link
 php artisan storage:link --force 2>/dev/null || true
-
-# Optimize for production
 php artisan config:cache
 php artisan route:cache
-php artisan view:cache
 
-# Render sets PORT env var — configure Apache to listen on it
+# Render uses a non-standard PORT — rewrite the VirtualHost with the correct port
 PORT="${PORT:-80}"
 sed -i "s/Listen 80/Listen ${PORT}/" /etc/apache2/ports.conf
-sed -i "s/<VirtualHost \*:80>/<VirtualHost *:${PORT}>/" /etc/apache2/sites-available/000-default.conf
+cat > /etc/apache2/sites-available/000-default.conf <<APACHECONF
+<VirtualHost *:${PORT}>
+    ServerName localhost
+    DocumentRoot /var/www/html/public
+    <Directory /var/www/html/public>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+    ErrorLog \${APACHE_LOG_DIR}/error.log
+    CustomLog \${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+APACHECONF
 
-# Start Apache
 exec apache2-foreground
