@@ -478,56 +478,51 @@
 
     function startPanicRecording(uuid) {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            console.warn('Media recording not supported');
+            console.warn('Media recording not supported in this browser.');
             return;
         }
 
-        navigator.mediaDevices.getUserMedia({ audio: true, video: { facingMode: 'user' } })
-            .then(stream => {
-                const mediaRecorder = new MediaRecorder(stream);
-                const chunks = [];
+        // Audio-only — camera permission not required, works on all devices
+        navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+            .then(stream => doRecord(stream, uuid, 'audio/webm', 'panic_audio.webm'))
+            .catch(err => console.warn('Microphone access denied — evidence not recorded:', err.message));
+    }
 
-                mediaRecorder.ondataavailable = (e) => {
-                    if (e.data.size > 0) chunks.push(e.data);
-                };
+    function doRecord(stream, uuid, mimeType, filename) {
+        const options = MediaRecorder.isTypeSupported(mimeType) ? { mimeType } : {};
+        const mediaRecorder = new MediaRecorder(stream, options);
+        const chunks = [];
 
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(chunks, { type: 'video/webm' });
-                    const formData = new FormData();
-                    formData.append('evidence', blob, 'panic_capture.webm');
-                    formData.append('_token', '{{ csrf_token() }}');
+        mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) chunks.push(e.data);
+        };
 
-                    fetch(`/emergency/evidence/${uuid}`, {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(res => res.json())
-                    .then(data => console.log('Evidence uploaded:', data.path))
-                    .catch(err => console.error('Evidence upload failed:', err))
-                    .finally(() => {
-                        // Stop all tracks to release camera/mic
-                        stream.getTracks().forEach(track => track.stop());
-                    });
-                };
+        mediaRecorder.onstop = () => {
+            const blob = new Blob(chunks, { type: mimeType });
+            const formData = new FormData();
+            formData.append('evidence', blob, filename);
+            formData.append('_token', '{{ csrf_token() }}');
 
-                mediaRecorder.start();
-                console.log('Panic recording started...');
-
-                // Record for 30 seconds
-                setTimeout(() => {
-                    if (mediaRecorder.state === 'recording') {
-                        mediaRecorder.stop();
-                        console.log('Panic recording stopped.');
-                    }
-                }, 30000);
+            fetch(`/emergency/evidence/${uuid}`, {
+                method: 'POST',
+                body: formData
             })
-            .catch(err => {
-                console.error('Recording access denied:', err);
-                // Fallback to audio only if video is denied
-                if (err.name === 'NotAllowedError' || err.name === 'NotFoundError') {
-                     // Could retry with audio only here
-                }
-            });
+            .then(res => res.json())
+            .then(data => console.log('Voice evidence uploaded:', data))
+            .catch(err => console.error('Evidence upload failed:', err))
+            .finally(() => stream.getTracks().forEach(t => t.stop()));
+        };
+
+        mediaRecorder.start();
+        console.log('Voice note recording started...');
+
+        // Record for 30 seconds then auto-stop
+        setTimeout(() => {
+            if (mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                console.log('Voice note recording complete.');
+            }
+        }, 30000);
     }
 
     let userLocationWatcher = null;
@@ -636,66 +631,78 @@
     const voiceIcon = document.getElementById('voiceIcon');
     let recognition = null;
     let isListening = false;
+    let sosSaid = false; // prevent double-trigger
 
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         recognition = new SpeechRecognition();
         recognition.continuous = true;
-        recognition.interimResults = true;
+        recognition.interimResults = false; // only fire on final results
         recognition.lang = 'en-US';
 
         recognition.onresult = (event) => {
-            const transcript = Array.from(event.results)
-                .map(result => result[0])
-                .map(result => result.transcript)
-                .join('')
-                .toLowerCase();
+            // Only check the newest result, not the whole accumulated list
+            const latest = event.results[event.results.length - 1][0].transcript.toLowerCase().trim();
+            console.log('Voice heard:', latest);
 
-            console.log('Transcript:', transcript);
-
-            if (transcript.includes('emergency resqlink') || transcript.includes('help me resqlink')) {
+            if (!sosSaid && (
+                latest.includes('emergency') ||
+                latest.includes('help') ||
+                latest.includes('resqlink') ||
+                latest.includes('sos')
+            )) {
+                sosSaid = true;
                 speak("Emergency detected. Triggering SOS. Help is on the way.");
                 triggerEmergency();
                 stopVoiceSOS();
             }
         };
 
+        recognition.onerror = (event) => {
+            console.warn('Voice recognition error:', event.error);
+            // Restart on non-fatal errors
+            if (isListening && event.error !== 'not-allowed' && event.error !== 'service-not-allowed') {
+                setTimeout(() => { if (isListening) recognition.start(); }, 1000);
+            }
+        };
+
         recognition.onend = () => {
-            if (isListening) recognition.start(); // Keep listening if active
+            if (isListening) recognition.start();
         };
     }
 
     voiceToggle.addEventListener('click', () => {
-        if (!recognition) return alert('Voice recognition not supported in this browser.');
-        
-        if (!isListening) {
-            startVoiceSOS();
-        } else {
-            stopVoiceSOS();
+        if (!recognition) {
+            alert('Voice recognition is not supported in this browser. Please use Chrome or Edge.');
+            return;
         }
+        isListening ? stopVoiceSOS() : startVoiceSOS();
     });
 
     function startVoiceSOS() {
         isListening = true;
+        sosSaid = false;
         voiceToggle.classList.add('active');
+        voiceToggle.title = 'Voice SOS Active — tap to stop';
         voiceIcon.setAttribute('data-lucide', 'mic-off');
         lucide.createIcons();
-        recognition.start();
-        speak("Voice mode active. I am listening for your help command.");
-        console.log('Voice SOS Active: Listening for "Emergency ResQLink"');
+        try { recognition.start(); } catch(e) {}
+        speak("Voice mode active. Say help or emergency to trigger SOS.");
     }
 
     function stopVoiceSOS() {
         isListening = false;
         voiceToggle.classList.remove('active');
+        voiceToggle.title = 'AI Voice SOS Mode';
         voiceIcon.setAttribute('data-lucide', 'mic');
         lucide.createIcons();
-        recognition.stop();
+        try { recognition.stop(); } catch(e) {}
         speak("Voice mode deactivated.");
     }
 
     function speak(text) {
         if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); // clear queue first
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.rate = 1.0;
             utterance.pitch = 1.0;
