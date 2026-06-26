@@ -73,6 +73,41 @@ class DashboardController extends Controller
                 return view('dashboard', compact('hospitals', 'ambulances', 'fireUnits', 'history', 'activeEmergency', 'samaritanMissions', 'walletTransactions'));
         }
     }
+    public function liveAdminData()
+    {
+        $emergencies = \App\Domains\Emergencies\Models\Emergency::with('user')
+            ->whereNotIn('status', ['resolved', 'cancelled'])
+            ->latest()
+            ->get()
+            ->map(fn($e) => [
+                'id'         => $e->id,
+                'uuid'       => $e->uuid,
+                'status'     => $e->status,
+                'lat'        => $e->latitude,
+                'lng'        => $e->longitude,
+                'user'       => $e->user ? ['name' => $e->user->name] : null,
+                'created_at' => $e->created_at->toISOString(),
+            ]);
+
+        $responders = \App\Domains\Responders\Models\Responder::with('user')
+            ->where('is_on_duty', true)
+            ->whereNotNull('current_lat')
+            ->whereNotNull('current_lng')
+            ->get()
+            ->map(fn($r) => [
+                'id'   => $r->id,
+                'type' => $r->responder_type,
+                'name' => $r->user ? $r->user->name : ('Unit #' . $r->id),
+                'lat'  => (float) $r->current_lat,
+                'lng'  => (float) $r->current_lng,
+            ]);
+
+        return response()->json([
+            'emergencies' => $emergencies,
+            'responders'  => $responders,
+        ]);
+    }
+
     public function liveMapData()
     {
         $responders = \App\Domains\Responders\Models\Responder::with('user')

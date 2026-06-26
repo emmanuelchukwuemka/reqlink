@@ -14,7 +14,6 @@
         .admin-table td { padding: 15px; border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border); }
         .admin-table td:first-child { border-left: 1px solid var(--glass-border); border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
         .admin-table td:last-child { border-right: 1px solid var(--glass-border); border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
-        
         .role-badge { padding: 4px 12px; border-radius: 100px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
         .role-civilian { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
         .role-responder { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
@@ -23,6 +22,23 @@
         .theme-toggle:hover { background: var(--glass); color: var(--white); }
         :root.light-mode .theme-toggle:hover { background: rgba(0,0,0,0.05); color: var(--black); }
         @media (max-width: 768px) { .top-bar { flex-wrap: wrap; gap: 8px; } }
+
+        /* SOS toast */
+        #sosToast {
+            position: fixed; top: 24px; right: 24px; z-index: 9999;
+            background: #0a0a0a; border: 1px solid var(--red); border-radius: 16px;
+            padding: 18px 22px; color: #fff; min-width: 260px;
+            box-shadow: 0 0 40px rgba(229,9,20,0.35);
+            display: none; animation: slideDown 0.4s ease;
+        }
+        @keyframes slideDown { from { transform: translateY(-20px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+        .sos-badge { position: relative; display: inline-flex; }
+        .sos-badge-count {
+            position: absolute; top: -8px; right: -8px;
+            background: var(--red); color: #fff; font-size: 0.65rem; font-weight: 900;
+            width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        }
+        .incident-row { display:flex; justify-content:space-between; align-items:center; padding:12px; background:rgba(229,9,20,0.04); border:1px solid rgba(229,9,20,0.15); border-radius:10px; margin-bottom:8px; }
     </style>
     <script src="/js/theme.js"></script>
 </head>
@@ -66,10 +82,13 @@
             <p style="color: var(--grey); font-size: 0.9rem;">Total Registered Accounts: {{ $users->count() }}</p>
         </div>
         <div style="display: flex; align-items: center; gap: 20px;">
-            <a href="{{ route('admin.command-center') }}" class="btn-primary" style="padding: 10px 20px; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; text-decoration: none;">
-                <i data-lucide="radar" style="width: 18px; height: 18px;"></i>
-                LIVE COMMAND
-            </a>
+            <div class="sos-badge">
+                <a href="{{ route('admin.command-center') }}" class="btn-primary" style="padding: 10px 20px; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; text-decoration: none;">
+                    <i data-lucide="radar" style="width: 18px; height: 18px;"></i>
+                    LIVE COMMAND
+                </a>
+                <span class="sos-badge-count" id="cmdBadge" style="display:none;">0</span>
+            </div>
             <button id="themeToggle" class="theme-toggle" aria-label="Toggle Dark Mode">
                 <i data-lucide="sun" id="themeIcon"></i>
             </button>
@@ -95,6 +114,37 @@
         <div class="stat-card">
             <div class="stat-value" style="color: var(--red);">{{ $activeEmergenciesCount }}</div>
             <div class="stat-label">Active Incidents</div>
+        </div>
+    </div>
+
+    <!-- SOS toast notification -->
+    <div id="sosToast">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <i data-lucide="siren" style="color:var(--red);width:18px;height:18px;"></i>
+            <span style="font-weight:800;font-size:0.85rem;color:var(--red);">NEW SOS RECEIVED</span>
+        </div>
+        <p id="toastPatient" style="margin:0 0 2px;font-weight:700;font-size:0.95rem;"></p>
+        <p id="toastTime" style="margin:0 0 12px;font-size:0.72rem;color:var(--grey);"></p>
+        <div style="display:flex;gap:8px;">
+            <a href="{{ route('admin.command-center') }}" style="flex:1;text-align:center;background:var(--red);color:#fff;text-decoration:none;padding:8px;border-radius:8px;font-weight:700;font-size:0.8rem;">View Map</a>
+            <button onclick="document.getElementById('sosToast').style.display='none'" style="flex:1;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);color:#fff;padding:8px;border-radius:8px;font-weight:700;font-size:0.8rem;cursor:pointer;">Dismiss</button>
+        </div>
+    </div>
+
+    <!-- Live Incidents Feed -->
+    <div class="dash-card" style="margin-top: 30px; border-left: 3px solid var(--red);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h3 style="margin:0;display:flex;align-items:center;gap:8px;">
+                <i data-lucide="siren" style="color:var(--red);"></i> Live Incidents
+            </h3>
+            <span style="font-size:0.75rem;color:var(--red);font-weight:700;background:rgba(229,9,20,0.1);padding:4px 10px;border-radius:4px;">
+                LIVE · <span id="incidentCount">{{ $activeEmergenciesCount }}</span> ACTIVE
+            </span>
+        </div>
+        <div id="incidentFeed">
+            <div style="text-align:center;padding:30px;opacity:0.5;">
+                <p>Loading live feed...</p>
+            </div>
         </div>
     </div>
 
@@ -197,6 +247,78 @@
             sidebarOverlay.classList.remove('active');
         });
     })();
+
+    // ── Live admin polling ────────────────────────────────────────────
+    const knownIds = new Set();
+    let toastTimer = null;
+
+    function statusColor(s) {
+        if (s === 'dispatched' || s === 'enroute') return '#22c55e';
+        if (s === 'pending') return '#f59e0b';
+        return 'var(--grey)';
+    }
+
+    function renderFeed(emergencies) {
+        const feed = document.getElementById('incidentFeed');
+        document.getElementById('incidentCount').textContent = emergencies.length;
+
+        const badge = document.getElementById('cmdBadge');
+        if (emergencies.length > 0) {
+            badge.textContent = emergencies.length;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
+
+        if (emergencies.length === 0) {
+            feed.innerHTML = '<div style="text-align:center;padding:30px;opacity:0.5;"><p>No active incidents right now.</p></div>';
+            return;
+        }
+
+        feed.innerHTML = emergencies.map(e => `
+            <div class="incident-row">
+                <div style="display:flex;gap:12px;align-items:center;">
+                    <div style="width:36px;height:36px;background:rgba(229,9,20,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--red);flex-shrink:0;">
+                        <i data-lucide="heart-pulse" style="width:16px;height:16px;"></i>
+                    </div>
+                    <div>
+                        <p style="margin:0;font-weight:700;font-size:0.9rem;">${e.user ? e.user.name : 'Unknown patient'}</p>
+                        <p style="margin:0;font-size:0.72rem;color:var(--grey);">${new Date(e.created_at).toLocaleTimeString()}</p>
+                    </div>
+                </div>
+                <span style="font-size:0.7rem;font-weight:800;color:${statusColor(e.status)};text-transform:uppercase;background:rgba(255,255,255,0.04);padding:4px 10px;border-radius:6px;">${e.status}</span>
+            </div>
+        `).join('');
+        lucide.createIcons();
+    }
+
+    function showToast(e) {
+        document.getElementById('toastPatient').textContent = 'Patient: ' + (e.user ? e.user.name : 'Unknown');
+        document.getElementById('toastTime').textContent = new Date(e.created_at).toLocaleTimeString();
+        const toast = document.getElementById('sosToast');
+        toast.style.display = 'block';
+        lucide.createIcons();
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 10000);
+    }
+
+    function pollAdmin() {
+        fetch('/admin/live-data')
+            .then(r => r.json())
+            .then(data => {
+                data.emergencies.forEach(e => {
+                    if (!knownIds.has(e.id)) {
+                        knownIds.add(e.id);
+                        if (knownIds.size > 1) showToast(e); // don't toast on first load
+                    }
+                });
+                renderFeed(data.emergencies);
+            })
+            .catch(() => {});
+    }
+
+    pollAdmin(); // immediate first load
+    setInterval(pollAdmin, 5000);
 </script>
 </body>
 </html>
