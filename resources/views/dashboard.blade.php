@@ -570,7 +570,6 @@
 
     const typeConfig = {
         ambulance: { color: '#2563eb', label: 'A' },
-        security:  { color: '#d97706', label: 'S' },
         fire:      { color: '#ea580c', label: 'F' },
     };
 
@@ -603,7 +602,6 @@
 
     [
         ...@json($ambulances->values()),
-        ...@json($securityUnits->values()),
         ...@json($fireUnits->values()),
     ].forEach(placeOrUpdate);
 
@@ -636,7 +634,6 @@
             '<div style="font-weight:700;margin-bottom:2px;letter-spacing:.5px;">LEGEND</div>' +
             '<div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#dc2626;margin-right:6px;"></span>Hospital</div>' +
             '<div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#2563eb;margin-right:6px;"></span>Ambulance</div>' +
-            '<div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#d97706;margin-right:6px;"></span>Security</div>' +
             '<div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ea580c;margin-right:6px;"></span>Fire Unit</div>';
         return div;
     };

@@ -75,6 +75,7 @@ class DashboardController extends Controller
             ->whereNotNull('current_lat')
             ->whereNotNull('current_lng')
             ->where('is_on_duty', true)
+            ->whereIn('responder_type', ['ambulance', 'fire'])
             ->get()
             ->map(fn($r) => [
                 'id'        => $r->id,
