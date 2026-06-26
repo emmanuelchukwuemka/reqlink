@@ -49,21 +49,6 @@
                     </ul>
                 </li>
                 <li class="nav-dropdown">
-                    <a href="#categories" class="nav-dropdown-trigger nav-link-item nav-emergency-link">
-                        <i data-lucide="shield-alert" class="nav-em-icon"></i>
-                        Security
-                        <i data-lucide="chevron-down" class="dropdown-arrow"></i>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a href="{{ route('register') }}"><i data-lucide="alert-triangle" class="drop-icon"></i>Armed Robbery</a></li>
-                        <li><a href="{{ route('register') }}"><i data-lucide="user-x" class="drop-icon"></i>Kidnapping</a></li>
-                        <li><a href="{{ route('register') }}"><i data-lucide="shield-off" class="drop-icon"></i>Assault</a></li>
-                        <li><a href="{{ route('register') }}"><i data-lucide="home" class="drop-icon"></i>Home Invasion</a></li>
-                        <li><a href="{{ route('register') }}"><i data-lucide="car" class="drop-icon"></i>Car Theft</a></li>
-                        <li><a href="{{ route('register') }}"><i data-lucide="eye" class="drop-icon"></i>Suspicious Activity</a></li>
-                    </ul>
-                </li>
-                <li class="nav-dropdown">
                     <a href="#accident" class="nav-dropdown-trigger nav-link-item nav-emergency-link">
                         <i data-lucide="car-front" class="nav-em-icon"></i>
                         Accident
@@ -375,11 +360,7 @@
                         <h4>Smart Hospital Finder</h4>
                         <p>Route patients to hospitals with available beds and emergency capacity.</p>
                     </div>
-                    <div class="feat-card">
-                        <div class="f-icon"><i data-lucide="volume-x" class="lucide-icon"></i></div>
-                        <h4>Security Silent SOS</h4>
-                        <p>Quietly send your location during robbery, kidnapping, or dangerous situations.</p>
-                    </div>
+
                     <div class="feat-card">
                         <div class="f-icon"><i data-lucide="bell-ring" class="lucide-icon"></i></div>
                         <h4>Multi-Channel Alerts</h4>
