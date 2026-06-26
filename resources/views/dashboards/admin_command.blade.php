@@ -49,7 +49,6 @@
 <script>
     lucide.createIcons();
 
-    // Initialize Map (Center on Lagos for demo, or dynamic)
     const map = L.map('map', {
         zoomControl: false,
         attributionControl: false

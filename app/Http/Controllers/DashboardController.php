@@ -29,10 +29,16 @@ class DashboardController extends Controller
             case 'security':
             case 'fire':
                 $responder = \App\Domains\Responders\Models\Responder::where('user_id', Auth::id())->first();
-                $hospitals = \App\Domains\Responders\Models\Hospital::all();
+                $hospitals  = \App\Domains\Responders\Models\Hospital::all();
                 $ambulances = \App\Domains\Responders\Models\Responder::where('responder_type', 'ambulance')->with('user')->get();
-                $fireUnits = \App\Domains\Responders\Models\Responder::where('responder_type', 'fire')->with('user')->get();
-                return view('dashboards.responder', compact('responder', 'hospitals', 'ambulances', 'fireUnits'));
+                $fireUnits  = \App\Domains\Responders\Models\Responder::where('responder_type', 'fire')->with('user')->get();
+                $missionsDone = $responder
+                    ? \App\Domains\Emergencies\Models\Emergency::where('assigned_responder_id', $responder->id)->where('status', 'resolved')->count()
+                    : 0;
+                $totalUnits = $responder
+                    ? \App\Domains\Responders\Models\Responder::where('responder_type', $responder->responder_type)->count()
+                    : 0;
+                return view('dashboards.responder', compact('responder', 'hospitals', 'ambulances', 'fireUnits', 'missionsDone', 'totalUnits'));
             default:
                 $hospitals  = \App\Domains\Responders\Models\Hospital::all();
                 $ambulances = \App\Domains\Responders\Models\Responder::where('responder_type', 'ambulance')->with('user')->get();

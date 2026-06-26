@@ -126,18 +126,9 @@
                 </div>
 
                 <div class="history-list" id="activeMissions">
-                    <!-- Sample Active Mission -->
-                    <div class="alert-item">
-                        <div style="display: flex; gap: 16px; align-items: center;">
-                            <div style="width: 40px; height: 40px; background: rgba(229, 9, 20, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--red);">
-                                <i data-lucide="heart-pulse"></i>
-                            </div>
-                            <div>
-                                <p style="font-weight: 700; margin: 0;">Critical Medical Alert</p>
-                                <p style="font-size: 0.75rem; color: var(--grey); margin: 0;">Location: 2.4km away • Ikoyi, Lagos</p>
-                            </div>
-                        </div>
-                        <button class="btn-primary" style="padding: 8px 16px; font-size: 0.8rem;">Accept Mission</button>
+                    <div id="noMissions" style="text-align: center; padding: 40px; opacity: 0.5;">
+                        <i data-lucide="shield-check" style="width: 40px; height: 40px; margin-bottom: 10px;"></i>
+                        <p>No active emergencies. Go on duty to receive alerts.</p>
                     </div>
                 </div>
             </div>
@@ -147,11 +138,11 @@
                     <h3><i data-lucide="activity"></i> Station Stats</h3>
                     <div class="stats-row" style="margin-top: 15px;">
                         <div class="stat-box">
-                            <h4 style="color: var(--red);">12</h4>
-                            <p>Saved</p>
+                            <h4 style="color: var(--red);">{{ $missionsDone }}</h4>
+                            <p>Completed</p>
                         </div>
                         <div class="stat-box">
-                            <h4>04</h4>
+                            <h4>{{ $totalUnits }}</h4>
                             <p>Units</p>
                         </div>
                     </div>
@@ -334,22 +325,45 @@
         fetch('{{ route("responder.alerts") }}')
             .then(res => res.json())
             .then(data => {
+                renderMissionsList(data);
                 if (data.length > 0) {
-                    const alert = data[0];
-                    if (currentAlertId !== alert.uuid) {
-                        showEmergency(alert);
+                    const latest = data[0];
+                    if (currentAlertId !== latest.uuid) {
+                        showEmergency(latest);
                     }
                 }
             });
     }
 
+    function renderMissionsList(emergencies) {
+        const list = document.getElementById('activeMissions');
+        if (emergencies.length === 0) {
+            list.innerHTML = '<div id="noMissions" style="text-align:center;padding:40px;opacity:0.5;"><p>No active emergencies. Go on duty to receive alerts.</p></div>';
+            return;
+        }
+        list.innerHTML = emergencies.map(e => `
+            <div class="alert-item">
+                <div style="display:flex;gap:16px;align-items:center;">
+                    <div style="width:40px;height:40px;background:rgba(229,9,20,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--red);">
+                        <i data-lucide="heart-pulse"></i>
+                    </div>
+                    <div>
+                        <p style="font-weight:700;margin:0;">Patient: ${e.user ? e.user.name : 'Unknown'}</p>
+                        <p style="font-size:0.75rem;color:var(--grey);margin:0;">Status: ${e.status.toUpperCase()} · ${new Date(e.created_at).toLocaleTimeString()}</p>
+                    </div>
+                </div>
+                <button class="btn-primary" style="padding:8px 16px;font-size:0.8rem;" onclick="showEmergency(${JSON.stringify(e).replace(/"/g, '&quot;')})">View</button>
+            </div>
+        `).join('');
+        lucide.createIcons();
+    }
+
     function showEmergency(alert) {
         currentAlertId = alert.uuid;
-        document.getElementById('alertUser').textContent = `Patient: ${alert.user.name}`;
+        document.getElementById('alertUser').textContent = `Patient: ${alert.user ? alert.user.name : 'Unknown'}`;
         document.getElementById('alertLoc').textContent = `LOCATION: ${alert.latitude}, ${alert.longitude}`;
-        document.getElementById('alertMedical').textContent = `Blood: ${alert.user.blood_group || 'N/A'} | Allergies: ${alert.user.allergies || 'None'}`;
-        
-        // Navigation Link
+        document.getElementById('alertMedical').textContent = `Blood: ${alert.user?.blood_group || 'N/A'} | Allergies: ${alert.user?.allergies || 'None'}`;
+
         const navLink = document.getElementById('navLink');
         navLink.href = `https://www.google.com/maps/dir/?api=1&destination=${alert.latitude},${alert.longitude}`;
         navLink.style.display = 'flex';
@@ -359,7 +373,7 @@
     }
 
     function closeAlert() {
-        document.getElementById('liveAlert').classList.remove('active');
+        document.getElementById('emergencyModal').style.display = 'none';
         siren.pause();
         siren.currentTime = 0;
     }
