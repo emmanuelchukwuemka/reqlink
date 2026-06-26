@@ -73,21 +73,59 @@ class DashboardController extends Controller
                 return view('dashboard', compact('hospitals', 'ambulances', 'fireUnits', 'history', 'activeEmergency', 'samaritanMissions', 'walletTransactions'));
         }
     }
+    public function adminDispatch(\Illuminate\Http\Request $request)
+    {
+        $request->validate([
+            'emergency_id' => 'required|integer',
+            'responder_id' => 'required|integer',
+        ]);
+
+        $emergency = \App\Domains\Emergencies\Models\Emergency::findOrFail($request->emergency_id);
+        $responder = \App\Domains\Responders\Models\Responder::with('user')->findOrFail($request->responder_id);
+
+        // Free the previously assigned responder if there was one
+        if ($emergency->assigned_responder_id && $emergency->assigned_responder_id !== $responder->id) {
+            \App\Domains\Responders\Models\Responder::where('id', $emergency->assigned_responder_id)
+                ->update(['is_available' => true]);
+        }
+
+        $emergency->update([
+            'assigned_responder_id' => $responder->id,
+            'status'                => 'dispatched',
+        ]);
+        $responder->update(['is_available' => false]);
+
+        return response()->json([
+            'success' => true,
+            'message' => ($responder->user->name ?? 'Responder') . ' dispatched.',
+        ]);
+    }
+
     public function liveAdminData()
     {
-        $emergencies = \App\Domains\Emergencies\Models\Emergency::with('user')
+        $activeEmergencies = \App\Domains\Emergencies\Models\Emergency::with('user')
             ->whereNotIn('status', ['resolved', 'cancelled'])
             ->latest()
+            ->get();
+
+        // Load assigned responder names in one query to avoid N+1
+        $assignedIds = $activeEmergencies->pluck('assigned_responder_id')->filter()->unique();
+        $responderNames = \App\Domains\Responders\Models\Responder::with('user')
+            ->whereIn('id', $assignedIds)
             ->get()
-            ->map(fn($e) => [
-                'id'         => $e->id,
-                'uuid'       => $e->uuid,
-                'status'     => $e->status,
-                'lat'        => $e->latitude,
-                'lng'        => $e->longitude,
-                'user'       => $e->user ? ['name' => $e->user->name] : null,
-                'created_at' => $e->created_at->toISOString(),
-            ]);
+            ->mapWithKeys(fn($r) => [$r->id => $r->user?->name ?? 'Unit #'.$r->id]);
+
+        $emergencies = $activeEmergencies->map(fn($e) => [
+            'id'               => $e->id,
+            'uuid'             => $e->uuid,
+            'status'           => $e->status,
+            'lat'              => $e->latitude,
+            'lng'              => $e->longitude,
+            'user'             => $e->user ? ['name' => $e->user->name] : null,
+            'created_at'       => $e->created_at->toISOString(),
+            'assigned_responder_id'   => $e->assigned_responder_id,
+            'assigned_responder_name' => $e->assigned_responder_id ? ($responderNames[$e->assigned_responder_id] ?? null) : null,
+        ]);
 
         $responders = \App\Domains\Responders\Models\Responder::with('user')
             ->where('is_on_duty', true)

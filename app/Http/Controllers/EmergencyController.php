@@ -169,10 +169,17 @@ class EmergencyController extends Controller
 
     public function fetchAlerts()
     {
-        // For now, we'll fetch pending emergencies assigned to this responder
-        // In a real app, we'd use the responder's ID linked to the user
-        $emergencies = Emergency::where('status', 'pending')
-            ->orWhere('status', 'dispatched')
+        $responder = \App\Domains\Responders\Models\Responder::where('user_id', Auth::id())->first();
+
+        $emergencies = Emergency::where(function ($q) use ($responder) {
+                // Unassigned emergencies (any on-duty responder can take)
+                $q->whereNull('assigned_responder_id');
+                // OR assigned specifically to this responder by admin
+                if ($responder) {
+                    $q->orWhere('assigned_responder_id', $responder->id);
+                }
+            })
+            ->whereIn('status', ['pending', 'dispatched'])
             ->with('user')
             ->orderBy('created_at', 'desc')
             ->get();

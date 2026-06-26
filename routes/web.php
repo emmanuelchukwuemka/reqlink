@@ -38,6 +38,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/wallet/callback', [\App\Http\Controllers\WalletController::class, 'callback'])->name('wallet.callback');
     Route::get('/map/live-data', [\App\Http\Controllers\DashboardController::class, 'liveMapData'])->name('map.live-data');
     Route::get('/admin/live-data', [\App\Http\Controllers\DashboardController::class, 'liveAdminData'])->name('admin.live-data');
+    Route::post('/admin/dispatch', [\App\Http\Controllers\DashboardController::class, 'adminDispatch'])->name('admin.dispatch');
 
     Route::post('/responder/toggle-duty', [ResponderController::class, 'toggleDuty'])->name('responder.toggle-duty');
     Route::post('/responder/update-location', [ResponderController::class, 'updateLocation'])->name('responder.update-location');
