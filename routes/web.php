@@ -28,7 +28,15 @@ Route::get('/logout', [WebAuthController::class, 'logout'])->name('logout.get');
 Route::post('/logout', [WebAuthController::class, 'logout'])->name('logout');
 Route::post('/support-message', [\App\Http\Controllers\SupportMessageController::class, 'store'])->name('support.message');
 
+// Paystack webhook — must be outside auth + CSRF
+Route::post('/wallet/webhook', [\App\Http\Controllers\WalletController::class, 'webhook'])
+    ->name('wallet.webhook')
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+
 Route::middleware(['auth'])->group(function () {
+    Route::post('/wallet/fund', [\App\Http\Controllers\WalletController::class, 'initiate'])->name('wallet.fund');
+    Route::get('/wallet/callback', [\App\Http\Controllers\WalletController::class, 'callback'])->name('wallet.callback');
+
     Route::post('/responder/toggle-duty', [ResponderController::class, 'toggleDuty'])->name('responder.toggle-duty');
     Route::post('/responder/update-location', [ResponderController::class, 'updateLocation'])->name('responder.update-location');
     Route::post('/hospital/update', [HospitalController::class, 'update'])->name('hospital.update');

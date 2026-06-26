@@ -60,7 +60,13 @@ class DashboardController extends Controller
                         ->get();
                 }
 
-                return view('dashboard', compact('hospitals', 'ambulances', 'securityUnits', 'fireUnits', 'history', 'activeEmergency', 'samaritanMissions')); // Civilian/User dashboard
+                $walletTransactions = \App\Models\WalletTransaction::where('user_id', Auth::id())
+                    ->where('status', 'success')
+                    ->orderBy('created_at', 'desc')
+                    ->limit(20)
+                    ->get();
+
+                return view('dashboard', compact('hospitals', 'ambulances', 'securityUnits', 'fireUnits', 'history', 'activeEmergency', 'samaritanMissions', 'walletTransactions'));
         }
     }
     public function commandCenter()

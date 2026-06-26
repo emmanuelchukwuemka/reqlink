@@ -89,6 +89,7 @@
         <a class="nav-item" data-tab="fire"><i data-lucide="flame"></i> Fire Services</a>
         <a class="nav-item" data-tab="hospitals"><i data-lucide="hospital"></i> Hospitals</a>
         <a class="nav-item" data-tab="history"><i data-lucide="history"></i> Incident History</a>
+        <a class="nav-item" data-tab="wallet"><i data-lucide="wallet"></i> My Wallet</a>
         <a href="{{ route('settings') }}" class="nav-item"><i data-lucide="settings"></i> Settings</a>
     </nav>
 
@@ -126,6 +127,10 @@
             <button id="themeToggle" class="theme-toggle" aria-label="Toggle Dark Mode">
                 <i data-lucide="sun" id="themeIcon"></i>
             </button>
+            <a data-tab="wallet" class="nav-item" style="background: rgba(229,9,20,0.1); border: 1px solid rgba(229,9,20,0.2); border-radius: 20px; padding: 6px 14px; font-size: 0.8rem; font-weight: 700; color: var(--red); cursor: pointer; text-decoration: none;">
+                <i data-lucide="wallet" style="width:14px;height:14px;"></i>
+                ₦{{ number_format(Auth::user()->wallet_balance, 2) }}
+            </a>
             <div class="user-profile">
                 <span style="font-size: 0.85rem; font-weight: 600;">Safety Status: Secure</span>
                 <div class="avatar-sm">{{ substr(Auth::user()->name, 0, 1) }}</div>
@@ -341,6 +346,129 @@
                 </tbody>
             </table>
             </div>
+        </div>
+    </div>
+
+    <!-- WALLET TAB -->
+    <div id="wallet" class="tab-pane">
+        @if(session('wallet_success'))
+            <div style="background: rgba(34,197,94,0.1); color: #22c55e; border: 1px solid rgba(34,197,94,0.2); border-radius: 12px; padding: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="check-circle" style="width:18px;height:18px;"></i>
+                {{ session('wallet_success') }}
+            </div>
+        @endif
+
+        @if($errors->has('wallet'))
+            <div style="background: rgba(229,9,20,0.1); color: var(--red); border: 1px solid rgba(229,9,20,0.2); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                {{ $errors->first('wallet') }}
+            </div>
+        @endif
+
+        <!-- Balance Card -->
+        <div class="dash-card" style="background: linear-gradient(135deg, #1a0505 0%, #2d0a0a 100%); border: 1px solid rgba(229,9,20,0.3); margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+                <div>
+                    <p style="color: var(--grey); font-size: 0.85rem; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 1px;">Available Balance</p>
+                    <h1 style="font-size: 2.8rem; font-weight: 900; margin: 0; color: #fff;">₦{{ number_format(Auth::user()->wallet_balance, 2) }}</h1>
+                    <p style="color: rgba(255,255,255,0.4); font-size: 0.8rem; margin: 8px 0 0;">Used for emergency dispatch & services</p>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-end;">
+                    <button onclick="document.getElementById('fundModal').style.display='flex'" style="background: var(--red); color: #fff; border: none; padding: 14px 28px; border-radius: 12px; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="plus-circle" style="width:18px;height:18px;"></i> Fund Wallet
+                    </button>
+                    <p style="color: rgba(255,255,255,0.3); font-size: 0.75rem; margin: 0;">Powered by Paystack</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats row -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div class="dash-card" style="text-align: center; padding: 20px;">
+                <i data-lucide="arrow-down-circle" style="color: #22c55e; width:28px; height:28px; margin-bottom: 8px;"></i>
+                <p style="color: var(--grey); font-size: 0.75rem; margin: 0 0 4px; text-transform: uppercase;">Total Funded</p>
+                <p style="font-size: 1.3rem; font-weight: 800; margin: 0;">₦{{ number_format($walletTransactions->where('type','credit')->sum('amount'), 2) }}</p>
+            </div>
+            <div class="dash-card" style="text-align: center; padding: 20px;">
+                <i data-lucide="arrow-up-circle" style="color: var(--red); width:28px; height:28px; margin-bottom: 8px;"></i>
+                <p style="color: var(--grey); font-size: 0.75rem; margin: 0 0 4px; text-transform: uppercase;">Total Spent</p>
+                <p style="font-size: 1.3rem; font-weight: 800; margin: 0;">₦{{ number_format($walletTransactions->where('type','debit')->sum('amount'), 2) }}</p>
+            </div>
+            <div class="dash-card" style="text-align: center; padding: 20px;">
+                <i data-lucide="receipt" style="color: #f59e0b; width:28px; height:28px; margin-bottom: 8px;"></i>
+                <p style="color: var(--grey); font-size: 0.75rem; margin: 0 0 4px; text-transform: uppercase;">Transactions</p>
+                <p style="font-size: 1.3rem; font-weight: 800; margin: 0;">{{ $walletTransactions->count() }}</p>
+            </div>
+        </div>
+
+        <!-- Transaction History -->
+        <div class="dash-card">
+            <h3 style="margin-bottom: 20px;"><i data-lucide="list"></i> Transaction History</h3>
+            @if($walletTransactions->isEmpty())
+                <div style="text-align: center; padding: 40px 20px; color: var(--grey);">
+                    <i data-lucide="wallet" style="width:48px;height:48px;opacity:0.3;margin-bottom:12px;"></i>
+                    <p>No transactions yet. Fund your wallet to get started.</p>
+                </div>
+            @else
+                <div class="table-scroll">
+                <table style="width:100%; border-collapse:collapse; min-width:480px;">
+                    <thead>
+                        <tr style="text-align:left; color:var(--grey); font-size:0.8rem; text-transform:uppercase;">
+                            <th style="padding:12px 15px;">Date</th>
+                            <th>Description</th>
+                            <th>Reference</th>
+                            <th style="text-align:right; padding-right:15px;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($walletTransactions as $tx)
+                        <tr style="border-top: 1px solid var(--glass-border);">
+                            <td style="padding:14px 15px; font-size:0.85rem; color:var(--grey);">{{ $tx->created_at->format('M d, Y H:i') }}</td>
+                            <td style="font-size:0.9rem;">{{ $tx->description }}</td>
+                            <td style="font-size:0.75rem; color:var(--grey); font-family:monospace;">{{ $tx->reference }}</td>
+                            <td style="text-align:right; padding-right:15px; font-weight:700; color:{{ $tx->type === 'credit' ? '#22c55e' : 'var(--red)' }};">
+                                {{ $tx->type === 'credit' ? '+' : '-' }}₦{{ number_format($tx->amount, 2) }}
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    <!-- FUND WALLET MODAL -->
+    <div id="fundModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:var(--dark); border:1px solid var(--glass-border); border-radius:20px; padding:32px; width:100%; max-width:400px; margin:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                <h3 style="margin:0;"><i data-lucide="wallet"></i> Fund Wallet</h3>
+                <button onclick="document.getElementById('fundModal').style.display='none'" style="background:none;border:none;color:var(--grey);cursor:pointer;font-size:1.5rem;">&times;</button>
+            </div>
+            <form action="{{ route('wallet.fund') }}" method="POST">
+                @csrf
+                <p style="color:var(--grey); font-size:0.85rem; margin-bottom:20px;">Select an amount or enter a custom value (minimum ₦100)</p>
+
+                <!-- Quick amounts -->
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px;">
+                    @foreach([500, 1000, 2000, 5000, 10000, 20000] as $amt)
+                    <button type="button" onclick="document.getElementById('fundAmount').value='{{ $amt }}'"
+                        style="padding:12px; border:1px solid var(--glass-border); border-radius:10px; background:rgba(255,255,255,0.03); color:var(--white); cursor:pointer; font-weight:600; font-size:0.9rem; transition:all 0.2s;"
+                        onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--glass-border)'">
+                        ₦{{ number_format($amt) }}
+                    </button>
+                    @endforeach
+                </div>
+
+                <div style="margin-bottom:20px;">
+                    <label style="font-size:0.85rem; color:var(--grey); display:block; margin-bottom:8px;">Custom Amount (₦)</label>
+                    <input type="number" name="amount" id="fundAmount" min="100" placeholder="e.g. 3000"
+                        style="width:100%; padding:14px; border-radius:12px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:var(--white); font-size:1rem; box-sizing:border-box;">
+                </div>
+
+                <button type="submit" style="width:100%; padding:16px; background:var(--red); color:#fff; border:none; border-radius:12px; font-weight:700; font-size:1rem; cursor:pointer;">
+                    Proceed to Payment
+                </button>
+            </form>
         </div>
     </div>
 

@@ -55,6 +55,7 @@ class User extends Authenticatable
         'samaritan_active',
         'last_known_lat',
         'last_known_lng',
+        'wallet_balance',
     ];
 
     /**
