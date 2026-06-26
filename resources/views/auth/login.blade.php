@@ -66,7 +66,7 @@
             </div>
         </div>
 
-        <button type="submit" class="btn-primary" style="width:100%; padding: 18px; margin-top: 10px; border-radius: 16px; font-size: 1rem;">Secure Login</button>
+        <button type="submit" class="btn-primary" style="width:100%; padding: 18px; margin-top: 10px; border-radius: 16px; font-size: 1rem;">Login</button>
     </form>
 
     <div class="auth-footer">
