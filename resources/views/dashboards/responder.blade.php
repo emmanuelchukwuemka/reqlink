@@ -66,7 +66,7 @@
     <nav class="sidebar-nav">
         <a class="nav-item active" data-tab="missions"><i data-lucide="layout-dashboard"></i> Missions</a>
         <a class="nav-item" data-tab="ambulance"><i data-lucide="truck"></i> Ambulance</a>
-        <a class="nav-item" data-tab="security"><i data-lucide="shield-alert"></i> Security</a>
+
         <a class="nav-item" data-tab="fire"><i data-lucide="flame"></i> Fire Services</a>
         <a class="nav-item" data-tab="hospitals"><i data-lucide="hospital"></i> Hospitals</a>
         <a href="{{ route('settings') }}" class="nav-item"><i data-lucide="settings"></i> Settings</a>
@@ -187,33 +187,6 @@
                 </div>
                 @empty
                 <p>No active ambulance units.</p>
-                @endforelse
-            </div>
-        </div>
-    </div>
-
-    <!-- SECURITY TAB -->
-    <div id="security" class="tab-pane">
-        <div class="dash-card">
-            <h3><i data-lucide="shield-alert"></i> Rapid Security Response</h3>
-            <div class="hospitals-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
-                @forelse($securityUnits as $unit)
-                <div class="sub-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px;">
-                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                        <div style="width: 45px; height: 45px; background: rgba(37, 99, 235, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #2563eb;">
-                            <i data-lucide="shield-alert"></i>
-                        </div>
-                        <div>
-                            <h4 style="margin: 0;">{{ $unit->user->name }}</h4>
-                            <small style="color: {{ $unit->is_on_duty ? '#22c55e' : 'var(--grey)' }};">
-                                {{ $unit->is_on_duty ? '● Active' : '○ Offline' }}
-                            </small>
-                        </div>
-                    </div>
-                    <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 0.85rem; border-radius: 8px; background: #2563eb;">View Profile</button>
-                </div>
-                @empty
-                <p>No security units found.</p>
                 @endforelse
             </div>
         </div>

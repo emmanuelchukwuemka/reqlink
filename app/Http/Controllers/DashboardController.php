@@ -31,15 +31,13 @@ class DashboardController extends Controller
                 $responder = \App\Domains\Responders\Models\Responder::where('user_id', Auth::id())->first();
                 $hospitals = \App\Domains\Responders\Models\Hospital::all();
                 $ambulances = \App\Domains\Responders\Models\Responder::where('responder_type', 'ambulance')->with('user')->get();
-                $securityUnits = \App\Domains\Responders\Models\Responder::where('responder_type', 'security')->with('user')->get();
                 $fireUnits = \App\Domains\Responders\Models\Responder::where('responder_type', 'fire')->with('user')->get();
-                return view('dashboards.responder', compact('responder', 'hospitals', 'ambulances', 'securityUnits', 'fireUnits'));
+                return view('dashboards.responder', compact('responder', 'hospitals', 'ambulances', 'fireUnits'));
             default:
-                $hospitals = \App\Domains\Responders\Models\Hospital::all();
+                $hospitals  = \App\Domains\Responders\Models\Hospital::all();
                 $ambulances = \App\Domains\Responders\Models\Responder::where('responder_type', 'ambulance')->with('user')->get();
-                $securityUnits = \App\Domains\Responders\Models\Responder::where('responder_type', 'security')->with('user')->get();
-                $fireUnits = \App\Domains\Responders\Models\Responder::where('responder_type', 'fire')->with('user')->get();
-                
+                $fireUnits  = \App\Domains\Responders\Models\Responder::where('responder_type', 'fire')->with('user')->get();
+
                 $history = \App\Domains\Emergencies\Models\Emergency::where('user_id', Auth::id())
                     ->orderBy('created_at', 'desc')
                     ->limit(5)
@@ -66,7 +64,7 @@ class DashboardController extends Controller
                     ->limit(20)
                     ->get();
 
-                return view('dashboard', compact('hospitals', 'ambulances', 'securityUnits', 'fireUnits', 'history', 'activeEmergency', 'samaritanMissions', 'walletTransactions'));
+                return view('dashboard', compact('hospitals', 'ambulances', 'fireUnits', 'history', 'activeEmergency', 'samaritanMissions', 'walletTransactions'));
         }
     }
     public function liveMapData()

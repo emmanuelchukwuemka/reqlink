@@ -85,7 +85,7 @@
     <nav class="sidebar-nav">
         <a class="nav-item active" data-tab="overview"><i data-lucide="layout-grid"></i> Overview</a>
         <a class="nav-item" data-tab="ambulance"><i data-lucide="truck"></i> Ambulance</a>
-        <a class="nav-item" data-tab="security"><i data-lucide="shield-alert"></i> Security</a>
+
         <a class="nav-item" data-tab="fire"><i data-lucide="flame"></i> Fire Services</a>
         <a class="nav-item" data-tab="hospitals"><i data-lucide="hospital"></i> Hospitals</a>
         <a class="nav-item" data-tab="history"><i data-lucide="history"></i> Incident History</a>
@@ -256,35 +256,6 @@
                 @empty
                 <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
                     <p style="color: var(--grey);">No active ambulance units in your area.</p>
-                </div>
-                @endforelse
-            </div>
-        </div>
-    </div>
-
-    <!-- SECURITY TAB -->
-    <div id="security" class="tab-pane">
-        <div class="dash-card">
-            <h3><i data-lucide="shield-alert"></i> Rapid Security Response</h3>
-            <div class="hospitals-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
-                @forelse($securityUnits as $unit)
-                <div class="sub-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px;">
-                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                        <div style="width: 45px; height: 45px; background: rgba(37, 99, 235, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #2563eb;">
-                            <i data-lucide="shield-alert"></i>
-                        </div>
-                        <div>
-                            <h4 style="margin: 0;">{{ $unit->user->name }}</h4>
-                            <small style="color: {{ $unit->is_on_duty ? '#22c55e' : 'var(--grey)' }};">
-                                {{ $unit->is_on_duty ? '● Active Patrol' : '○ Standby' }}
-                            </small>
-                        </div>
-                    </div>
-                    <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 0.85rem; border-radius: 8px; background: #2563eb;">Request Response</button>
-                </div>
-                @empty
-                <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
-                    <p style="color: var(--grey);">No security units currently patrolling.</p>
                 </div>
                 @endforelse
             </div>
