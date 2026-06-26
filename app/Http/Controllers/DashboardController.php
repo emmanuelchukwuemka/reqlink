@@ -69,6 +69,25 @@ class DashboardController extends Controller
                 return view('dashboard', compact('hospitals', 'ambulances', 'securityUnits', 'fireUnits', 'history', 'activeEmergency', 'samaritanMissions', 'walletTransactions'));
         }
     }
+    public function liveMapData()
+    {
+        $responders = \App\Domains\Responders\Models\Responder::with('user')
+            ->whereNotNull('current_lat')
+            ->whereNotNull('current_lng')
+            ->where('is_on_duty', true)
+            ->get()
+            ->map(fn($r) => [
+                'id'        => $r->id,
+                'type'      => $r->responder_type,
+                'name'      => $r->user ? $r->user->name : ('Responder #' . $r->id),
+                'lat'       => (float) $r->current_lat,
+                'lng'       => (float) $r->current_lng,
+                'available' => (bool) $r->is_available,
+            ]);
+
+        return response()->json(['responders' => $responders]);
+    }
+
     public function commandCenter()
     {
         $emergencies = \App\Domains\Emergencies\Models\Emergency::where('status', '!=', 'resolved')->get();

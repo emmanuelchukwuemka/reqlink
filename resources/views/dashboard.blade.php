@@ -556,7 +556,93 @@
                 .bindPopup('Your Current Location').openPopup();
         });
     }
-    
+
+    // ── Real-time map markers ─────────────────────────────────────────
+    function makeIcon(bg, label) {
+        return L.divIcon({
+            html: `<div style="background:${bg};color:#fff;font-weight:700;font-size:11px;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.5);">${label}</div>`,
+            className: 'custom-div-icon',
+            iconSize: [26, 26],
+            iconAnchor: [13, 13],
+            popupAnchor: [0, -14]
+        });
+    }
+
+    const typeConfig = {
+        ambulance: { color: '#2563eb', label: 'A' },
+        security:  { color: '#d97706', label: 'S' },
+        fire:      { color: '#ea580c', label: 'F' },
+    };
+
+    // Hospital markers (static — hospitals don't move)
+    @json($hospitals->filter(fn($h) => $h->lat && $h->lng)->values()).forEach(h => {
+        L.marker([parseFloat(h.lat), parseFloat(h.lng)], { icon: makeIcon('#dc2626', 'H') })
+            .addTo(map)
+            .bindPopup(`<b>${h.name}</b><br>Beds available: ${h.available_beds ?? '?'}/${h.total_beds ?? '?'}`);
+    });
+
+    // Responder markers — seeded from initial server data then kept live
+    const liveMarkers = {};
+
+    function placeOrUpdate(r) {
+        const lat = parseFloat(r.current_lat ?? r.lat);
+        const lng = parseFloat(r.current_lng ?? r.lng);
+        if (!lat || !lng) return;
+        const cfg = typeConfig[r.responder_type ?? r.type] || { color: '#6b7280', label: 'R' };
+        const name = (r.user ? r.user.name : null) ?? r.name ?? ('Responder #' + r.id);
+        const status = (r.is_available ?? r.available) ? 'Available' : 'Busy';
+        const popup = `<b>${name}</b><br>${(r.responder_type ?? r.type)} — ${status}`;
+        if (liveMarkers[r.id]) {
+            liveMarkers[r.id].setLatLng([lat, lng]);
+            liveMarkers[r.id].bindPopup(popup);
+        } else {
+            liveMarkers[r.id] = L.marker([lat, lng], { icon: makeIcon(cfg.color, cfg.label) })
+                .addTo(map).bindPopup(popup);
+        }
+    }
+
+    [
+        ...@json($ambulances->values()),
+        ...@json($securityUnits->values()),
+        ...@json($fireUnits->values()),
+    ].forEach(placeOrUpdate);
+
+    // Poll every 15 s for position updates
+    setInterval(() => {
+        fetch('/map/live-data')
+            .then(r => r.json())
+            .then(data => data.responders.forEach(r => {
+                const lat = r.lat, lng = r.lng;
+                if (!lat || !lng) return;
+                const cfg = typeConfig[r.type] || { color: '#6b7280', label: 'R' };
+                const popup = `<b>${r.name}</b><br>${r.type} — ${r.available ? 'Available' : 'Busy'}`;
+                if (liveMarkers[r.id]) {
+                    liveMarkers[r.id].setLatLng([lat, lng]);
+                    liveMarkers[r.id].bindPopup(popup);
+                } else {
+                    liveMarkers[r.id] = L.marker([lat, lng], { icon: makeIcon(cfg.color, cfg.label) })
+                        .addTo(map).bindPopup(popup);
+                }
+            }))
+            .catch(() => {});
+    }, 15000);
+
+    // Map legend
+    const mapLegend = L.control({ position: 'bottomright' });
+    mapLegend.onAdd = () => {
+        const div = L.DomUtil.create('div');
+        div.style.cssText = 'background:rgba(10,10,10,0.82);border-radius:8px;padding:8px 10px;color:#fff;font-size:11px;line-height:1.9;border:1px solid rgba(255,255,255,0.1);pointer-events:none;';
+        div.innerHTML =
+            '<div style="font-weight:700;margin-bottom:2px;letter-spacing:.5px;">LEGEND</div>' +
+            '<div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#dc2626;margin-right:6px;"></span>Hospital</div>' +
+            '<div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#2563eb;margin-right:6px;"></span>Ambulance</div>' +
+            '<div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#d97706;margin-right:6px;"></span>Security</div>' +
+            '<div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ea580c;margin-right:6px;"></span>Fire Unit</div>';
+        return div;
+    };
+    mapLegend.addTo(map);
+    // ─────────────────────────────────────────────────────────────────
+
     // Panic Button — single tap/click triggers immediately
     const panicBtn = document.getElementById('panicBtn');
 
