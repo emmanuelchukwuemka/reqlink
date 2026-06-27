@@ -10,7 +10,8 @@
 </head>
 <body class="auth-page">
 
-<div class="theme-toggle-floating">
+<div class="theme-toggle-floating" style="display: flex; align-items: center; gap: 10px;">
+    @include('partials.lang-switcher')
     <button id="themeToggle" class="theme-toggle-btn" title="Toggle Theme">
         <i id="themeIcon" data-lucide="sun"></i>
     </button>

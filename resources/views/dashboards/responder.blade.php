@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Mission Control | ResQLink</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/dashboard.css">
     <link rel="stylesheet" href="/css/chat.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -103,6 +104,7 @@
                 <span class="duty-label duty-label-on">ON DUTY</span>
             </div>
 
+            @include('partials.lang-switcher')
             <button id="themeToggle" class="theme-toggle" aria-label="Toggle Dark Mode">
                 <i data-lucide="sun" id="themeIcon"></i>
             </button>
@@ -158,7 +160,7 @@
 
     <!-- AMBULANCE TAB -->
     <div id="ambulance" class="tab-pane">
-        <div class="dash-card">
+        <div class="dash-card" style="margin-bottom: 24px;">
             <h3><i data-lucide="truck"></i> Active Ambulance Units</h3>
             <div class="hospitals-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
                 @forelse($ambulances as $unit)
@@ -181,6 +183,50 @@
                 @endforelse
             </div>
         </div>
+
+        <!-- BED RESERVATION -->
+        @if(Auth::user()->role === 'ambulance')
+        <div class="dash-card">
+            <h3><i data-lucide="bed"></i> Reserve Hospital Bed</h3>
+            <p style="color: var(--grey); font-size: 0.85rem; margin-bottom: 20px;">Reserve a bed at a hospital before you arrive so it's ready when you need it.</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+                @forelse($hospitals as $hospital)
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 14px; padding: 18px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+                        <div style="width: 40px; height: 40px; background: rgba(34,197,94,0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #22c55e; flex-shrink: 0;">
+                            <i data-lucide="hospital"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0; font-size: 0.9rem;">{{ $hospital->name }}</h4>
+                            <small style="color: var(--grey);">{{ $hospital->available_beds ?? 0 }} beds available</small>
+                        </div>
+                    </div>
+                    @if(($hospital->available_beds ?? 0) > 0)
+                    <form onsubmit="reserveBed(event, {{ $hospital->id }}, this)">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                            <select name="emergency_id" required style="padding: 8px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: var(--white); font-size: 0.8rem;">
+                                <option value="">Select Emergency</option>
+                                @if($activeEmergencyForBed ?? null)
+                                <option value="{{ $activeEmergencyForBed->uuid }}" selected>Active Mission</option>
+                                @endif
+                            </select>
+                            <input type="number" name="eta_minutes" placeholder="ETA (mins)" min="1" max="120" style="padding: 8px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: var(--white); font-size: 0.8rem;">
+                        </div>
+                        <button type="submit" class="btn-primary" style="width: 100%; padding: 10px; font-size: 0.82rem; border-radius: 8px;">
+                            Reserve Bed
+                        </button>
+                    </form>
+                    @else
+                    <div style="text-align: center; padding: 10px; color: var(--grey); font-size: 0.8rem; background: rgba(255,255,255,0.02); border-radius: 8px;">No beds available</div>
+                    @endif
+                </div>
+                @empty
+                <p style="color: var(--grey);">No hospitals registered.</p>
+                @endforelse
+            </div>
+            <div id="bedMsg" style="display:none; margin-top:16px; padding:12px; border-radius:10px; font-size:0.85rem;"></div>
+        </div>
+        @endif
     </div>
 
     <!-- FIRE TAB -->
@@ -251,15 +297,33 @@
             <p id="alertMedical" style="font-weight: 600;">Blood: O+ | Allergies: None | Asthma</p>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
             <button onclick="closeAlert()" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">Decline</button>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-                <button onclick="acceptMission()" style="background: var(--red); color: #fff; border: none; padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 10px 20px rgba(229, 9, 20, 0.3); width: 100%;">Accept Mission</button>
-                <a id="navLink" href="#" target="_blank" style="display: none; background: #2563eb; color: #fff; text-decoration: none; padding: 12px; border-radius: 12px; font-weight: 700; font-size: 0.8rem; align-items: center; justify-content: center; gap: 8px;">
-                    <i data-lucide="navigation"></i> Open Navigation
-                </a>
-            </div>
+            <button onclick="acceptMission()" style="background: var(--red); color: #fff; border: none; padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 10px 20px rgba(229, 9, 20, 0.3);">Accept</button>
+            <button onclick="openResponderChat()" style="background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">Chat</button>
         </div>
+        <a id="navLink" href="#" target="_blank" style="display: none; background: #2563eb; color: #fff; text-decoration: none; padding: 12px; border-radius: 12px; font-weight: 700; font-size: 0.8rem; align-items: center; justify-content: center; gap: 8px; margin-top: 10px;">
+            <i data-lucide="navigation"></i> Open Navigation
+        </a>
+    </div>
+</div>
+
+<!-- RESPONDER CHAT WINDOW -->
+<div id="responderChat" style="display:none; position:fixed; bottom:30px; right:30px; width:340px; height:440px; background:#0a0a0a; border:1px solid rgba(34,197,94,0.3); border-radius:20px; flex-direction:column; overflow:hidden; z-index:6000; box-shadow:0 20px 50px rgba(0,0,0,0.6);">
+    <div style="background:rgba(34,197,94,0.1); padding:16px 20px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(34,197,94,0.15);">
+        <div style="width:36px;height:36px;background:var(--red);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;">P</div>
+        <div style="flex:1;">
+            <h4 style="margin:0;font-size:0.9rem;" id="rChatPatientName">Patient</h4>
+            <small style="color:#22c55e;font-weight:700;font-size:0.7rem;">Mission Chat</small>
+        </div>
+        <button onclick="document.getElementById('responderChat').style.display='none'" style="background:none;border:none;color:var(--grey);cursor:pointer;font-size:1.2rem;">&times;</button>
+    </div>
+    <div id="rChatBody" style="flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;">
+        <div style="text-align:center;color:var(--grey);font-size:0.8rem;padding:20px;">Chat with the patient</div>
+    </div>
+    <div style="padding:12px;border-top:1px solid var(--glass-border);display:flex;gap:8px;">
+        <input id="rChatInput" type="text" placeholder="Type a message..." style="flex:1;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);border-radius:10px;padding:10px 14px;color:#fff;font-size:0.85rem;" onkeypress="if(event.key==='Enter') sendResponderChat()">
+        <button onclick="sendResponderChat()" style="background:#22c55e;border:none;color:#fff;width:40px;border-radius:10px;cursor:pointer;font-size:1rem;">➤</button>
     </div>
 </div>
 
@@ -509,7 +573,80 @@
     }
 
     setInterval(pollAlerts, 5000);
+
+    // ── Bed Reservation ──────────────────────────────────────────────
+    function reserveBed(e, hospitalUuid, form) {
+        e.preventDefault();
+        const fd = new FormData(form);
+        const emergencyId = fd.get('emergency_id');
+        const eta = fd.get('eta_minutes');
+        if (!emergencyId) { alert('Please select an emergency/mission first.'); return; }
+
+        fetch(`/bed/reserve/${hospitalUuid}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+            body: JSON.stringify({ emergency_uuid: emergencyId, eta_minutes: eta })
+        }).then(r => r.json()).then(data => {
+            const msg = document.getElementById('bedMsg');
+            msg.textContent = data.message || (data.success ? 'Bed reserved!' : 'Failed to reserve bed.');
+            msg.style.background = data.success ? 'rgba(34,197,94,0.1)' : 'rgba(229,9,20,0.1)';
+            msg.style.color = data.success ? '#22c55e' : 'var(--red)';
+            msg.style.display = 'block';
+            setTimeout(() => { msg.style.display = 'none'; }, 5000);
+        }).catch(() => {});
+    }
+
+    // ── Responder Emergency Chat ──────────────────────────────────────
+    let rChatPolling = null;
+    let rLastChatId = 0;
+
+    function openResponderChat() {
+        if (!currentAlertId) return;
+        const el = document.getElementById('responderChat');
+        el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
+        if (el.style.display === 'flex') {
+            pollResponderChat();
+            if (!rChatPolling) rChatPolling = setInterval(pollResponderChat, 3000);
+        }
+    }
+
+    function pollResponderChat() {
+        if (!currentAlertId) return;
+        fetch(`/chat/${currentAlertId}/messages`)
+            .then(r => r.json())
+            .then(msgs => {
+                const body = document.getElementById('rChatBody');
+                const newMsgs = msgs.filter(m => m.id > rLastChatId);
+                newMsgs.forEach(m => {
+                    rLastChatId = Math.max(rLastChatId, m.id);
+                    const isMe = m.sender_role === 'responder';
+                    const div = document.createElement('div');
+                    div.style.cssText = `max-width:80%;padding:10px 14px;border-radius:14px;font-size:0.82rem;line-height:1.4;
+                        align-self:${isMe ? 'flex-end' : 'flex-start'};
+                        background:${isMe ? '#22c55e' : 'rgba(255,255,255,0.06)'};
+                        color:#fff;
+                        border-bottom-${isMe ? 'right' : 'left'}-radius:3px;`;
+                    div.textContent = m.message;
+                    body.appendChild(div);
+                });
+                body.scrollTop = body.scrollHeight;
+            }).catch(() => {});
+    }
+
+    function sendResponderChat() {
+        if (!currentAlertId) return;
+        const input = document.getElementById('rChatInput');
+        const msg = input.value.trim();
+        if (!msg) return;
+        input.value = '';
+        fetch(`/chat/${currentAlertId}/send`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+            body: JSON.stringify({ message: msg })
+        }).then(() => pollResponderChat()).catch(() => {});
+    }
 </script>
 <script src="/js/chat.js"></script>
+<script src="/js/pwa.js" defer></script>
 </body>
 </html>

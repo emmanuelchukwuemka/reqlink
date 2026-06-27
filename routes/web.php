@@ -33,12 +33,36 @@ Route::post('/wallet/webhook', [\App\Http\Controllers\WalletController::class, '
     ->name('wallet.webhook')
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 
+// Language switcher (public)
+Route::get('/lang/{locale}', function ($locale) {
+    if (in_array($locale, ['en', 'yo', 'ha', 'ig'])) {
+        session(['locale' => $locale]);
+    }
+    return back();
+})->name('lang.switch');
+
 Route::middleware(['auth'])->group(function () {
     Route::post('/wallet/fund', [\App\Http\Controllers\WalletController::class, 'initiate'])->name('wallet.fund');
     Route::get('/wallet/callback', [\App\Http\Controllers\WalletController::class, 'callback'])->name('wallet.callback');
     Route::get('/map/live-data', [\App\Http\Controllers\DashboardController::class, 'liveMapData'])->name('map.live-data');
     Route::get('/admin/live-data', [\App\Http\Controllers\DashboardController::class, 'liveAdminData'])->name('admin.live-data');
     Route::post('/admin/dispatch', [\App\Http\Controllers\DashboardController::class, 'adminDispatch'])->name('admin.dispatch');
+    Route::get('/admin/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('admin.analytics');
+
+    // Chat
+    Route::get('/chat/{uuid}/messages', [\App\Http\Controllers\ChatController::class, 'messages'])->name('chat.messages');
+    Route::post('/chat/{uuid}/send', [\App\Http\Controllers\ChatController::class, 'send'])->name('chat.send');
+    Route::get('/chat/{uuid}/unread', [\App\Http\Controllers\ChatController::class, 'unreadCount'])->name('chat.unread');
+
+    // Bed reservations
+    Route::post('/bed/reserve/{uuid}', [\App\Http\Controllers\BedReservationController::class, 'reserve'])->name('bed.reserve');
+    Route::post('/bed/respond/{id}', [\App\Http\Controllers\BedReservationController::class, 'respond'])->name('bed.respond');
+    Route::post('/bed/arrived/{id}', [\App\Http\Controllers\BedReservationController::class, 'arrived'])->name('bed.arrived');
+    Route::get('/bed/pending', [\App\Http\Controllers\BedReservationController::class, 'pending'])->name('bed.pending');
+
+    // Push subscriptions
+    Route::post('/push/subscribe', [\App\Http\Controllers\PushController::class, 'subscribe'])->name('push.subscribe');
+    Route::post('/push/unsubscribe', [\App\Http\Controllers\PushController::class, 'unsubscribe'])->name('push.unsubscribe');
 
     Route::post('/responder/toggle-duty', [ResponderController::class, 'toggleDuty'])->name('responder.toggle-duty');
     Route::post('/responder/update-location', [ResponderController::class, 'updateLocation'])->name('responder.update-location');

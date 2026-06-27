@@ -38,7 +38,13 @@ class DashboardController extends Controller
                 $totalUnits = $responder
                     ? \App\Domains\Responders\Models\Responder::where('responder_type', $responder->responder_type)->count()
                     : 0;
-                return view('dashboards.responder', compact('responder', 'hospitals', 'ambulances', 'fireUnits', 'missionsDone', 'totalUnits'));
+                $activeEmergencyForBed = $responder
+                    ? \App\Domains\Emergencies\Models\Emergency::where('assigned_responder_id', $responder->id)
+                        ->whereIn('status', ['dispatched', 'enroute', 'arrived'])
+                        ->latest()
+                        ->first()
+                    : null;
+                return view('dashboards.responder', compact('responder', 'hospitals', 'ambulances', 'fireUnits', 'missionsDone', 'totalUnits', 'activeEmergencyForBed'));
             default:
                 $hospitals  = \App\Domains\Responders\Models\Hospital::all();
                 $ambulances = \App\Domains\Responders\Models\Responder::where('responder_type', 'ambulance')->with('user')->get();
@@ -121,10 +127,13 @@ class DashboardController extends Controller
             'status'           => $e->status,
             'lat'              => $e->latitude,
             'lng'              => $e->longitude,
+            'latitude'         => $e->latitude,
+            'longitude'        => $e->longitude,
             'user'             => $e->user ? ['name' => $e->user->name] : null,
             'created_at'       => $e->created_at->toISOString(),
             'assigned_responder_id'   => $e->assigned_responder_id,
             'assigned_responder_name' => $e->assigned_responder_id ? ($responderNames[$e->assigned_responder_id] ?? null) : null,
+            'evidence_file'    => $e->evidence_file,
         ]);
 
         $responders = \App\Domains\Responders\Models\Responder::with('user')
@@ -168,9 +177,25 @@ class DashboardController extends Controller
 
     public function commandCenter()
     {
-        $emergencies = \App\Domains\Emergencies\Models\Emergency::where('status', '!=', 'resolved')->get();
+        $emergencies = \App\Domains\Emergencies\Models\Emergency::with('user')
+            ->where('status', '!=', 'resolved')
+            ->latest()
+            ->get()
+            ->map(fn($e) => [
+                'id'          => $e->id,
+                'uuid'        => $e->uuid,
+                'status'      => $e->status,
+                'latitude'    => $e->latitude,
+                'longitude'   => $e->longitude,
+                'user'        => $e->user ? ['name' => $e->user->name] : null,
+                'created_at'  => $e->created_at->toISOString(),
+                'assigned_responder_id' => $e->assigned_responder_id,
+                'assigned_responder_name' => null,
+                'evidence_file' => $e->evidence_file,
+            ]);
+
         $responders = \App\Domains\Responders\Models\Responder::with('user')->where('is_on_duty', true)->get();
-        
+
         return view('dashboards.admin_command', compact('emergencies', 'responders'));
     }
 

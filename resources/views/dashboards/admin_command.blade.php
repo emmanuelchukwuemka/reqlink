@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Command Center | ResQLink</title>
+    <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/dashboard.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -105,6 +106,14 @@
     </div>
     <div class="panel-body">
         <div id="panelStatus" style="margin-bottom:16px;"></div>
+        <!-- Evidence Playback -->
+        <div id="evidenceSection" style="display:none; margin-bottom:16px;">
+            <h4 style="color:var(--grey);font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px;">
+                <i data-lucide="mic" style="width:12px;height:12px;margin-right:4px;"></i>Voice Evidence
+            </h4>
+            <audio id="evidencePlayer" controls style="width:100%;border-radius:8px;"></audio>
+        </div>
+
         <h4 style="color:var(--grey);font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;margin:0 0 10px;">On-Duty Responders</h4>
         <div id="responderList">
             <p style="color:var(--grey);font-size:0.8rem;">No on-duty responders available.</p>
@@ -201,6 +210,18 @@
             `Status: <span class="status-pill ${statusClass(e.status)}">${e.status}</span>` +
             (e.assigned_responder_name ? `<br><span style="font-size:0.78rem;color:#22c55e;margin-top:6px;display:block;">Currently assigned: ${e.assigned_responder_name}</span>` : '');
 
+        // Evidence playback
+        const evidenceSection = document.getElementById('evidenceSection');
+        const evidencePlayer = document.getElementById('evidencePlayer');
+        if (e.evidence_file) {
+            evidencePlayer.src = '/storage/' + e.evidence_file;
+            evidenceSection.style.display = 'block';
+            lucide.createIcons();
+        } else {
+            evidenceSection.style.display = 'none';
+            evidencePlayer.src = '';
+        }
+
         renderResponderList();
         document.getElementById('dispatchMsg').style.display = 'none';
         document.getElementById('dispatchPanel').classList.add('open');
@@ -265,6 +286,9 @@
         lucide.createIcons();
         setTimeout(() => { toast.style.display = 'none'; }, 10000);
     }
+
+    // Register PWA
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
 
     setInterval(() => {
         fetch('/admin/live-data')

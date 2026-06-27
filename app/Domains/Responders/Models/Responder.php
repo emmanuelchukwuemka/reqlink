@@ -39,4 +39,9 @@ class Responder extends Model
             ->withPivot('status', 'assigned_at', 'arrived_at', 'completed_at')
             ->withTimestamps();
     }
+
+    public function assignedEmergencies()
+    {
+        return $this->hasMany(Emergency::class, 'assigned_responder_id');
+    }
 }

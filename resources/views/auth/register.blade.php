@@ -57,9 +57,12 @@
 
     <!-- RIGHT PANEL -->
     <div class="auth-split-right">
-        <button id="themeToggle" class="auth-theme-toggle" title="Toggle Theme">
-            <i id="themeIcon" data-lucide="sun"></i>
-        </button>
+        <div style="position: absolute; top: 24px; right: 24px; display: flex; align-items: center; gap: 10px; z-index: 10;">
+            @include('partials.lang-switcher')
+            <button id="themeToggle" class="auth-theme-toggle" title="Toggle Theme" style="position: static;">
+                <i id="themeIcon" data-lucide="sun"></i>
+            </button>
+        </div>
         <div class="auth-split-form-wrap">
 
             <div class="auth-form-header">

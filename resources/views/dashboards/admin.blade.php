@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>National Oversight | ResQLink Admin</title>
+    <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/dashboard.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -59,7 +60,7 @@
         <a href="{{ route('admin.command-center') }}" class="nav-item"><i data-lucide="shield-alert" style="color: var(--red);"></i> Command Center</a>
         <a href="#" class="nav-item"><i data-lucide="activity"></i> Global Incidents</a>
         <a href="#" class="nav-item"><i data-lucide="building-2"></i> Agency Oversight</a>
-        <a href="#" class="nav-item"><i data-lucide="bar-chart-3"></i> System Analytics</a>
+        <a href="{{ route('admin.analytics') }}" class="nav-item"><i data-lucide="bar-chart-3"></i> System Analytics</a>
     </nav>
 
     <div class="sidebar-footer">
@@ -82,6 +83,7 @@
             <p style="color: var(--grey); font-size: 0.9rem;">Total Registered Accounts: {{ $users->count() }}</p>
         </div>
         <div style="display: flex; align-items: center; gap: 20px;">
+            @include('partials.lang-switcher')
             <div class="sos-badge">
                 <a href="{{ route('admin.command-center') }}" class="btn-primary" style="padding: 10px 20px; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; text-decoration: none;">
                     <i data-lucide="radar" style="width: 18px; height: 18px;"></i>

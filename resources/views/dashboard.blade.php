@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Dashboard | ResQLink</title>
+    <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/dashboard.css">
     <link rel="stylesheet" href="/css/chat.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -121,6 +122,7 @@
                 </label>
             </div>
             @endif
+            @include('partials.lang-switcher')
             <button id="voiceToggle" class="voice-toggle" title="AI Voice SOS Mode">
                 <i data-lucide="mic" id="voiceIcon"></i>
             </button>
@@ -465,11 +467,31 @@
             </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <button class="btn-primary" style="padding: 10px; font-size: 0.8rem; background: #2563eb;">Call Unit</button>
-            <button onclick="cancelEmergency()" style="padding: 10px; font-size: 0.8rem; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); border-radius: 8px;">Cancel</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px;">
+            <button class="btn-primary" style="padding: 10px; font-size: 0.75rem; background: #2563eb;">Call Unit</button>
+            <button onclick="openEmergencyChat()" style="padding: 10px; font-size: 0.75rem; background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; cursor: pointer;">Chat</button>
+            <button onclick="cancelEmergency()" style="padding: 10px; font-size: 0.75rem; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); border-radius: 8px; cursor: pointer;">Cancel</button>
         </div>
     </div>
+
+<!-- EMERGENCY CHAT WINDOW -->
+<div id="emergencyChat" style="display:none; position:fixed; bottom:110px; right:30px; width:340px; height:440px; background:#0a0a0a; border:1px solid rgba(34,197,94,0.3); border-radius:20px; flex-direction:column; overflow:hidden; z-index:6000; box-shadow:0 20px 50px rgba(0,0,0,0.6);">
+    <div style="background:rgba(34,197,94,0.1); padding:16px 20px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(34,197,94,0.15);">
+        <div style="width:36px;height:36px;background:#22c55e;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:900;">R</div>
+        <div style="flex:1;">
+            <h4 style="margin:0;font-size:0.9rem;" id="chatResponderName">Responder</h4>
+            <small style="color:#22c55e;font-weight:700;font-size:0.7rem;">Emergency Chat</small>
+        </div>
+        <button onclick="document.getElementById('emergencyChat').style.display='none'" style="background:none;border:none;color:var(--grey);cursor:pointer;font-size:1.2rem;">&times;</button>
+    </div>
+    <div id="emergencyChatBody" style="flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;">
+        <div style="text-align:center;color:var(--grey);font-size:0.8rem;padding:20px;">Chat with your assigned responder</div>
+    </div>
+    <div style="padding:12px;border-top:1px solid var(--glass-border);display:flex;gap:8px;">
+        <input id="emergencyChatInput" type="text" placeholder="Type a message..." style="flex:1;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);border-radius:10px;padding:10px 14px;color:#fff;font-size:0.85rem;" onkeypress="if(event.key==='Enter') sendEmergencyChat()">
+        <button onclick="sendEmergencyChat()" style="background:#22c55e;border:none;color:#fff;width:40px;border-radius:10px;cursor:pointer;font-size:1rem;">➤</button>
+    </div>
+</div>
 </main>
 
 <script>
@@ -973,5 +995,58 @@
     lucide.createIcons();
 </script>
 <script src="/js/chat.js"></script>
+<script src="/js/pwa.js" defer></script>
+<script>
+    // ── Emergency Real-Time Chat ──────────────────────────────────────
+    let chatPolling = null;
+    let lastChatId = 0;
+
+    function openEmergencyChat() {
+        if (!activeEmergencyUuid) return;
+        const el = document.getElementById('emergencyChat');
+        el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
+        if (el.style.display === 'flex') {
+            pollEmergencyChat();
+            if (!chatPolling) chatPolling = setInterval(pollEmergencyChat, 3000);
+        }
+    }
+
+    function pollEmergencyChat() {
+        if (!activeEmergencyUuid) return;
+        fetch(`/chat/${activeEmergencyUuid}/messages`)
+            .then(r => r.json())
+            .then(msgs => {
+                const body = document.getElementById('emergencyChatBody');
+                if (!msgs.length) return;
+                const newMsgs = msgs.filter(m => m.id > lastChatId);
+                newMsgs.forEach(m => {
+                    lastChatId = Math.max(lastChatId, m.id);
+                    const isMe = m.sender_role === 'user';
+                    const div = document.createElement('div');
+                    div.style.cssText = `max-width:80%;padding:10px 14px;border-radius:14px;font-size:0.82rem;line-height:1.4;
+                        align-self:${isMe ? 'flex-end' : 'flex-start'};
+                        background:${isMe ? 'var(--red)' : 'rgba(255,255,255,0.06)'};
+                        color:${isMe ? '#fff' : 'inherit'};
+                        border-bottom-${isMe ? 'right' : 'left'}-radius:3px;`;
+                    div.textContent = m.message;
+                    body.appendChild(div);
+                });
+                body.scrollTop = body.scrollHeight;
+            }).catch(() => {});
+    }
+
+    function sendEmergencyChat() {
+        if (!activeEmergencyUuid) return;
+        const input = document.getElementById('emergencyChatInput');
+        const msg = input.value.trim();
+        if (!msg) return;
+        input.value = '';
+        fetch(`/chat/${activeEmergencyUuid}/send`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            body: JSON.stringify({ message: msg })
+        }).then(() => pollEmergencyChat()).catch(() => {});
+    }
+</script>
 </body>
 </html>

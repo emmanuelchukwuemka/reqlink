@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login | ResQLink</title>
+    <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/auth.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="/js/theme.js"></script>
@@ -15,7 +16,8 @@
     Back to Home
 </a>
 
-<div class="theme-toggle-floating">
+<div class="theme-toggle-floating" style="display: flex; align-items: center; gap: 10px;">
+    @include('partials.lang-switcher')
     <button id="themeToggle" class="theme-toggle-btn" title="Toggle Theme">
         <i id="themeIcon" data-lucide="sun"></i>
     </button>
@@ -77,6 +79,7 @@
     </div>
 </div>
 
+<script src="/js/pwa.js" defer></script>
 <script>
     lucide.createIcons();
     function togglePwd(id, iconId) {

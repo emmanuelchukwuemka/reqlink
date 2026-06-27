@@ -40,4 +40,9 @@ return [
         'public' => env('PAYSTACK_PUBLIC_KEY'),
     ],
 
+    'firebase' => [
+        'server_key' => env('FIREBASE_SERVER_KEY'),
+        'vapid_key'  => env('FIREBASE_VAPID_KEY'),
+    ],
+
 ];

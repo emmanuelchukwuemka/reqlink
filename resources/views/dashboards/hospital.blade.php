@@ -4,6 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Hospital Management | ResQLink</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/dashboard.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -69,6 +71,7 @@
         </div>
         
         <div style="display: flex; align-items: center; gap: 20px;">
+            @include('partials.lang-switcher')
             <div class="user-profile">
                 <div class="user-info">
                     <span>{{ Auth::user()->name }}</span>
@@ -212,6 +215,17 @@
                 <h4 style="margin: 0; font-size: 0.9rem; color: #22c55e;">Status: ACTIVE</h4>
                 <p style="font-size: 0.75rem; opacity: 0.7; margin-top: 5px;">Your facility is currently receiving emergency routing from the ResQLink dispatch engine.</p>
             </div>
+
+            <!-- BED RESERVATIONS -->
+            <div class="facility-card" style="border-left: 4px solid #3b82f6;">
+                <h3 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <span><i data-lucide="bed" style="color:#3b82f6;"></i> Incoming Reservations</span>
+                    <span id="reservationBadge" style="background:rgba(59,130,246,0.1);color:#3b82f6;font-size:0.68rem;padding:2px 10px;border-radius:12px;font-weight:800;">LIVE</span>
+                </h3>
+                <div id="reservationList" style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="text-align:center;padding:20px;opacity:0.5;font-size:0.85rem;">No pending reservations.</div>
+                </div>
+            </div>
         </div>
     </div>
 </main>
@@ -238,10 +252,58 @@
 
     const lat = {{ $hospital->lat }};
     const lng = {{ $hospital->lng }};
-    
+
     const map = L.map('map').setView([lat, lng], 15);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
     L.marker([lat, lng]).addTo(map).bindPopup('{{ $hospital->name }}').openPopup();
+
+    // ── Bed Reservation Polling ──────────────────────────────────────
+    const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
+
+    function renderReservations(reservations) {
+        const list = document.getElementById('reservationList');
+        if (!reservations.length) {
+            list.innerHTML = '<div style="text-align:center;padding:20px;opacity:0.5;font-size:0.85rem;">No pending reservations.</div>';
+            return;
+        }
+        const badge = document.getElementById('reservationBadge');
+        badge.textContent = reservations.length + ' PENDING';
+        list.innerHTML = reservations.map(r => `
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+                    <div>
+                        <p style="margin:0;font-weight:700;font-size:0.88rem;">Patient: ${r.patient}</p>
+                        <p style="margin:2px 0 0;font-size:0.73rem;color:var(--grey);">Unit: ${r.responder} · ETA: ${r.eta_minutes ?? '?'} mins</p>
+                    </div>
+                    <span style="font-size:0.65rem;font-weight:800;padding:2px 8px;border-radius:6px;background:${r.status==='confirmed'?'rgba(34,197,94,0.1)':'rgba(245,158,11,0.1)'};color:${r.status==='confirmed'?'#22c55e':'#f59e0b'};">${r.status.toUpperCase()}</span>
+                </div>
+                ${r.status === 'pending' ? `
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                    <button onclick="respondReservation(${r.id},'confirmed')" style="padding:8px;background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);border-radius:8px;cursor:pointer;font-weight:700;font-size:0.78rem;">Confirm</button>
+                    <button onclick="respondReservation(${r.id},'declined')" style="padding:8px;background:rgba(229,9,20,0.08);color:var(--red);border:1px solid rgba(229,9,20,0.2);border-radius:8px;cursor:pointer;font-weight:700;font-size:0.78rem;">Decline</button>
+                </div>` : ''}
+            </div>
+        `).join('');
+    }
+
+    function respondReservation(id, action) {
+        fetch(`/bed/respond/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+            body: JSON.stringify({ action })
+        }).then(() => pollReservations()).catch(() => {});
+    }
+
+    function pollReservations() {
+        fetch('/bed/pending')
+            .then(r => r.json())
+            .then(data => renderReservations(data))
+            .catch(() => {});
+    }
+
+    pollReservations();
+    setInterval(pollReservations, 10000);
 </script>
+<script src="/js/pwa.js" defer></script>
 </body>
 </html>
