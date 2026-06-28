@@ -8,15 +8,15 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .settings-container { max-width: 800px; margin-top: 30px; }
-        .settings-section { 
-            background: rgba(255, 255, 255, 0.02); 
-            border: 1px solid var(--glass-border); 
-            border-radius: 16px; 
-            padding: 30px; 
-            margin-bottom: 30px; 
+        .settings-section {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
             transition: all 0.3s;
         }
-        .settings-section:hover { background: rgba(255, 255, 255, 0.04); border-color: rgba(255,255,255,0.1); }
+        .settings-section:hover { background: var(--glass); border-color: var(--glass-border); }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
         .form-group label { display: block; font-size: 0.8rem; color: var(--grey); margin-bottom: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         .form-group input, .form-group select, .form-group textarea {

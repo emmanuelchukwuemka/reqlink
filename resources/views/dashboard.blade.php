@@ -41,7 +41,7 @@
             bottom: 30px;
             right: 30px;
             width: 350px;
-            background: #0a0a0a;
+            background: var(--dark);
             border: 2px solid var(--red);
             border-radius: 20px;
             padding: 25px;
@@ -411,8 +411,8 @@
     </div>
 
     <!-- FUND WALLET MODAL -->
-    <div id="fundModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
-        <div style="background:var(--dark); border:1px solid var(--glass-border); border-radius:20px; padding:32px; width:100%; max-width:400px; margin:20px;">
+    <div id="fundModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:var(--dark); border:1px solid var(--glass-border); border-radius:20px; padding:32px; width:100%; max-width:400px; margin:20px; color:var(--white);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
                 <h3 style="margin:0;"><i data-lucide="wallet"></i> Fund Wallet</h3>
                 <button onclick="document.getElementById('fundModal').style.display='none'" style="background:none;border:none;color:var(--grey);cursor:pointer;font-size:1.5rem;">&times;</button>
@@ -457,11 +457,11 @@
             <i data-lucide="siren" style="color: var(--red); width: 24px;"></i>
         </div>
 
-        <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+        <div style="background: var(--glass); border: 1px solid var(--glass-border); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
             <div style="display: flex; align-items: center; gap: 12px;">
-                <div id="responderAvatar" style="width: 40px; height: 40px; background: var(--red); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900;">R</div>
+                <div id="responderAvatar" style="width: 40px; height: 40px; background: var(--red); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff;">R</div>
                 <div>
-                    <div id="responderName" style="font-weight: 700; font-size: 0.9rem;">Medical Unit 101</div>
+                    <div id="responderName" style="font-weight: 700; font-size: 0.9rem; color: var(--white);">Medical Unit 101</div>
                     <div id="responderETA" style="font-size: 0.75rem; color: #22c55e; font-weight: 700;">ETA: Calculating...</div>
                 </div>
             </div>
@@ -470,25 +470,25 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px;">
             <button class="btn-primary" style="padding: 10px; font-size: 0.75rem; background: #2563eb;">Call Unit</button>
             <button onclick="openEmergencyChat()" style="padding: 10px; font-size: 0.75rem; background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; cursor: pointer;">Chat</button>
-            <button onclick="cancelEmergency()" style="padding: 10px; font-size: 0.75rem; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); border-radius: 8px; cursor: pointer;">Cancel</button>
+            <button onclick="cancelEmergency()" style="padding: 10px; font-size: 0.75rem; background: rgba(255,255,255,0.05); color: var(--white); border: 1px solid var(--glass-border); border-radius: 8px; cursor: pointer;">Cancel</button>
         </div>
     </div>
 
 <!-- EMERGENCY CHAT WINDOW -->
-<div id="emergencyChat" style="display:none; position:fixed; bottom:110px; right:30px; width:340px; height:440px; background:#0a0a0a; border:1px solid rgba(34,197,94,0.3); border-radius:20px; flex-direction:column; overflow:hidden; z-index:6000; box-shadow:0 20px 50px rgba(0,0,0,0.6);">
-    <div style="background:rgba(34,197,94,0.1); padding:16px 20px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(34,197,94,0.15);">
-        <div style="width:36px;height:36px;background:#22c55e;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:900;">R</div>
+<div id="emergencyChat" style="display:none; position:fixed; bottom:110px; right:30px; width:340px; height:440px; background:var(--dark2); border:1px solid rgba(34,197,94,0.3); border-radius:20px; flex-direction:column; overflow:hidden; z-index:6000; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
+    <div style="background:rgba(34,197,94,0.1); padding:16px 20px; display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--glass-border);">
+        <div style="width:36px;height:36px;background:#22c55e;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:900;color:#fff;">R</div>
         <div style="flex:1;">
-            <h4 style="margin:0;font-size:0.9rem;" id="chatResponderName">Responder</h4>
+            <h4 style="margin:0;font-size:0.9rem;color:var(--white);" id="chatResponderName">Responder</h4>
             <small style="color:#22c55e;font-weight:700;font-size:0.7rem;">Emergency Chat</small>
         </div>
         <button onclick="document.getElementById('emergencyChat').style.display='none'" style="background:none;border:none;color:var(--grey);cursor:pointer;font-size:1.2rem;">&times;</button>
     </div>
-    <div id="emergencyChatBody" style="flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;">
+    <div id="emergencyChatBody" style="flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;background:var(--dark2);">
         <div style="text-align:center;color:var(--grey);font-size:0.8rem;padding:20px;">Chat with your assigned responder</div>
     </div>
-    <div style="padding:12px;border-top:1px solid var(--glass-border);display:flex;gap:8px;">
-        <input id="emergencyChatInput" type="text" placeholder="Type a message..." style="flex:1;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);border-radius:10px;padding:10px 14px;color:#fff;font-size:0.85rem;" onkeypress="if(event.key==='Enter') sendEmergencyChat()">
+    <div style="padding:12px;border-top:1px solid var(--glass-border);display:flex;gap:8px;background:var(--dark2);">
+        <input id="emergencyChatInput" type="text" placeholder="Type a message..." style="flex:1;background:var(--glass);border:1px solid var(--glass-border);border-radius:10px;padding:10px 14px;color:var(--white);font-size:0.85rem;" onkeypress="if(event.key==='Enter') sendEmergencyChat()">
         <button onclick="sendEmergencyChat()" style="background:#22c55e;border:none;color:#fff;width:40px;border-radius:10px;cursor:pointer;font-size:1rem;">➤</button>
     </div>
 </div>
@@ -960,7 +960,7 @@
     });
 </script>
 <!-- Support Widget -->
-<div class="support-trigger" id="supportTrigger" style="position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; background: var(--black); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 5000; transition: transform 0.3s; border: 1px solid var(--glass-border);">
+<div class="support-trigger" id="supportTrigger" style="position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; background: var(--dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--white); cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 5000; transition: transform 0.3s; border: 1px solid var(--glass-border);">
     <i data-lucide="mail"></i>
 </div>
 
@@ -1023,11 +1023,7 @@
                     lastChatId = Math.max(lastChatId, m.id);
                     const isMe = m.sender_role === 'user';
                     const div = document.createElement('div');
-                    div.style.cssText = `max-width:80%;padding:10px 14px;border-radius:14px;font-size:0.82rem;line-height:1.4;
-                        align-self:${isMe ? 'flex-end' : 'flex-start'};
-                        background:${isMe ? 'var(--red)' : 'rgba(255,255,255,0.06)'};
-                        color:${isMe ? '#fff' : 'inherit'};
-                        border-bottom-${isMe ? 'right' : 'left'}-radius:3px;`;
+                    div.className = isMe ? 'echat-msg me' : 'echat-msg them';
                     div.textContent = m.message;
                     body.appendChild(div);
                 });

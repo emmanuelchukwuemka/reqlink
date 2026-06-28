@@ -484,7 +484,7 @@
 <script src="/js/chat.js"></script>
 
 <!-- Support Widget -->
-<div class="support-trigger" id="supportTrigger" style="position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; background: var(--black); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 5000; transition: transform 0.3s;">
+<div class="support-trigger" id="supportTrigger" style="position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; background: var(--dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--white); cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 5000; transition: transform 0.3s;">
     <i data-lucide="mail"></i>
 </div>
 

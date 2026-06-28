@@ -46,8 +46,8 @@
         /* SOS toast */
         #sosToast {
             position: fixed; bottom: 30px; right: 30px; z-index: 9999;
-            background: #0a0a0a; border: 1px solid var(--red); border-radius: 16px;
-            padding: 20px 24px; color: #fff; min-width: 280px;
+            background: var(--dark); border: 1px solid var(--red); border-radius: 16px;
+            padding: 20px 24px; color: var(--white); min-width: 280px;
             box-shadow: 0 0 40px rgba(229,9,20,0.4); display: none;
             animation: slideIn 0.4s ease;
         }

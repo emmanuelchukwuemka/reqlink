@@ -283,22 +283,22 @@
 </main>
 
 <!-- EMERGENCY ALERT MODAL -->
-<div id="emergencyModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
-    <div style="background: #0a0a0a; border: 1px solid var(--red); width: 100%; max-width: 500px; border-radius: 20px; padding: 40px; text-align: center; box-shadow: 0 0 50px rgba(229, 9, 20, 0.3); animation: pulse-red 2s infinite;">
+<div id="emergencyModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+    <div style="background: var(--dark); border: 1px solid var(--red); width: 100%; max-width: 500px; border-radius: 20px; padding: 40px; text-align: center; box-shadow: 0 0 50px rgba(229, 9, 20, 0.3); animation: pulse-red 2s infinite; color: var(--white);">
         <div style="width: 80px; height: 80px; background: rgba(229, 9, 20, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--red); margin: 0 auto 24px;">
             <i data-lucide="siren" style="width: 48px; height: 48px;"></i>
         </div>
-        <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 10px; color: #fff;">CRITICAL ALERT</h2>
+        <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 10px; color: var(--white);">CRITICAL ALERT</h2>
         <p id="alertUser" style="font-size: 1.1rem; color: var(--grey); margin-bottom: 5px;">Patient: John Doe</p>
         <p id="alertLoc" style="font-size: 0.9rem; color: var(--red); font-weight: 700; margin-bottom: 30px;">LOCATION: 1.2km away</p>
         
-        <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 20px; margin-bottom: 30px; text-align: left;">
+        <div style="background: var(--glass); border: 1px solid var(--glass-border); border-radius: 12px; padding: 20px; margin-bottom: 30px; text-align: left;">
             <p style="font-size: 0.75rem; color: var(--grey); margin-bottom: 5px; text-transform: uppercase;">Medical ID Summary</p>
-            <p id="alertMedical" style="font-weight: 600;">Blood: O+ | Allergies: None | Asthma</p>
+            <p id="alertMedical" style="font-weight: 600; color: var(--white);">Blood: O+ | Allergies: None | Asthma</p>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
-            <button onclick="closeAlert()" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">Decline</button>
+            <button onclick="closeAlert()" style="background: rgba(255,255,255,0.05); color: var(--white); border: 1px solid var(--glass-border); padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">Decline</button>
             <button onclick="acceptMission()" style="background: var(--red); color: #fff; border: none; padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 10px 20px rgba(229, 9, 20, 0.3);">Accept</button>
             <button onclick="openResponderChat()" style="background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">Chat</button>
         </div>
@@ -309,20 +309,20 @@
 </div>
 
 <!-- RESPONDER CHAT WINDOW -->
-<div id="responderChat" style="display:none; position:fixed; bottom:30px; right:30px; width:340px; height:440px; background:#0a0a0a; border:1px solid rgba(34,197,94,0.3); border-radius:20px; flex-direction:column; overflow:hidden; z-index:6000; box-shadow:0 20px 50px rgba(0,0,0,0.6);">
-    <div style="background:rgba(34,197,94,0.1); padding:16px 20px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(34,197,94,0.15);">
-        <div style="width:36px;height:36px;background:var(--red);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;">P</div>
+<div id="responderChat" style="display:none; position:fixed; bottom:30px; right:30px; width:340px; height:440px; background:var(--dark2); border:1px solid rgba(34,197,94,0.3); border-radius:20px; flex-direction:column; overflow:hidden; z-index:6000; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
+    <div style="background:rgba(34,197,94,0.1); padding:16px 20px; display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--glass-border);">
+        <div style="width:36px;height:36px;background:var(--red);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;">P</div>
         <div style="flex:1;">
-            <h4 style="margin:0;font-size:0.9rem;" id="rChatPatientName">Patient</h4>
+            <h4 style="margin:0;font-size:0.9rem;color:var(--white);" id="rChatPatientName">Patient</h4>
             <small style="color:#22c55e;font-weight:700;font-size:0.7rem;">Mission Chat</small>
         </div>
         <button onclick="document.getElementById('responderChat').style.display='none'" style="background:none;border:none;color:var(--grey);cursor:pointer;font-size:1.2rem;">&times;</button>
     </div>
-    <div id="rChatBody" style="flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;">
+    <div id="rChatBody" style="flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;background:var(--dark2);">
         <div style="text-align:center;color:var(--grey);font-size:0.8rem;padding:20px;">Chat with the patient</div>
     </div>
-    <div style="padding:12px;border-top:1px solid var(--glass-border);display:flex;gap:8px;">
-        <input id="rChatInput" type="text" placeholder="Type a message..." style="flex:1;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);border-radius:10px;padding:10px 14px;color:#fff;font-size:0.85rem;" onkeypress="if(event.key==='Enter') sendResponderChat()">
+    <div style="padding:12px;border-top:1px solid var(--glass-border);display:flex;gap:8px;background:var(--dark2);">
+        <input id="rChatInput" type="text" placeholder="Type a message..." style="flex:1;background:var(--glass);border:1px solid var(--glass-border);border-radius:10px;padding:10px 14px;color:var(--white);font-size:0.85rem;" onkeypress="if(event.key==='Enter') sendResponderChat()">
         <button onclick="sendResponderChat()" style="background:#22c55e;border:none;color:#fff;width:40px;border-radius:10px;cursor:pointer;font-size:1rem;">➤</button>
     </div>
 </div>
@@ -621,11 +621,7 @@
                     rLastChatId = Math.max(rLastChatId, m.id);
                     const isMe = m.sender_role === 'responder';
                     const div = document.createElement('div');
-                    div.style.cssText = `max-width:80%;padding:10px 14px;border-radius:14px;font-size:0.82rem;line-height:1.4;
-                        align-self:${isMe ? 'flex-end' : 'flex-start'};
-                        background:${isMe ? '#22c55e' : 'rgba(255,255,255,0.06)'};
-                        color:#fff;
-                        border-bottom-${isMe ? 'right' : 'left'}-radius:3px;`;
+                    div.className = isMe ? 'echat-msg me green' : 'echat-msg them';
                     div.textContent = m.message;
                     body.appendChild(div);
                 });

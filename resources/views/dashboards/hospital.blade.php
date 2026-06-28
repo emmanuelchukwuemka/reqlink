@@ -13,7 +13,7 @@
         .facility-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 20px; padding: 30px; }
         .bed-counter { display: flex; align-items: center; justify-content: space-between; padding: 20px; background: rgba(255,255,255,0.03); border-radius: 12px; margin-bottom: 15px; }
         .counter-controls { display: flex; align-items: center; gap: 15px; }
-        .count-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .count-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--white); cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .count-value { font-size: 1.2rem; font-weight: 800; min-width: 30px; text-align: center; }
 
         @media (max-width: 900px) {

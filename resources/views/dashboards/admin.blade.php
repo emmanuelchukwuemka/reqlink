@@ -27,8 +27,8 @@
         /* SOS toast */
         #sosToast {
             position: fixed; top: 24px; right: 24px; z-index: 9999;
-            background: #0a0a0a; border: 1px solid var(--red); border-radius: 16px;
-            padding: 18px 22px; color: #fff; min-width: 260px;
+            background: var(--dark); border: 1px solid var(--red); border-radius: 16px;
+            padding: 18px 22px; color: var(--white); min-width: 260px;
             box-shadow: 0 0 40px rgba(229,9,20,0.35);
             display: none; animation: slideDown 0.4s ease;
         }
@@ -129,7 +129,7 @@
         <p id="toastTime" style="margin:0 0 12px;font-size:0.72rem;color:var(--grey);"></p>
         <div style="display:flex;gap:8px;">
             <a href="{{ route('admin.command-center') }}" style="flex:1;text-align:center;background:var(--red);color:#fff;text-decoration:none;padding:8px;border-radius:8px;font-weight:700;font-size:0.8rem;">View Map</a>
-            <button onclick="document.getElementById('sosToast').style.display='none'" style="flex:1;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);color:#fff;padding:8px;border-radius:8px;font-weight:700;font-size:0.8rem;cursor:pointer;">Dismiss</button>
+            <button onclick="document.getElementById('sosToast').style.display='none'" style="flex:1;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);color:var(--white);padding:8px;border-radius:8px;font-weight:700;font-size:0.8rem;cursor:pointer;">Dismiss</button>
         </div>
     </div>
 

@@ -122,7 +122,7 @@
                     <div style="width: 32px; height: 32px; background: {{ ['#e50914','#f59e0b','#3b82f6'][$index] ?? '#6b7280' }}22; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: {{ ['#e50914','#f59e0b','#3b82f6'][$index] ?? '#6b7280' }}; font-weight: 900; font-size: 0.8rem; flex-shrink: 0;">{{ $index + 1 }}</div>
                     <div style="flex: 1; min-width: 0;">
                         <p style="margin: 0; font-weight: 700; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $r->name ?? 'Unknown' }}</p>
-                        <div style="background: rgba(255,255,255,0.06); border-radius: 4px; height: 8px; margin-top: 4px;">
+                        <div style="background: var(--glass-border); border-radius: 4px; height: 8px; margin-top: 4px;">
                             <div class="bar-fill" style="width: {{ $pct }}%;"></div>
                         </div>
                     </div>
