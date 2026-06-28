@@ -80,24 +80,6 @@
                         <li><a href="{{ route('register') }}"><i data-lucide="help-circle" class="drop-icon"></i>Other Fire Incident</a></li>
                     </ul>
                 </li>
-                <li class="nav-dropdown">
-                    <a href="#categories" class="nav-dropdown-trigger nav-link-item nav-emergency-link">
-                        <i data-lucide="tornado" class="nav-em-icon"></i>
-                        Disaster
-                        <i data-lucide="chevron-down" class="dropdown-arrow"></i>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a href="{{ route('register') }}"><i data-lucide="waves" class="drop-icon"></i>Flooding</a></li>
-                        <li><a href="{{ route('register') }}"><i data-lucide="building-2" class="drop-icon"></i>Building Collapse</a></li>
-                        <li><a href="{{ route('register') }}"><i data-lucide="mountain" class="drop-icon"></i>Landslide</a></li>
-                        <li><a href="{{ route('register') }}"><i data-lucide="cloud-lightning" class="drop-icon"></i>Storm Damage</a></li>
-                        <li><a href="{{ route('register') }}"><i data-lucide="users" class="drop-icon"></i>Community Disaster</a></li>
-                        <li><a href="{{ route('register') }}"><i data-lucide="alert-octagon" class="drop-icon"></i>Mass Casualty Incident</a></li>
-                        <li><a href="{{ route('register') }}"><i data-lucide="leaf" class="drop-icon"></i>Environmental Hazard</a></li>
-                        <li><a href="{{ route('register') }}"><i data-lucide="help-circle" class="drop-icon"></i>Other Disaster</a></li>
-                    </ul>
-                </li>
-
                 <li class="nav-divider-line"></li>
 
                 <li><a href="{{ route('login') }}" class="nav-link-item">Login</a></li>
