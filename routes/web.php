@@ -82,6 +82,11 @@ Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'ind
 Route::get('/settings', [\App\Http\Controllers\SettingsController::class, 'index'])->name('settings')->middleware('auth');
 Route::get('/admin/command-center', [DashboardController::class, 'commandCenter'])->name('admin.command-center')->middleware('auth');
 Route::post('/admin/user/{id}/toggle-status', [DashboardController::class, 'toggleUserStatus'])->name('admin.user.toggle-status')->middleware('auth');
+Route::post('/admin/user/{id}/role', [DashboardController::class, 'updateUserRole'])->name('admin.user.role')->middleware('auth');
+Route::get('/admin/incidents', [DashboardController::class, 'globalIncidents'])->name('admin.incidents')->middleware('auth');
+Route::post('/admin/incident/{id}/status', [DashboardController::class, 'updateIncidentStatus'])->name('admin.incident.status')->middleware('auth');
+Route::get('/admin/agencies', [DashboardController::class, 'agencyOversight'])->name('admin.agencies')->middleware('auth');
+Route::post('/admin/responder/{id}/toggle-duty', [DashboardController::class, 'adminToggleResponderDuty'])->name('admin.responder.toggle-duty')->middleware('auth');
 Route::post('/settings', [\App\Http\Controllers\SettingsController::class, 'update'])->name('settings.update')->middleware('auth');
 Route::post('/user/toggle-samaritan', [DashboardController::class, 'toggleSamaritan'])->middleware('auth');
 Route::post('/api/chat/openai', [\App\Http\Controllers\OpenAiController::class, 'chat'])->middleware('auth');
