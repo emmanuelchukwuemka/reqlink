@@ -25,7 +25,7 @@ class AnalyticsController extends Controller
         // Average response time in minutes
         $avg_response = Emergency::whereNotNull('assigned_responder_id')
             ->whereIn('status', ['dispatched', 'enroute', 'arrived', 'resolved'])
-            ->selectRaw('AVG(EXTRACT(EPOCH FROM (updated_at - created_at))/60) as avg_minutes')
+            ->selectRaw('AVG(TIMESTAMPDIFF(SECOND, created_at, updated_at)/60) as avg_minutes')
             ->value('avg_minutes');
 
         // Top responders by resolved missions (via direct FK assigned_responder_id)
