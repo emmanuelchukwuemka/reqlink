@@ -81,9 +81,9 @@ def upload_file(token, password, local_path, remote_path):
 
     url  = f"https://{CPANEL_HOST}:{CPANEL_PORT}/{token}/execute/Fileman/save_file_content"
     body = urllib.parse.urlencode({
-        "dir":      remote_dir,
-        "filename": remote_name,
-        "content":  content,
+        "dir":     remote_dir,
+        "file":    remote_name,
+        "content": content,
     }).encode()
 
     ctx = ssl.create_default_context()
@@ -98,6 +98,42 @@ def upload_file(token, password, local_path, remote_path):
         result = json.loads(resp.read())
 
     return result.get("status") == 1
+
+
+def clear_route_cache(token, password):
+    """Delete bootstrap/cache/routes-*.php so stale cached routes never shadow web.php.
+
+    Laravel route caching writes bootstrap/cache/routes-v7.php and, if present, it takes
+    priority over routes/web.php for named-route lookups -- a deploy that adds/renames a
+    route but doesn't bust this cache causes RouteNotFoundException (500) on any view
+    using route(). exec() is disabled on this host so `artisan route:clear` isn't an
+    option; UAPI's Fileman/delete_files doesn't exist on this account's cPanel version,
+    so we fall back to the legacy API2 Fileman/fileop op=unlink, which does.
+    """
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    auth = base64.b64encode(f"{CPANEL_USER}:{password}".encode()).decode()
+
+    for name in ("routes-v7.php", "routes.php"):
+        remote = f"{SERVER_APP_ROOT}/bootstrap/cache/{name}"
+        url = f"https://{CPANEL_HOST}:{CPANEL_PORT}/{token}/json-api/cpanel"
+        body = urllib.parse.urlencode({
+            "cpanel_jsonapi_apiversion": "2",
+            "cpanel_jsonapi_module":     "Fileman",
+            "cpanel_jsonapi_func":       "fileop",
+            "op":                        "unlink",
+            "sourcefiles":               remote,
+            "doubledecode":              "0",
+        }).encode()
+        req = urllib.request.Request(url, data=body, method="POST")
+        req.add_header("Authorization", f"Basic {auth}")
+        req.add_header("Content-Type", "application/x-www-form-urlencoded")
+        try:
+            with urllib.request.urlopen(req, context=ctx, timeout=30) as resp:
+                json.loads(resp.read())  # file may not exist; errors here are fine to ignore
+        except urllib.error.HTTPError:
+            pass
 
 
 def get_changed_files():
@@ -173,7 +209,15 @@ def main():
         else:
             fail += 1
 
-    print(f"\n[4/4] Finalizing…")
+    if any(f.startswith("routes/") for f in changed):
+        print(f"\n[4/5] Clearing stale route cache (routes/ changed)…")
+        clear_route_cache(token, password)
+        print(f"      ✓ Cleared")
+        step = "5/5"
+    else:
+        step = "4/4"
+
+    print(f"\n[{step}] Finalizing…")
     current_commit = get_current_commit()
     DEPLOY_MARKER.write_text(current_commit)
     print(f"      Saved deploy marker: {current_commit[:10]}")
