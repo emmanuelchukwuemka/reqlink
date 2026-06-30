@@ -644,8 +644,21 @@
     let responderMarker = null;
     let pollingInterval = null;
 
+    let sosTriggering = false;
+
+    function resetPanicBtn() {
+        sosTriggering = false;
+        panicBtn.innerHTML = '<span>SOS</span><small>Tap to Alert</small>';
+    }
+
     function triggerEmergency() {
-        if (!navigator.geolocation) return alert('Geolocation not supported');
+        if (sosTriggering) return; // ignore repeat taps while already in flight
+        if (!window.isSecureContext) {
+            return alert('This page must be loaded over HTTPS for SOS to access your location. Please reload using https://');
+        }
+        if (!navigator.geolocation) return alert('Geolocation not supported on this device/browser.');
+
+        sosTriggering = true;
         panicBtn.innerHTML = '<span>...</span><small>Locating</small>';
 
         navigator.geolocation.getCurrentPosition((position) => {
@@ -655,12 +668,16 @@
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                 body: JSON.stringify({ latitude, longitude })
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error('Server responded with ' + res.status);
+                return res.json();
+            })
             .then(data => {
+                sosTriggering = false;
                 activeEmergencyUuid = data.uuid;
                 startPollingStatus();
                 startPanicRecording(data.uuid); // Start recording evidence
-                
+
                 if (data.status === 'dispatched') {
                     panicBtn.innerHTML = '<span>SOS</span><small>Help En-Route</small>';
                     document.getElementById('emergencyStatus').textContent = data.message;
@@ -676,7 +693,24 @@
                 }
 
                 document.getElementById('liveAlert').style.display = 'block';
+            })
+            .catch(err => {
+                console.error('SOS dispatch failed:', err);
+                resetPanicBtn();
+                alert('Could not reach ResQLink to send your alert. Check your connection and tap SOS again.');
             });
+        }, (error) => {
+            resetPanicBtn();
+            const messages = {
+                1: 'Location permission was denied. Please allow location access in your browser settings, then tap SOS again.',
+                2: 'Your location could not be determined. Please try again, ideally outdoors or near a window.',
+                3: 'Getting your location took too long. Please tap SOS again.'
+            };
+            alert(messages[error.code] || 'Could not get your location. Please tap SOS again.');
+        }, {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0
         });
     }
 
@@ -864,8 +898,17 @@
 
         recognition.onerror = (event) => {
             console.warn('Voice recognition error:', event.error);
-            // Restart on non-fatal errors
-            if (isListening && event.error !== 'not-allowed' && event.error !== 'service-not-allowed') {
+            const fatal = ['not-allowed', 'service-not-allowed', 'audio-capture'];
+            if (fatal.includes(event.error)) {
+                // Permission denied or no mic — stop instead of looping forever in onend
+                stopVoiceSOS();
+                const messages = {
+                    'not-allowed': 'Microphone access was denied. Please allow microphone access in your browser settings to use Voice SOS.',
+                    'service-not-allowed': 'Microphone access was denied. Please allow microphone access in your browser settings to use Voice SOS.',
+                    'audio-capture': 'No microphone was found on this device. Voice SOS requires a working microphone.'
+                };
+                alert(messages[event.error]);
+            } else if (isListening) {
                 setTimeout(() => { if (isListening) recognition.start(); }, 1000);
             }
         };
@@ -876,6 +919,10 @@
     }
 
     voiceToggle.addEventListener('click', () => {
+        if (!window.isSecureContext) {
+            alert('Voice SOS requires a secure (https://) connection. Please reload this page using https://.');
+            return;
+        }
         if (!recognition) {
             alert('Voice recognition is not supported in this browser. Please use Chrome or Edge.');
             return;

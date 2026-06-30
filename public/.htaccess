@@ -5,6 +5,14 @@
 
     RewriteEngine On
 
+    # Force HTTPS — geolocation, microphone access, and the Web Speech API
+    # (SOS trigger, panic-evidence recording, AI voice assistant) are all
+    # blocked by browsers on insecure origins, so plain http:// visitors
+    # silently lose those features with no error shown.
+    RewriteCond %{HTTPS} off
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
