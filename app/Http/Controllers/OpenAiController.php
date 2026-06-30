@@ -9,8 +9,11 @@ class OpenAiController extends Controller
 {
     public function chat(Request $request)
     {
-        $message = $request->input('message');
-        $apiKey = env('OPENAI_API_KEY');
+        $validated = $request->validate([
+            'message' => 'required|string|max:1000',
+        ]);
+        $message = $validated['message'];
+        $apiKey = config('services.openai.key');
 
         if (!$apiKey) {
             return response()->json(['error' => 'API Key not configured'], 500);
@@ -20,13 +23,14 @@ class OpenAiController extends Controller
             $response = Http::withoutVerifying()->withHeaders([
                 'Authorization' => 'Bearer ' . $apiKey,
                 'Content-Type' => 'application/json',
-            ])->post('https://api.openai.com/v1/chat/completions', [
+            ])->timeout(25)->post('https://api.openai.com/v1/chat/completions', [
                 'model' => 'gpt-4o-mini',
                 'messages' => [
-                    ['role' => 'system', 'content' => 'You are ResQLink Medical AI, an empathetic, calm, and professional digital first-responder. Your goal is to provide clear, actionable medical advice and first-aid instructions. Always start with a medical disclaimer. If the situation is critical, tell the user to use the Red SOS button immediately.'],
+                    ['role' => 'system', 'content' => 'You are ResQLink Medical AI, an empathetic, calm, and professional digital first-responder. You answer any medical question the user asks — symptoms, conditions, medication dosages, first aid, mental health, pediatric and maternal care — with clear, accurate, actionable guidance. Keep answers concise and practical. Always start with a brief medical disclaimer. If the situation sounds critical or life-threatening, tell the user to use the Red SOS button immediately.'],
                     ['role' => 'user', 'content' => $message],
                 ],
                 'temperature' => 0.7,
+                'max_tokens' => 600,
             ]);
 
             if ($response->failed()) {

@@ -45,4 +45,8 @@ return [
         'vapid_key'  => env('FIREBASE_VAPID_KEY'),
     ],
 
+    'openai' => [
+        'key' => env('OPENAI_API_KEY'),
+    ],
+
 ];

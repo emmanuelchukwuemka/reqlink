@@ -89,7 +89,10 @@ Route::get('/admin/agencies', [DashboardController::class, 'agencyOversight'])->
 Route::post('/admin/responder/{id}/toggle-duty', [DashboardController::class, 'adminToggleResponderDuty'])->name('admin.responder.toggle-duty')->middleware('auth');
 Route::post('/settings', [\App\Http\Controllers\SettingsController::class, 'update'])->name('settings.update')->middleware('auth');
 Route::post('/user/toggle-samaritan', [DashboardController::class, 'toggleSamaritan'])->middleware('auth');
-Route::post('/api/chat/openai', [\App\Http\Controllers\OpenAiController::class, 'chat'])->middleware('auth');
+// Public so the landing-page AI widget works for visitors who aren't logged in yet
+Route::post('/api/chat/openai', [\App\Http\Controllers\OpenAiController::class, 'chat'])
+    ->name('api.chat.openai')
+    ->middleware('throttle:20,1');
 
 Route::post('/emergency/trigger', [\App\Http\Controllers\EmergencyController::class, 'trigger'])
     ->name('emergency.trigger')
