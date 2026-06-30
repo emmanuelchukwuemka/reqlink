@@ -17,10 +17,18 @@ class EmergencyController extends Controller
             'type' => 'nullable|string',
         ]);
 
-        // 1. Create the emergency record
+        // 1. Resolve emergency type — seed row if seeder never ran on this environment
+        $typeId = \App\Domains\Emergencies\Models\EmergencyType::min('id')
+            ?? \App\Domains\Emergencies\Models\EmergencyType::create([
+                'name' => 'Medical',
+                'icon' => 'medical-bag',
+                'description' => 'Health emergencies requiring ambulance or doctors.',
+            ])->id;
+
+        // 2. Create the emergency record
         $emergency = Emergency::create([
             'user_id' => Auth::id(),
-            'emergency_type_id' => 1, // Defaulting to Health/General for now
+            'emergency_type_id' => $typeId,
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
             'status' => 'pending',

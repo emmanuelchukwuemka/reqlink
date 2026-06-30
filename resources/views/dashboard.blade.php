@@ -669,14 +669,19 @@
                 body: JSON.stringify({ latitude, longitude })
             })
             .then(res => {
-                if (!res.ok) throw new Error('Server responded with ' + res.status);
+                if (!res.ok) {
+                    const status = res.status;
+                    return res.text().then(body => {
+                        throw new Error('HTTP_' + status + ':' + body.substring(0, 300));
+                    });
+                }
                 return res.json();
             })
             .then(data => {
                 sosTriggering = false;
                 activeEmergencyUuid = data.uuid;
                 startPollingStatus();
-                startPanicRecording(data.uuid); // Start recording evidence
+                startPanicRecording(data.uuid);
 
                 if (data.status === 'dispatched') {
                     panicBtn.innerHTML = '<span>SOS</span><small>Help En-Route</small>';
@@ -697,7 +702,15 @@
             .catch(err => {
                 console.error('SOS dispatch failed:', err);
                 resetPanicBtn();
-                alert('Could not reach ResQLink to send your alert. Check your connection and tap SOS again.');
+                let msg = 'Could not reach ResQLink. Please tap SOS again.';
+                if (err.message && err.message.startsWith('HTTP_')) {
+                    const status = parseInt(err.message.split(':')[0].replace('HTTP_', ''));
+                    if (status === 419) msg = 'Session expired. Please refresh the page, then tap SOS again.';
+                    else if (status >= 500) msg = 'ResQLink server error (' + status + '). Please try again in a moment.';
+                    else if (status === 401 || status === 403) msg = 'Please log in again, then tap SOS.';
+                    else msg = 'SOS request failed (error ' + status + '). Please try again.';
+                }
+                setTimeout(() => alert(msg), 50);
             });
         }, (error) => {
             resetPanicBtn();
@@ -706,7 +719,7 @@
                 2: 'Your location could not be determined. Please try again, ideally outdoors or near a window.',
                 3: 'Getting your location took too long. Please tap SOS again.'
             };
-            alert(messages[error.code] || 'Could not get your location. Please tap SOS again.');
+            setTimeout(() => alert(messages[error.code] || 'Could not get your location. Please tap SOS again.'), 50);
         }, {
             enableHighAccuracy: true,
             timeout: 15000,
