@@ -8,8 +8,8 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/dashboard.css">
     <link rel="stylesheet" href="/css/chat.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .mission-grid { display: grid; grid-template-columns: 1fr 350px; gap: 24px; }
@@ -510,9 +510,13 @@
 
     // Initialize Map
     let responderMap = L.map('responderMap').setView([6.5244, 3.3792], 13);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; CartoDB'
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19
     }).addTo(responderMap);
+    // Dark mode filter
+    const rPane = responderMap.getPane('tilePane');
+    if (rPane) rPane.style.filter = 'invert(92%) hue-rotate(180deg) brightness(95%) contrast(90%)';
 
     function startTracking() {
         if ("geolocation" in navigator) {

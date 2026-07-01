@@ -230,8 +230,8 @@
     </div>
 </main>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
 <script>
     lucide.createIcons();
 
@@ -254,7 +254,12 @@
     const lng = {{ $hospital->lng }};
 
     const map = L.map('map').setView([lat, lng], 15);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19
+    }).addTo(map);
+    const hPane = map.getPane('tilePane');
+    if (hPane) hPane.style.filter = 'invert(92%) hue-rotate(180deg) brightness(95%) contrast(90%)';
     L.marker([lat, lng]).addTo(map).bindPopup('{{ $hospital->name }}').openPopup();
 
     // ── Bed Reservation Polling ──────────────────────────────────────

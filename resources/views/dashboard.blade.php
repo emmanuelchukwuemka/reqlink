@@ -8,8 +8,8 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/dashboard.css">
     <link rel="stylesheet" href="/css/chat.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .tab-pane { display: none; }
@@ -497,14 +497,9 @@
 <script>
     lucide.createIcons();
 
-    // Listen for global theme changes to update map
+    // Listen for global theme changes to restyle map
     document.addEventListener('themeChanged', (e) => {
-        if (typeof tileLayer !== 'undefined') {
-            const newTileUrl = e.detail.isLight 
-                ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
-                : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-            tileLayer.setUrl(newTileUrl);
-        }
+        if (typeof applyMapTheme === 'function') applyMapTheme(e.detail.isLight);
     });
     // Tab Switching
     document.querySelectorAll('.nav-item[data-tab]').forEach(item => {
@@ -531,23 +526,31 @@
 
     // Map Initialization
     let map = L.map('map').setView([6.5244, 3.3792], 13);
-    const initialTileUrl = document.documentElement.classList.contains('light-mode')
-        ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
-        : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-        
-    let tileLayer = L.tileLayer(initialTileUrl, {
-        attribution: '&copy; CartoDB'
+
+    let tileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19
     }).addTo(map);
+
+    function applyMapTheme(isLight) {
+        const pane = map.getPane('tilePane');
+        if (pane) pane.style.filter = isLight ? '' : 'invert(92%) hue-rotate(180deg) brightness(95%) contrast(90%)';
+    }
+    applyMapTheme(document.documentElement.classList.contains('light-mode'));
 
     let userMarker;
 
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((position) => {
-            const { latitude, longitude } = position.coords;
-            map.setView([latitude, longitude], 15);
-            userMarker = L.marker([latitude, longitude]).addTo(map)
-                .bindPopup('Your Current Location').openPopup();
-        });
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                map.setView([latitude, longitude], 15);
+                userMarker = L.marker([latitude, longitude]).addTo(map)
+                    .bindPopup('Your Current Location').openPopup();
+            },
+            () => { /* location denied — stay at Lagos default */ },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
     }
 
     // ── Real-time map markers ─────────────────────────────────────────
