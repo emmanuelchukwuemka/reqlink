@@ -644,5 +644,6 @@
 </script>
 <script src="/js/chat.js"></script>
 <script src="/js/pwa.js" defer></script>
+@include('partials.profile-modal')
 </body>
 </html>

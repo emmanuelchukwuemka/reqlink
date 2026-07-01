@@ -435,5 +435,6 @@
     pollAdmin();
     setInterval(pollAdmin, 5000);
 </script>
+@include('partials.profile-modal')
 </body>
 </html>

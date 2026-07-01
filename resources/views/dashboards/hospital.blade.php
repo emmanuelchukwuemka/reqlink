@@ -305,5 +305,6 @@
     setInterval(pollReservations, 10000);
 </script>
 <script src="/js/pwa.js" defer></script>
+@include('partials.profile-modal')
 </body>
 </html>

@@ -1104,5 +1104,7 @@
         }).then(() => pollEmergencyChat()).catch(() => {});
     }
 </script>
+
+@include('partials.profile-modal')
 </body>
 </html>
