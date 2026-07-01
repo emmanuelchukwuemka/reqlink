@@ -76,8 +76,10 @@ def upload_file(token, password, local_path, remote_path):
     except UnicodeDecodeError:
         content = local_path.read_bytes().decode("latin-1")
 
-    remote_dir  = str(Path(remote_path).parent)
-    remote_name = Path(remote_path).name
+    # Use posixpath (not Path) so Linux remote paths keep forward slashes on Windows
+    import posixpath
+    remote_dir  = posixpath.dirname(remote_path)
+    remote_name = posixpath.basename(remote_path)
 
     url  = f"https://{CPANEL_HOST}:{CPANEL_PORT}/{token}/execute/Fileman/save_file_content"
     body = urllib.parse.urlencode({
