@@ -83,7 +83,7 @@
 <aside class="sidebar">
     <div class="sidebar-header">
         <div class="auth-logo" style="margin-bottom: 0;">
-            <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 50px; width: auto; object-fit: contain;">
+            <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 100px; width: auto; object-fit: contain;">
         </div>
         <div style="font-size: 0.6rem; color: var(--red); font-weight: 900; text-transform: uppercase; margin-top: 5px; letter-spacing: 2px;">Admin Portal</div>
     </div>

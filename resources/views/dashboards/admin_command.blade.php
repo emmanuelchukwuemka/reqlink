@@ -45,7 +45,7 @@
         }
         .cmd-back:hover { background: rgba(255,255,255,0.12); }
         .cmd-divider { width: 1px; height: 28px; background: var(--glass-border); flex-shrink: 0; }
-        .cmd-logo { height: 30px; width: auto; object-fit: contain; }
+        .cmd-logo { height: 60px; width: auto; object-fit: contain; }
         .cmd-title { font-size: 0.85rem; font-weight: 900; letter-spacing: 3px; color: var(--white); opacity: 0.9; white-space: nowrap; }
         .cmd-spacer { flex: 1; }
 

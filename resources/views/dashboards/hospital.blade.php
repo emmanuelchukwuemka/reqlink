@@ -38,7 +38,7 @@
 <aside class="sidebar">
     <div class="sidebar-header">
         <div class="auth-logo">
-            <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 50px; width: auto;">
+            <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 100px; width: auto;">
         </div>
         <div class="role-badge" style="background: #22c55e; color: white; margin-top: 10px; font-size: 0.7rem; padding: 4px 12px; border-radius: 20px; font-weight: 800;">MEDICAL FACILITY</div>
     </div>

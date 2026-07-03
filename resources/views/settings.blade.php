@@ -48,7 +48,7 @@
 <aside class="sidebar">
     <div class="sidebar-header">
         <div class="auth-logo" style="margin-bottom: 0;">
-            <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 50px; width: auto; object-fit: contain;">
+            <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 100px; width: auto; object-fit: contain;">
         </div>
     </div>
     
