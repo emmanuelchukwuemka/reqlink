@@ -342,13 +342,48 @@
 <script>
     lucide.createIcons();
 
+    function addSatelliteToggle(mapObj, osmLayer) {
+        let sat = false;
+        const satLayer = L.tileLayer(
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            { attribution: 'Tiles &copy; Esri', maxZoom: 19 }
+        );
+        const ctrl = document.createElement('div');
+        ctrl.className = 'map-type-ctrl';
+        ctrl.innerHTML = '<button class="mtb active" data-t="map">Map</button><button class="mtb" data-t="satellite">Satellite</button>';
+        mapObj.getContainer().appendChild(ctrl);
+        ctrl.addEventListener('click', e => {
+            const btn = e.target.closest('.mtb');
+            if (!btn) return;
+            ctrl.querySelectorAll('.mtb').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const pane = mapObj.getPane('tilePane');
+            if (btn.dataset.t === 'satellite' && !sat) {
+                osmLayer.remove(); satLayer.addTo(mapObj);
+                if (pane) pane.style.filter = ''; sat = true;
+            } else if (btn.dataset.t === 'map' && sat) {
+                satLayer.remove(); osmLayer.addTo(mapObj);
+                const light = document.documentElement.classList.contains('light-mode');
+                if (pane && !light) pane.style.filter = 'invert(92%) hue-rotate(180deg) brightness(95%) contrast(90%)';
+                sat = false;
+            }
+        });
+        return () => sat;
+    }
+
     const CSRF = document.querySelector('meta[name="csrf-token"]').content;
 
     // ── Map ──────────────────────────────────────────────────────────────
     const map = L.map('map', { zoomControl: false, attributionControl: false })
         .setView([6.465422, 3.406448], 13);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+    const aTileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19
+    }).addTo(map);
+    const aPane = map.getPane('tilePane');
+    if (aPane) aPane.style.filter = 'invert(92%) hue-rotate(180deg) brightness(95%) contrast(90%)';
     L.control.zoom({ position: 'bottomright' }).addTo(map);
+    addSatelliteToggle(map, aTileLayer);
 
     const emergencyMarkers = {};
     const responderMarkers = {};

@@ -497,6 +497,35 @@
 <script>
     lucide.createIcons();
 
+    function addSatelliteToggle(mapObj, osmLayer) {
+        let sat = false;
+        const satLayer = L.tileLayer(
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            { attribution: 'Tiles &copy; Esri', maxZoom: 19 }
+        );
+        const ctrl = document.createElement('div');
+        ctrl.className = 'map-type-ctrl';
+        ctrl.innerHTML = '<button class="mtb active" data-t="map">Map</button><button class="mtb" data-t="satellite">Satellite</button>';
+        mapObj.getContainer().appendChild(ctrl);
+        ctrl.addEventListener('click', e => {
+            const btn = e.target.closest('.mtb');
+            if (!btn) return;
+            ctrl.querySelectorAll('.mtb').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const pane = mapObj.getPane('tilePane');
+            if (btn.dataset.t === 'satellite' && !sat) {
+                osmLayer.remove(); satLayer.addTo(mapObj);
+                if (pane) pane.style.filter = ''; sat = true;
+            } else if (btn.dataset.t === 'map' && sat) {
+                satLayer.remove(); osmLayer.addTo(mapObj);
+                const light = document.documentElement.classList.contains('light-mode');
+                if (pane && !light) pane.style.filter = 'invert(92%) hue-rotate(180deg) brightness(95%) contrast(90%)';
+                sat = false;
+            }
+        });
+        return () => sat;
+    }
+
     // Listen for global theme changes to restyle map
     document.addEventListener('themeChanged', (e) => {
         if (typeof applyMapTheme === 'function') applyMapTheme(e.detail.isLight);
@@ -532,11 +561,13 @@
         maxZoom: 19
     }).addTo(map);
 
+    let isSat = () => false;
     function applyMapTheme(isLight) {
         const pane = map.getPane('tilePane');
-        if (pane) pane.style.filter = isLight ? '' : 'invert(92%) hue-rotate(180deg) brightness(95%) contrast(90%)';
+        if (pane && !isSat()) pane.style.filter = isLight ? '' : 'invert(92%) hue-rotate(180deg) brightness(95%) contrast(90%)';
     }
     applyMapTheme(document.documentElement.classList.contains('light-mode'));
+    isSat = addSatelliteToggle(map, tileLayer);
 
     let userMarker;
 

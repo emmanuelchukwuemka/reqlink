@@ -386,6 +386,39 @@
     .top-bar { gap: 6px; }
 }
 
+/* ===== Map Type Toggle (Map / Satellite) ===== */
+.map-type-ctrl {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    background: rgba(0,0,0,0.72);
+    border-radius: 8px;
+    padding: 3px;
+    display: flex;
+    gap: 2px;
+    backdrop-filter: blur(4px);
+}
+.mtb {
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,0.65);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 5px 11px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.18s;
+    letter-spacing: 0.3px;
+}
+.mtb.active {
+    background: #fff;
+    color: #111;
+}
+.mtb:hover:not(.active) {
+    color: #fff;
+}
+
 /* Visual Aid Styles */
 .visual-aid {
     margin-top: 15px;
