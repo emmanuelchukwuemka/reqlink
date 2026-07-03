@@ -352,7 +352,7 @@ img { max-width: 100%; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 48px 24px 56px;
+  padding: 120px 24px 80px;
   background: var(--dark2);
   border-bottom: 1px solid var(--glass-border);
 }
