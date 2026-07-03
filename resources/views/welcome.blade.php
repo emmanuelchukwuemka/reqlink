@@ -24,7 +24,7 @@
 <nav class="nav" id="navbar">
     <div class="container">
         <a href="#" class="nav-logo">
-            <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 60px; width: auto; object-fit: contain;">
+            <img src="{{ asset('images/logo.png') }}" alt="ResQLink" style="height: 120px; width: auto; object-fit: contain;">
         </a>
             <ul class="nav-links" id="navLinks">
                 <li><a href="#home" class="nav-link-item">Home</a></li>
