@@ -47,7 +47,7 @@
         <a href="#" class="nav-item active"><i data-lucide="building-2"></i> Facility</a>
         <a href="#" class="nav-item"><i data-lucide="users"></i> Patients</a>
         <a href="#" class="nav-item"><i data-lucide="history"></i> Admissions</a>
-        <a href="#" class="nav-item"><i data-lucide="settings"></i> Settings</a>
+        <a href="{{ route('settings') }}" class="nav-item"><i data-lucide="settings"></i> Settings</a>
     </nav>
 
     <div class="sidebar-footer">

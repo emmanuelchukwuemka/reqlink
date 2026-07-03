@@ -78,6 +78,7 @@
         <a href="{{ route('admin.incidents') }}" class="nav-item"><i data-lucide="activity"></i> Global Incidents</a>
         <a href="{{ route('admin.agencies') }}" class="nav-item"><i data-lucide="building-2"></i> Agency Oversight</a>
         <a href="{{ route('admin.analytics') }}" class="nav-item"><i data-lucide="bar-chart-3"></i> System Analytics</a>
+        <a href="{{ route('settings') }}" class="nav-item"><i data-lucide="settings"></i> Settings</a>
     </nav>
     <div class="sidebar-footer">
         <form action="{{ route('logout') }}" method="POST" id="logoutForm">
