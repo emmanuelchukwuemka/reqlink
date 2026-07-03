@@ -32,7 +32,7 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+html { scroll-behavior: smooth; scroll-padding-top: 160px; }
 
 body {
   font-family: 'Inter', sans-serif;
@@ -159,7 +159,7 @@ img { max-width: 100%; }
   display: flex;
   align-items: center;
   position: relative;
-  padding: 100px 0;
+  padding: 180px 0 100px;
   background: url('../images/hero-bg.png') no-repeat center center;
   background-size: cover;
   overflow: hidden;
