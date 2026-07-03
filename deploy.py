@@ -138,6 +138,77 @@ def clear_route_cache(token, password):
             pass
 
 
+def clear_blade_cache(token, password):
+    """Wipe Laravel's compiled Blade view cache so updated templates take effect immediately.
+
+    Uploads a one-shot PHP script to public_html, fires it over HTTPS to delete all
+    *.php files in storage/framework/views/, then removes the script. exec() is disabled
+    on this host so we can't run `artisan view:clear` — this achieves the same result.
+    """
+    import uuid as _uuid
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    auth = base64.b64encode(f"{CPANEL_USER}:{password}".encode()).decode()
+
+    script_name = f"_vc_{_uuid.uuid4().hex[:10]}.php"
+    web_root    = "/home/resqlink/public_html"
+    remote_path = f"{web_root}/{script_name}"
+
+    php = (
+        "<?php "
+        "$d = dirname(__DIR__) . '/resqlink_app/storage/framework/views/';"
+        "$files = glob($d . '*.php') ?: [];"
+        "array_map('unlink', $files);"
+        "echo 'OK:' . count($files);"
+        " ?>"
+    )
+
+    # Upload the script
+    url  = f"https://{CPANEL_HOST}:{CPANEL_PORT}/{token}/execute/Fileman/save_file_content"
+    body = urllib.parse.urlencode({
+        "dir":     web_root,
+        "file":    script_name,
+        "content": php,
+    }).encode()
+    req = urllib.request.Request(url, data=body, method="POST")
+    req.add_header("Authorization", f"Basic {auth}")
+    req.add_header("Content-Type", "application/x-www-form-urlencoded")
+    try:
+        with urllib.request.urlopen(req, context=ctx, timeout=30) as resp:
+            json.loads(resp.read())
+    except Exception:
+        return
+
+    # Execute it
+    try:
+        run_req = urllib.request.Request(f"https://resqlink.org.ng/{script_name}")
+        with urllib.request.urlopen(run_req, context=ctx, timeout=15) as resp:
+            result = resp.read().decode().strip()
+            print(f"      Blade cache: {result} compiled view(s) removed")
+    except Exception:
+        pass
+
+    # Delete the script
+    del_url  = f"https://{CPANEL_HOST}:{CPANEL_PORT}/{token}/json-api/cpanel"
+    del_body = urllib.parse.urlencode({
+        "cpanel_jsonapi_apiversion": "2",
+        "cpanel_jsonapi_module":     "Fileman",
+        "cpanel_jsonapi_func":       "fileop",
+        "op":                        "unlink",
+        "sourcefiles":               remote_path,
+        "doubledecode":              "0",
+    }).encode()
+    del_req = urllib.request.Request(del_url, data=del_body, method="POST")
+    del_req.add_header("Authorization", f"Basic {auth}")
+    del_req.add_header("Content-Type", "application/x-www-form-urlencoded")
+    try:
+        with urllib.request.urlopen(del_req, context=ctx, timeout=30) as resp:
+            json.loads(resp.read())
+    except Exception:
+        pass
+
+
 def get_changed_files():
     """Return list of changed file paths relative to project root since last deploy."""
     if DEPLOY_MARKER.exists():
@@ -211,15 +282,25 @@ def main():
         else:
             fail += 1
 
+    extra_steps = sum([
+        any(f.startswith("routes/") for f in changed),
+        any(f.endswith(".blade.php") for f in changed),
+    ])
+    total = 3 + extra_steps + 1
+    step_n = 4
+
     if any(f.startswith("routes/") for f in changed):
-        print(f"\n[4/5] Clearing stale route cache (routes/ changed)…")
+        print(f"\n[{step_n}/{total}] Clearing stale route cache (routes/ changed)…")
         clear_route_cache(token, password)
         print(f"      ✓ Cleared")
-        step = "5/5"
-    else:
-        step = "4/4"
+        step_n += 1
 
-    print(f"\n[{step}] Finalizing…")
+    if any(f.endswith(".blade.php") for f in changed):
+        print(f"\n[{step_n}/{total}] Clearing Blade view cache (blade files changed)…")
+        clear_blade_cache(token, password)
+        step_n += 1
+
+    print(f"\n[{step_n}/{total}] Finalizing…")
     current_commit = get_current_commit()
     DEPLOY_MARKER.write_text(current_commit)
     print(f"      Saved deploy marker: {current_commit[:10]}")
