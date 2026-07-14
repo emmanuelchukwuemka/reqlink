@@ -295,6 +295,7 @@
         <div style="background: var(--glass); border: 1px solid var(--glass-border); border-radius: 12px; padding: 20px; margin-bottom: 30px; text-align: left;">
             <p style="font-size: 0.75rem; color: var(--grey); margin-bottom: 5px; text-transform: uppercase;">Medical ID Summary</p>
             <p id="alertMedical" style="font-weight: 600; color: var(--white);">Blood: O+ | Allergies: None | Asthma</p>
+            <div id="alertMamaCare" style="display:none; margin-top:12px; padding-top:12px; border-top:1px solid var(--glass-border);"></div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
@@ -456,6 +457,23 @@
         document.getElementById('alertUser').textContent = `Patient: ${alert.user ? alert.user.name : 'Unknown'}`;
         document.getElementById('alertLoc').textContent = `LOCATION: ${alert.latitude}, ${alert.longitude}`;
         document.getElementById('alertMedical').textContent = `Blood: ${alert.user?.blood_group || 'N/A'} | Allergies: ${alert.user?.allergies || 'None'}`;
+        
+        const mamaCareDiv = document.getElementById('alertMamaCare');
+        if (alert.subtype === 'Labor / Maternity' && alert.user) {
+            const highRisk = alert.user.pregnancy_high_risk ? '<span style="color:var(--red);font-weight:bold;margin-left:5px;">(HIGH RISK)</span>' : '';
+            mamaCareDiv.style.display = 'block';
+            mamaCareDiv.innerHTML = `
+                <p style="font-size: 0.75rem; color: #ec4899; margin-bottom: 5px; text-transform: uppercase; font-weight: 800;">
+                    <i data-lucide="baby" style="width:14px;height:14px;vertical-align:text-bottom;"></i> Maternity Details
+                </p>
+                <p style="font-size: 0.8rem; color: var(--white); margin-bottom: 3px;">Due Date: ${alert.user.pregnancy_due_date || 'Unknown'} ${highRisk}</p>
+                <p style="font-size: 0.8rem; color: var(--white); margin-bottom: 3px;">Preferred Hospital: ${alert.user.preferred_maternity_hospital || 'None stated'}</p>
+                <p style="font-size: 0.8rem; color: var(--white); margin-bottom: 0;">OB/GYN: ${alert.user.obgyn_contact || 'None'}</p>
+            `;
+        } else {
+            mamaCareDiv.style.display = 'none';
+            mamaCareDiv.innerHTML = '';
+        }
 
         const navLink = document.getElementById('navLink');
         navLink.href = `https://www.google.com/maps/dir/?api=1&destination=${alert.latitude},${alert.longitude}`;

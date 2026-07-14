@@ -1027,6 +1027,20 @@
         document.getElementById('panelSub').textContent =
             'Patient: ' + (e.user ? e.user.name : 'Unknown');
 
+        let mamaCareHtml = '';
+        if (e.subtype === 'Labor / Maternity' && e.user) {
+            const highRisk = e.user.pregnancy_high_risk ? '<span style="color:var(--red);font-weight:bold;margin-left:5px;">(HIGH RISK)</span>' : '';
+            mamaCareHtml = `
+                <div style="margin-top:12px;background:rgba(236,72,153,0.1);border:1px solid rgba(236,72,153,0.3);border-radius:8px;padding:10px;">
+                    <p style="margin:0 0 5px;font-size:0.75rem;color:#ec4899;font-weight:800;text-transform:uppercase;">
+                        <i data-lucide="baby" style="width:14px;height:14px;vertical-align:text-bottom;"></i> Maternity Details
+                    </p>
+                    <p style="margin:0 0 3px;font-size:0.75rem;"><b>Due:</b> ${e.user.pregnancy_due_date || 'Unknown'} ${highRisk}</p>
+                    <p style="margin:0 0 3px;font-size:0.75rem;"><b>Hospital:</b> ${e.user.preferred_maternity_hospital || 'None stated'}</p>
+                    <p style="margin:0;font-size:0.75rem;"><b>OB/GYN:</b> ${e.user.obgyn_contact || 'None'}</p>
+                </div>`;
+        }
+
         document.getElementById('panelStatus').innerHTML =
             `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                 <span style="font-size:0.78rem;color:var(--grey);">Status:</span>
@@ -1034,7 +1048,7 @@
              </div>` +
             (e.assigned_responder_name
                 ? `<div style="margin-top:6px;font-size:0.75rem;color:#22c55e;">Currently assigned: ${e.assigned_responder_name}</div>`
-                : '');
+                : '') + mamaCareHtml;
 
         const evidenceSection = document.getElementById('evidenceSection');
         const evidencePlayer  = document.getElementById('evidencePlayer');
