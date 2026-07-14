@@ -624,6 +624,17 @@
     background: rgba(0, 0, 0, 0.03);
 }
 
+.form-group select option {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 8px;
+}
+
+:root.light-mode .form-group select option {
+    background: #fff;
+    color: #111;
+}
+
 .form-group input:focus, 
 .form-group select:focus {
     background: rgba(255, 255, 255, 0.08);
