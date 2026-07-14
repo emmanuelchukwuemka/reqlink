@@ -126,10 +126,6 @@
                     </div>
                 </div>
 
-                <!-- Medical ID -->
-                <div class="auth-section-divider">
-                    <span>Medical ID <em>optional — life saving</em></span>
-                </div>
 
                 <div class="auth-field-row">
                     <div class="auth-field">
