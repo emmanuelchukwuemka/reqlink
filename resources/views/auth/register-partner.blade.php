@@ -7,6 +7,107 @@
     <link rel="stylesheet" href="/css/auth.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="/js/theme.js"></script>
+    <style>
+        /* Custom Select Dropdown */
+        .custom-select-wrap {
+            position: relative;
+            width: 100%;
+        }
+        .custom-select-trigger {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-sizing: border-box;
+        }
+        .custom-select-trigger.has-value {
+            color: var(--text-main);
+        }
+        .custom-select-trigger:hover,
+        .custom-select-wrap.open .custom-select-trigger {
+            border-color: var(--red);
+            background: rgba(229, 9, 20, 0.04);
+            box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.12);
+        }
+        .custom-select-trigger svg {
+            flex-shrink: 0;
+            opacity: 0.5;
+            transition: transform 0.2s;
+        }
+        .custom-select-wrap.open .custom-select-trigger svg {
+            transform: rotate(180deg);
+        }
+        .custom-select-options {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            background: #1a1a1a;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            padding: 6px;
+            z-index: 100;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+            max-height: 240px;
+            overflow-y: auto;
+        }
+        .custom-select-wrap.open .custom-select-options {
+            display: block;
+        }
+        .custom-select-option {
+            padding: 12px 16px;
+            color: #fff;
+            font-size: 0.92rem;
+            font-weight: 500;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .custom-select-option:hover {
+            background: rgba(229, 9, 20, 0.15);
+            color: #fff;
+        }
+        .custom-select-option.selected {
+            background: rgba(229, 9, 20, 0.2);
+            color: var(--red);
+            font-weight: 700;
+        }
+
+        /* Light mode overrides */
+        :root.light-mode .custom-select-trigger {
+            background: rgba(0, 0, 0, 0.03);
+            color: #999;
+        }
+        :root.light-mode .custom-select-trigger.has-value {
+            color: #111;
+        }
+        :root.light-mode .custom-select-options {
+            background: #fff;
+            border-color: #ddd;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+        }
+        :root.light-mode .custom-select-option {
+            color: #333;
+        }
+        :root.light-mode .custom-select-option:hover {
+            background: rgba(229, 9, 20, 0.08);
+            color: #111;
+        }
+        :root.light-mode .custom-select-option.selected {
+            background: rgba(229, 9, 20, 0.1);
+            color: var(--red);
+        }
+    </style>
 </head>
 <body class="auth-page">
 
@@ -59,14 +160,22 @@
 
             <div class="form-group">
                 <label class="field-label"><i data-lucide="briefcase" class="lucide-icon sm"></i> Partner Category</label>
-                <select name="role" required>
-                    <option value="" disabled selected>Select Category</option>
-                    <option value="doctor">Private Practitioner (Doctor)</option>
-                    <option value="hospital">Hospital / Clinic</option>
-                    <option value="ambulance">Ambulance Service Provider</option>
-                    <option value="security">Security & Rapid Response</option>
-                    <option value="fire">Fire Service Unit</option>
-                </select>
+                <input type="hidden" name="role" id="roleInput" value="{{ old('role', '') }}" required>
+                <div class="custom-select-wrap" id="roleSelect">
+                    <div class="custom-select-trigger {{ old('role') ? 'has-value' : '' }}" id="roleTrigger">
+                        <span id="roleLabel">@php
+                            $roleMap = ['doctor'=>'Private Practitioner (Doctor)','hospital'=>'Hospital / Clinic','ambulance'=>'Ambulance Service Provider','security'=>'Security & Rapid Response','fire'=>'Fire Service Unit'];
+                        @endphp{{ old('role') && isset($roleMap[old('role')]) ? $roleMap[old('role')] : 'Select Category' }}</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    <div class="custom-select-options" id="roleOptions">
+                        <div class="custom-select-option {{ old('role') === 'doctor' ? 'selected' : '' }}" data-value="doctor">Private Practitioner (Doctor)</div>
+                        <div class="custom-select-option {{ old('role') === 'hospital' ? 'selected' : '' }}" data-value="hospital">Hospital / Clinic</div>
+                        <div class="custom-select-option {{ old('role') === 'ambulance' ? 'selected' : '' }}" data-value="ambulance">Ambulance Service Provider</div>
+                        <div class="custom-select-option {{ old('role') === 'security' ? 'selected' : '' }}" data-value="security">Security &amp; Rapid Response</div>
+                        <div class="custom-select-option {{ old('role') === 'fire' ? 'selected' : '' }}" data-value="fire">Fire Service Unit</div>
+                    </div>
+                </div>
             </div>
 
             <div class="form-group">
@@ -82,7 +191,7 @@
             <!-- ===== SECTION 2: VERIFICATION ===== -->
             <div style="grid-column: span 2; margin-top: 20px; margin-bottom: 10px;">
                 <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--red); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; margin-bottom: 20px;">
-                    2. Legal & Licensing
+                    2. Legal &amp; Licensing
                 </h3>
             </div>
 
@@ -175,6 +284,41 @@
             design.style.background = '';
         }
     }
+
+    // Custom select dropdown logic
+    (function() {
+        const wrap    = document.getElementById('roleSelect');
+        const trigger = document.getElementById('roleTrigger');
+        const label   = document.getElementById('roleLabel');
+        const options = document.getElementById('roleOptions');
+        const hidden  = document.getElementById('roleInput');
+
+        trigger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            wrap.classList.toggle('open');
+        });
+
+        options.querySelectorAll('.custom-select-option').forEach(function(opt) {
+            opt.addEventListener('click', function(e) {
+                e.stopPropagation();
+                // Update hidden input
+                hidden.value = this.dataset.value;
+                // Update label
+                label.textContent = this.textContent;
+                trigger.classList.add('has-value');
+                // Mark selected
+                options.querySelectorAll('.custom-select-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                // Close
+                wrap.classList.remove('open');
+            });
+        });
+
+        // Close on outside click
+        document.addEventListener('click', function() {
+            wrap.classList.remove('open');
+        });
+    })();
 </script>
 </body>
 </html>
