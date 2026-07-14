@@ -624,13 +624,25 @@
     background: rgba(0, 0, 0, 0.03);
 }
 
-.form-group select option {
+.form-group select,
+.auth-field select {
+    color-scheme: dark;
+}
+
+.form-group select option,
+.auth-field select option {
     background: #1a1a1a;
     color: #fff;
     padding: 8px;
 }
 
-:root.light-mode .form-group select option {
+:root.light-mode .form-group select,
+:root.light-mode .auth-field select {
+    color-scheme: light;
+}
+
+:root.light-mode .form-group select option,
+:root.light-mode .auth-field select option {
     background: #fff;
     color: #111;
 }
