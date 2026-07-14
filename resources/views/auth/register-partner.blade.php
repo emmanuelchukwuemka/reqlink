@@ -163,9 +163,7 @@
                 <input type="hidden" name="role" id="roleInput" value="{{ old('role', '') }}" required>
                 <div class="custom-select-wrap" id="roleSelect">
                     <div class="custom-select-trigger {{ old('role') ? 'has-value' : '' }}" id="roleTrigger">
-                        <span id="roleLabel">@php
-                            $roleMap = ['doctor'=>'Private Practitioner (Doctor)','hospital'=>'Hospital / Clinic','ambulance'=>'Ambulance Service Provider','security'=>'Security & Rapid Response','fire'=>'Fire Service Unit'];
-                        @endphp{{ old('role') && isset($roleMap[old('role')]) ? $roleMap[old('role')] : 'Select Category' }}</span>
+                        <span id="roleLabel">Select Category</span>
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </div>
                     <div class="custom-select-options" id="roleOptions">
@@ -318,6 +316,16 @@
         document.addEventListener('click', function() {
             wrap.classList.remove('open');
         });
+
+        // Restore selection on page load (when old('role') has a value)
+        if (hidden.value) {
+            var selected = options.querySelector('[data-value="' + hidden.value + '"]');
+            if (selected) {
+                label.textContent = selected.textContent;
+                trigger.classList.add('has-value');
+                selected.classList.add('selected');
+            }
+        }
     })();
 </script>
 </body>
