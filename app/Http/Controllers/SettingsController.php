@@ -10,6 +10,12 @@ class SettingsController extends Controller
 {
     public function index()
     {
+        $user = Auth::user();
+
+        if ($user && $user->role === 'admin') {
+            return view('settings_admin');
+        }
+
         return view('settings');
     }
 
@@ -19,7 +25,7 @@ class SettingsController extends Controller
 
         $rules = [
             'name'  => 'required|string|max:255',
-            'email' => 'nullable|email|unique:users,email,' . $user->id,
+            'email' => 'required|email|unique:users,email,' . $user->id,
             'phone' => 'required|string|unique:users,phone,' . $user->id,
             'blood_group'               => 'nullable|string|max:10',
             'allergies'                 => 'nullable|string',

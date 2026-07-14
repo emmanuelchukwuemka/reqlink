@@ -96,8 +96,8 @@
                 </div>
 
                 <div class="auth-field">
-                    <label><i data-lucide="mail"></i> Email Address <span class="auth-optional">optional</span></label>
-                    <input type="email" name="email" value="{{ old('email') }}" placeholder="john@example.com">
+                    <label><i data-lucide="mail"></i> Email Address</label>
+                    <input type="email" name="email" value="{{ old('email') }}" placeholder="john@example.com" required>
                 </div>
 
                 <div class="auth-field-row">

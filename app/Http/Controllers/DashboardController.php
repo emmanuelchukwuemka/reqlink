@@ -287,6 +287,16 @@ class DashboardController extends Controller
         if ($request->status === 'resolved' && !$emergency->resolved_at) {
             $emergency->update(['resolved_at' => now()]);
         }
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Incident status updated.',
+                'status' => $emergency->status,
+                'id' => $emergency->id,
+            ]);
+        }
+
         return redirect()->back()->with('success', 'Incident status updated.');
     }
 

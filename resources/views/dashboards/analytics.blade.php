@@ -36,9 +36,10 @@
     <nav class="sidebar-nav">
         <a href="{{ route('dashboard') }}" class="nav-item"><i data-lucide="users"></i> User Management</a>
         <a href="{{ route('admin.command-center') }}" class="nav-item"><i data-lucide="shield-alert" style="color: var(--red);"></i> Command Center</a>
-        <a href="#" class="nav-item"><i data-lucide="activity"></i> Global Incidents</a>
-        <a href="#" class="nav-item"><i data-lucide="building-2"></i> Agency Oversight</a>
+        <a href="{{ route('admin.incidents') }}" class="nav-item"><i data-lucide="activity"></i> Global Incidents</a>
+        <a href="{{ route('admin.agencies') }}" class="nav-item"><i data-lucide="building-2"></i> Agency Oversight</a>
         <a href="{{ route('admin.analytics') }}" class="nav-item active"><i data-lucide="bar-chart-3"></i> System Analytics</a>
+        <a href="{{ route('admin.blog.index') }}" class="nav-item"><i data-lucide="newspaper"></i> Blog & News</a>
     </nav>
     <div class="sidebar-footer">
         <form action="{{ route('logout') }}" method="POST" id="logoutForm">
@@ -59,8 +60,15 @@
             <h1 style="font-size: 1.5rem; font-weight: 800;">System Analytics</h1>
             <p style="color: var(--grey); font-size: 0.9rem;">Last 30 days performance overview</p>
         </div>
-        <div style="display: flex; align-items: center; gap: 16px;">
+        <div class="topbar-actions">
             @include('partials.lang-switcher')
+            <form action="{{ route('logout') }}" method="POST" class="topbar-logout-form">
+                @csrf
+                <button type="submit" class="topbar-logout">
+                    <i data-lucide="log-out" style="width:16px;height:16px;"></i>
+                    Logout
+                </button>
+            </form>
             <button id="themeToggle" class="theme-toggle" aria-label="Toggle Dark Mode">
                 <i data-lucide="sun" id="themeIcon"></i>
             </button>

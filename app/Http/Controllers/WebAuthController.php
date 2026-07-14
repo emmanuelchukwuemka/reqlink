@@ -60,7 +60,7 @@ class WebAuthController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'phone' => 'required|string|unique:users,phone',
-            'email' => 'nullable|email|unique:users,email',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|string|in:civilian,doctor,hospital,ambulance,security,fire',
             'blood_group' => 'nullable|string|max:10',

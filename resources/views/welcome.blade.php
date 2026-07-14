@@ -28,6 +28,7 @@
         </a>
             <ul class="nav-links" id="navLinks">
                 <li><a href="#home" class="nav-link-item">Home</a></li>
+                <li><a href="{{ route('blog.index') }}" class="nav-link-item">Blog</a></li>
 
                 <li class="nav-divider-line"></li>
 
@@ -449,6 +450,7 @@
             </div>
             <div class="footer-col">
                 <h5>Company</h5>
+                <a href="{{ route('blog.index') }}">Blog & News</a>
 <a href="#market">Business Model</a>
                 <a href="#impact">Impact</a>
             </div>

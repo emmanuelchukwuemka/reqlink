@@ -137,6 +137,94 @@
         /* ── Map ── */
         .cmd-map-wrap { flex: 1; position: relative; overflow: hidden; }
         #map { position: absolute; inset: 0; z-index: 1; }
+        .map-toolbar {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            z-index: 1200;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: min(320px, calc(100% - 32px));
+            pointer-events: none;
+        }
+        .map-card {
+            pointer-events: auto;
+            background: rgba(6,6,6,0.9);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+        }
+        .map-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 10px;
+        }
+        .map-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.04);
+            color: var(--white);
+            font-size: 0.76rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .map-action-btn:hover { background: rgba(255,255,255,0.08); }
+        .map-action-btn.active {
+            background: rgba(229,9,20,0.12);
+            border-color: rgba(229,9,20,0.3);
+            color: #fff;
+        }
+        .map-incident-card { padding: 14px; }
+        .map-incident-kicker {
+            font-size: 0.64rem;
+            color: var(--grey);
+            text-transform: uppercase;
+            letter-spacing: 1.3px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .map-incident-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            line-height: 1.3;
+            margin-bottom: 8px;
+        }
+        .map-incident-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-size: 0.72rem;
+            color: var(--grey);
+            margin-bottom: 10px;
+        }
+        .map-summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .map-summary-stat {
+            padding: 10px 11px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .map-summary-value { display: block; font-size: 0.92rem; font-weight: 800; color: var(--white); }
+        .map-summary-label {
+            display: block;
+            margin-top: 4px;
+            font-size: 0.66rem;
+            color: var(--grey);
+            text-transform: uppercase;
+            letter-spacing: 0.9px;
+        }
 
         .map-legend {
             position: absolute; bottom: 80px; left: 16px; z-index: 1000;
@@ -147,6 +235,22 @@
         .legend-row { display: flex; align-items: center; gap: 8px; font-size: 0.72rem; font-weight: 600; }
         .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
         .legend-sq  { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+        .admin-marker {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #2563eb;
+            border: 3px solid #fff;
+            box-shadow: 0 0 0 8px rgba(37,99,235,0.18);
+        }
+        .selected-emergency-ring {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 3px solid rgba(255,255,255,0.96);
+            background: rgba(229,9,20,0.25);
+            box-shadow: 0 0 0 10px rgba(229,9,20,0.12);
+        }
 
         /* ── Dispatch panel ── */
         #dispatchPanel {
@@ -172,6 +276,43 @@
         .panel-body { padding: 16px; flex: 1; }
         .panel-section { margin-bottom: 18px; }
         .panel-section-title { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--grey); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .route-summary-card {
+            padding: 12px;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.03);
+        }
+        .route-summary-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 0.76rem;
+            margin-bottom: 8px;
+        }
+        .route-summary-row:last-child { margin-bottom: 0; }
+        .route-summary-row span:first-child { color: var(--grey); }
+        .route-summary-row span:last-child { color: var(--white); font-weight: 700; text-align: right; }
+        .route-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .route-step {
+            padding: 9px 10px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.04);
+            font-size: 0.72rem;
+            line-height: 1.5;
+            color: var(--grey);
+        }
+        .route-empty {
+            font-size: 0.76rem;
+            line-height: 1.6;
+            color: var(--grey);
+            padding: 10px 0 0;
+        }
 
         .responder-row {
             display: flex; justify-content: space-between; align-items: center;
@@ -189,6 +330,33 @@
         }
         .dispatch-btn:hover { opacity: 0.8; }
         .dispatch-btn:disabled { background: #333; cursor: default; opacity: 1; }
+        .panel-action-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+        .panel-status-btn {
+            border: none;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 0.74rem;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+        .panel-status-btn:hover { opacity: 0.88; }
+        .panel-status-btn:disabled { opacity: 0.55; cursor: default; }
+        .panel-status-btn.done {
+            background: rgba(34,197,94,0.14);
+            color: #22c55e;
+            border: 1px solid rgba(34,197,94,0.32);
+        }
+        .panel-status-btn.secondary {
+            background: rgba(255,255,255,0.06);
+            color: var(--white);
+            border: 1px solid var(--glass-border);
+        }
 
         /* SOS toast */
         #sosToast {
@@ -206,6 +374,9 @@
             .cmd-stats { gap: 14px; }
             .cmd-stat-val { font-size: 1.1rem; }
             .cmd-title { display: none; }
+            .map-toolbar { top: 12px; left: 12px; width: calc(100% - 24px); }
+            .map-summary-grid { grid-template-columns: 1fr; }
+            .map-legend { bottom: 72px; left: 12px; }
         }
 
         /* Marker styles */
@@ -279,10 +450,59 @@
     <!-- Map -->
     <div class="cmd-map-wrap">
         <div id="map"></div>
+        <div class="map-toolbar">
+            <div class="map-card">
+                <div class="map-actions">
+                    <button type="button" class="map-action-btn" id="locateMeBtn">
+                        <i data-lucide="locate-fixed" style="width:15px;height:15px;"></i>
+                        Locate Me
+                    </button>
+                    <button type="button" class="map-action-btn" id="fitAllBtn">
+                        <i data-lucide="maximize" style="width:15px;height:15px;"></i>
+                        Fit All
+                    </button>
+                    <button type="button" class="map-action-btn" id="focusSelectedBtn">
+                        <i data-lucide="crosshair" style="width:15px;height:15px;"></i>
+                        Focus User
+                    </button>
+                    <button type="button" class="map-action-btn" id="followAdminBtn">
+                        <i data-lucide="navigation" style="width:15px;height:15px;"></i>
+                        Follow Me
+                    </button>
+                </div>
+            </div>
+            <div class="map-card map-incident-card" id="mapIncidentCard" style="display:none;">
+                <div class="map-incident-kicker">Selected Emergency</div>
+                <div class="map-incident-title" id="mapIncidentTitle">No incident selected</div>
+                <div class="map-incident-meta">
+                    <span id="mapIncidentStatus">Status: -</span>
+                    <span id="mapIncidentTime">Updated: -</span>
+                </div>
+                <div class="map-summary-grid">
+                    <div class="map-summary-stat">
+                        <span class="map-summary-value" id="mapEtaValue">-</span>
+                        <span class="map-summary-label">ETA From You</span>
+                    </div>
+                    <div class="map-summary-stat">
+                        <span class="map-summary-value" id="mapDistanceValue">-</span>
+                        <span class="map-summary-label">Distance</span>
+                    </div>
+                    <div class="map-summary-stat">
+                        <span class="map-summary-value" id="mapStartValue">Waiting</span>
+                        <span class="map-summary-label">Your Location</span>
+                    </div>
+                    <div class="map-summary-stat">
+                        <span class="map-summary-value" id="mapTargetValue">Waiting</span>
+                        <span class="map-summary-label">User Coordinates</span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Map legend -->
         <div class="map-legend">
             <div class="legend-row"><div class="legend-dot" style="background:var(--red);box-shadow:0 0 6px var(--red);"></div>SOS Emergency</div>
+            <div class="legend-row"><div class="legend-dot" style="background:#2563eb;"></div>Your Position</div>
             <div class="legend-row"><div class="legend-dot" style="background:#22c55e;"></div>Ambulance</div>
             <div class="legend-row"><div class="legend-dot" style="background:#f59e0b;"></div>Fire Unit</div>
             <div class="legend-row"><div class="legend-dot" style="background:#0ea5e9;"></div>Security</div>
@@ -307,10 +527,30 @@
             <div id="panelStatus" style="margin-bottom:10px;"></div>
         </div>
 
+        <div class="panel-action-row">
+            <button type="button" class="panel-status-btn done" id="markDoneBtn" onclick="markIncidentDone()">Mark Done</button>
+            <button type="button" class="panel-status-btn secondary" id="refreshRouteBtn" onclick="drawRouteToSelected()">Refresh Route</button>
+        </div>
+
         <!-- Evidence -->
         <div id="evidenceSection" style="display:none;" class="panel-section">
             <div class="panel-section-title"><i data-lucide="mic" style="width:12px;height:12px;"></i> Voice Evidence</div>
             <audio id="evidencePlayer" controls style="width:100%;border-radius:8px;"></audio>
+        </div>
+
+        <div class="panel-section">
+            <div class="panel-section-title"><i data-lucide="route" style="width:12px;height:12px;"></i> Route & Directions</div>
+            <div class="route-summary-card" id="routeSummaryCard">
+                <div class="route-empty" id="routeEmptyState">Choose an incident and allow location access to see your route, ETA, and quick directions to the user.</div>
+                <div id="routeSummaryContent" style="display:none;">
+                    <div class="route-summary-row"><span>From</span><span id="routeFromText">-</span></div>
+                    <div class="route-summary-row"><span>To</span><span id="routeToText">-</span></div>
+                    <div class="route-summary-row"><span>Distance</span><span id="routeDistanceText">-</span></div>
+                    <div class="route-summary-row"><span>Estimated time</span><span id="routeDurationText">-</span></div>
+                    <div class="route-summary-row"><span>Assigned responder</span><span id="routeAssignedText">Not assigned</span></div>
+                    <div class="route-steps" id="routeSteps"></div>
+                </div>
+            </div>
         </div>
 
         <!-- Responders -->
@@ -392,6 +632,13 @@
     let latestResponders  = [];
     let selectedEmergency = null;
     let activeFilter      = 'all';
+    let adminLocation     = null;
+    let adminMarker       = null;
+    let selectedRing      = null;
+    let routeLine         = null;
+    let followAdmin       = false;
+    let geoWatchId        = null;
+    let routeAbortController = null;
 
     // Seed initial data
     const initEmergencies = @json($emergencies);
@@ -399,6 +646,24 @@
     initEmergencies.forEach(e => { addEmergencyMarker(e); latestEmergencies.push(e); });
     initResponders.forEach(r  => { addResponderMarker(r);  latestResponders.push(r); });
     renderSidebar();
+    fitAllMarkers();
+
+    const locateMeBtn = document.getElementById('locateMeBtn');
+    const fitAllBtn = document.getElementById('fitAllBtn');
+    const focusSelectedBtn = document.getElementById('focusSelectedBtn');
+    const followAdminBtn = document.getElementById('followAdminBtn');
+
+    locateMeBtn.addEventListener('click', () => requestAdminLocation(true));
+    fitAllBtn.addEventListener('click', fitAllMarkers);
+    focusSelectedBtn.addEventListener('click', focusSelectedEmergency);
+    followAdminBtn.addEventListener('click', () => {
+        followAdmin = !followAdmin;
+        followAdminBtn.classList.toggle('active', followAdmin);
+        if (followAdmin && adminLocation) {
+            map.setView([adminLocation.lat, adminLocation.lng], Math.max(map.getZoom(), 15));
+        }
+    });
+    setTimeout(() => requestAdminLocation(false), 800);
 
     // ── Marker helpers ───────────────────────────────────────────────────
     function addEmergencyMarker(item) {
@@ -439,6 +704,244 @@
             responderMarkers[item.id] = L.marker([lat, lng], {
                 icon: L.divIcon({ className: `responder-marker ${type}`, iconSize: [14,14] })
             }).addTo(map).bindPopup(`<b>${name}</b><br>${type.toUpperCase()}`);
+        }
+    }
+
+    function formatLatLng(lat, lng) {
+        return `${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)}`;
+    }
+
+    function formatDistance(meters) {
+        if (!Number.isFinite(meters)) return '—';
+        return meters >= 1000 ? `${(meters / 1000).toFixed(1)} km` : `${Math.round(meters)} m`;
+    }
+
+    function formatDuration(seconds) {
+        if (!Number.isFinite(seconds)) return '—';
+        const mins = Math.round(seconds / 60);
+        if (mins < 60) return `${mins} min`;
+        const hours = Math.floor(mins / 60);
+        const remain = mins % 60;
+        return remain ? `${hours}h ${remain}m` : `${hours}h`;
+    }
+
+    function getEmergencyLatLng(item) {
+        const lat = item?.latitude ?? item?.lat;
+        const lng = item?.longitude ?? item?.lng;
+        if (!lat || !lng) return null;
+        return { lat: Number(lat), lng: Number(lng) };
+    }
+
+    function getResponderById(id) {
+        return latestResponders.find(r => Number(r.id) === Number(id)) || null;
+    }
+
+    function updateAdminMarker() {
+        if (!adminLocation) return;
+
+        if (!adminMarker) {
+            adminMarker = L.marker([adminLocation.lat, adminLocation.lng], {
+                icon: L.divIcon({ className: 'admin-marker', iconSize: [18, 18] })
+            }).addTo(map);
+        } else {
+            adminMarker.setLatLng([adminLocation.lat, adminLocation.lng]);
+        }
+
+        adminMarker.bindPopup(`<b>Your location</b><br>${formatLatLng(adminLocation.lat, adminLocation.lng)}`);
+    }
+
+    function requestAdminLocation(forceFocus = false) {
+        if (!navigator.geolocation) {
+            showRouteEmpty('Geolocation is not available on this browser.');
+            return;
+        }
+
+        const onSuccess = (position) => {
+            adminLocation = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+                accuracy: position.coords.accuracy
+            };
+            updateAdminMarker();
+            locateMeBtn.classList.add('active');
+
+            if (forceFocus || followAdmin) {
+                map.setView([adminLocation.lat, adminLocation.lng], Math.max(map.getZoom(), 15));
+            }
+
+            if (selectedEmergency) {
+                updateSelectedEmergencyVisuals();
+                drawRouteToSelected();
+            }
+        };
+
+        const onError = () => {
+            showRouteEmpty('Location access is needed to draw directions from your position to the selected user.');
+        };
+
+        navigator.geolocation.getCurrentPosition(onSuccess, onError, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 15000
+        });
+
+        if (geoWatchId === null) {
+            geoWatchId = navigator.geolocation.watchPosition(onSuccess, () => {}, {
+                enableHighAccuracy: true,
+                maximumAge: 10000,
+                timeout: 15000
+            });
+        }
+    }
+
+    function fitAllMarkers() {
+        const points = [];
+
+        latestEmergencies.forEach(e => {
+            const point = getEmergencyLatLng(e);
+            if (point) points.push([point.lat, point.lng]);
+        });
+        latestResponders.forEach(r => {
+            const lat = Number(r.current_lat ?? r.lat);
+            const lng = Number(r.current_lng ?? r.lng);
+            if (lat && lng) points.push([lat, lng]);
+        });
+        if (adminLocation) points.push([adminLocation.lat, adminLocation.lng]);
+
+        if (!points.length) {
+            return;
+        }
+
+        if (points.length === 1) {
+            map.setView(points[0], 15);
+            return;
+        }
+
+        map.fitBounds(L.latLngBounds(points), { padding: [45, 45] });
+    }
+
+    function focusSelectedEmergency() {
+        if (!selectedEmergency) return;
+        const point = getEmergencyLatLng(selectedEmergency);
+        if (!point) return;
+        map.setView([point.lat, point.lng], 16);
+    }
+
+    function updateSelectedEmergencyVisuals() {
+        if (selectedRing) {
+            map.removeLayer(selectedRing);
+            selectedRing = null;
+        }
+
+        if (!selectedEmergency) {
+            document.getElementById('mapIncidentCard').style.display = 'none';
+            return;
+        }
+
+        const point = getEmergencyLatLng(selectedEmergency);
+        if (!point) return;
+
+        selectedRing = L.marker([point.lat, point.lng], {
+            icon: L.divIcon({ className: 'selected-emergency-ring', iconSize: [28, 28] }),
+            interactive: false,
+            zIndexOffset: -10
+        }).addTo(map);
+
+        document.getElementById('mapIncidentCard').style.display = 'block';
+        document.getElementById('mapIncidentTitle').textContent = selectedEmergency.user ? selectedEmergency.user.name : 'Unknown user';
+        document.getElementById('mapIncidentStatus').textContent = `Status: ${selectedEmergency.status}`;
+        document.getElementById('mapIncidentTime').textContent = `Opened: ${timeAgo(selectedEmergency.created_at)}`;
+        document.getElementById('mapTargetValue').textContent = formatLatLng(point.lat, point.lng);
+        document.getElementById('mapStartValue').textContent = adminLocation ? formatLatLng(adminLocation.lat, adminLocation.lng) : 'Location off';
+    }
+
+    function clearRouteLine() {
+        if (routeLine) {
+            map.removeLayer(routeLine);
+            routeLine = null;
+        }
+    }
+
+    function showRouteEmpty(message) {
+        document.getElementById('routeEmptyState').textContent = message;
+        document.getElementById('routeEmptyState').style.display = 'block';
+        document.getElementById('routeSummaryContent').style.display = 'none';
+        document.getElementById('mapEtaValue').textContent = '—';
+        document.getElementById('mapDistanceValue').textContent = '—';
+    }
+
+    function updateRouteSummary(route, emergencyPoint) {
+        const assignedResponder = selectedEmergency?.assigned_responder_id
+            ? getResponderById(selectedEmergency.assigned_responder_id)
+            : null;
+
+        document.getElementById('routeEmptyState').style.display = 'none';
+        document.getElementById('routeSummaryContent').style.display = 'block';
+        document.getElementById('routeFromText').textContent = adminLocation ? formatLatLng(adminLocation.lat, adminLocation.lng) : 'Unknown';
+        document.getElementById('routeToText').textContent = formatLatLng(emergencyPoint.lat, emergencyPoint.lng);
+        document.getElementById('routeDistanceText').textContent = formatDistance(route.distance);
+        document.getElementById('routeDurationText').textContent = formatDuration(route.duration);
+        document.getElementById('routeAssignedText').textContent = assignedResponder ? `${assignedResponder.name || 'Unit'} (${(assignedResponder.type || '').toUpperCase()})` : 'Not assigned';
+        document.getElementById('mapEtaValue').textContent = formatDuration(route.duration);
+        document.getElementById('mapDistanceValue').textContent = formatDistance(route.distance);
+
+        const steps = route.legs?.[0]?.steps || [];
+        document.getElementById('routeSteps').innerHTML = steps.slice(0, 4).map((step, index) => {
+            const instruction = step.maneuver?.instruction || step.name || 'Continue';
+            return `<div class="route-step"><strong style="color:var(--white);">${index + 1}.</strong> ${instruction}<br><span style="color:var(--grey);">${formatDistance(step.distance)}</span></div>`;
+        }).join('') || '<div class="route-step">No step-by-step directions available yet.</div>';
+    }
+
+    async function drawRouteToSelected() {
+        clearRouteLine();
+
+        if (routeAbortController) {
+            routeAbortController.abort();
+        }
+
+        if (!selectedEmergency) {
+            showRouteEmpty('Choose an incident to show directions.');
+            return;
+        }
+
+        const emergencyPoint = getEmergencyLatLng(selectedEmergency);
+        if (!emergencyPoint) {
+            showRouteEmpty('This incident does not have usable coordinates.');
+            return;
+        }
+
+        if (!adminLocation) {
+            showRouteEmpty('Allow location access to draw your route to the selected user.');
+            return;
+        }
+
+        routeAbortController = new AbortController();
+
+        try {
+            const response = await fetch(`https://router.project-osrm.org/route/v1/driving/${adminLocation.lng},${adminLocation.lat};${emergencyPoint.lng},${emergencyPoint.lat}?overview=full&geometries=geojson&steps=true`, {
+                signal: routeAbortController.signal
+            });
+            const data = await response.json();
+            const route = data.routes?.[0];
+
+            if (!route) {
+                showRouteEmpty('Route not available for this incident right now.');
+                return;
+            }
+
+            routeLine = L.geoJSON(route.geometry, {
+                style: {
+                    color: '#60a5fa',
+                    weight: 5,
+                    opacity: 0.95
+                }
+            }).addTo(map);
+
+            updateRouteSummary(route, emergencyPoint);
+        } catch (error) {
+            if (error.name !== 'AbortError') {
+                showRouteEmpty('Unable to load directions right now. Try again in a moment.');
+            }
         }
     }
 
@@ -544,7 +1047,11 @@
         }
 
         renderResponderList();
+        updateSelectedEmergencyVisuals();
+        drawRouteToSelected();
         document.getElementById('dispatchMsg').style.display = 'none';
+        document.getElementById('markDoneBtn').disabled = e.status === 'resolved';
+        document.getElementById('markDoneBtn').textContent = e.status === 'resolved' ? 'Already Done' : 'Mark Done';
         document.getElementById('dispatchPanel').classList.add('open');
         lucide.createIcons();
     }
@@ -552,6 +1059,9 @@
     function closePanel() {
         document.getElementById('dispatchPanel').classList.remove('open');
         selectedEmergency = null;
+        updateSelectedEmergencyVisuals();
+        clearRouteLine();
+        showRouteEmpty('Choose an incident and allow location access to see your route, ETA, and quick directions to the user.');
         renderSidebar();
     }
 
@@ -576,6 +1086,64 @@
                 <button class="dispatch-btn" onclick="dispatchResponder(${r.id}, '${name.replace(/'/g,'\\x27')}')">Assign</button>
             </div>`;
         }).join('');
+    }
+
+    function markIncidentDone() {
+        if (!selectedEmergency || selectedEmergency.status === 'resolved') return;
+
+        const doneBtn = document.getElementById('markDoneBtn');
+        doneBtn.disabled = true;
+        doneBtn.textContent = 'Updating...';
+
+        fetch(`/admin/incident/${selectedEmergency.id}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': CSRF
+            },
+            body: JSON.stringify({ status: 'resolved' })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) {
+                throw new Error(data.message || 'Unable to update incident.');
+            }
+
+            const resolvedId = selectedEmergency.id;
+            selectedEmergency.status = 'resolved';
+            selectedEmergency.resolved_at = new Date().toISOString();
+            latestEmergencies = latestEmergencies.filter(e => e.id !== resolvedId);
+
+            if (emergencyMarkers[resolvedId]) {
+                map.removeLayer(emergencyMarkers[resolvedId]);
+                delete emergencyMarkers[resolvedId];
+            }
+            knownIds.delete(resolvedId);
+
+            const msg = document.getElementById('dispatchMsg');
+            msg.textContent = '✓ Incident marked done.';
+            msg.style.display = 'block';
+            document.getElementById('panelStatus').innerHTML =
+                `<div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:0.78rem;color:var(--grey);">Status:</span>
+                    <span class="s-pill s-resolved">resolved</span>
+                 </div>`;
+            doneBtn.textContent = 'Already Done';
+            renderSidebar();
+            updateSelectedEmergencyVisuals();
+            clearRouteLine();
+            showRouteEmpty('Incident resolved. Select another live case to see route guidance.');
+            setTimeout(() => {
+                if (selectedEmergency && selectedEmergency.id === resolvedId) {
+                    closePanel();
+                }
+            }, 1200);
+        })
+        .catch(() => {
+            doneBtn.disabled = false;
+            doneBtn.textContent = 'Mark Done';
+        });
     }
 
     function dispatchResponder(responderId, responderName) {
@@ -658,7 +1226,17 @@
                 });
 
                 renderSidebar();
-                if (selectedEmergency) renderResponderList();
+                if (selectedEmergency) {
+                    selectedEmergency = latestEmergencies.find(e => e.id === selectedEmergency.id) || null;
+                }
+                if (selectedEmergency) {
+                    renderResponderList();
+                    updateSelectedEmergencyVisuals();
+                    drawRouteToSelected();
+                } else {
+                    clearRouteLine();
+                    updateSelectedEmergencyVisuals();
+                }
             })
             .catch(() => {});
     }, 6000);

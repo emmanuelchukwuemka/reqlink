@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\WebAuthController;
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ResponderController;
 use App\Http\Controllers\HospitalController;
@@ -8,6 +9,9 @@ use App\Http\Controllers\HospitalController;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/{blogPost:slug}', [BlogController::class, 'show'])->name('blog.show');
 
 Route::get('/login', [WebAuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [WebAuthController::class, 'login']);
@@ -87,6 +91,11 @@ Route::get('/admin/incidents', [DashboardController::class, 'globalIncidents'])-
 Route::post('/admin/incident/{id}/status', [DashboardController::class, 'updateIncidentStatus'])->name('admin.incident.status')->middleware('auth');
 Route::get('/admin/agencies', [DashboardController::class, 'agencyOversight'])->name('admin.agencies')->middleware('auth');
 Route::post('/admin/responder/{id}/toggle-duty', [DashboardController::class, 'adminToggleResponderDuty'])->name('admin.responder.toggle-duty')->middleware('auth');
+Route::get('/admin/blog', [BlogController::class, 'adminIndex'])->name('admin.blog.index')->middleware('auth');
+Route::post('/admin/blog', [BlogController::class, 'store'])->name('admin.blog.store')->middleware('auth');
+Route::post('/admin/blog/media-upload', [BlogController::class, 'uploadMedia'])->name('admin.blog.media-upload')->middleware('auth');
+Route::put('/admin/blog/{blogPost}', [BlogController::class, 'update'])->name('admin.blog.update')->middleware('auth');
+Route::delete('/admin/blog/{blogPost}', [BlogController::class, 'destroy'])->name('admin.blog.destroy')->middleware('auth');
 Route::post('/settings', [\App\Http\Controllers\SettingsController::class, 'update'])->name('settings.update')->middleware('auth');
 Route::post('/user/toggle-samaritan', [DashboardController::class, 'toggleSamaritan'])->middleware('auth');
 // Public so the landing-page AI widget works for visitors who aren't logged in yet

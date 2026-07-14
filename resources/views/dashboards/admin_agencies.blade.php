@@ -73,6 +73,7 @@
         <a href="{{ route('admin.incidents') }}" class="nav-item"><i data-lucide="activity"></i> Global Incidents</a>
         <a href="{{ route('admin.agencies') }}" class="nav-item active"><i data-lucide="building-2"></i> Agency Oversight</a>
         <a href="{{ route('admin.analytics') }}" class="nav-item"><i data-lucide="bar-chart-3"></i> System Analytics</a>
+        <a href="{{ route('admin.blog.index') }}" class="nav-item"><i data-lucide="newspaper"></i> Blog & News</a>
     </nav>
     <div class="sidebar-footer">
         <form action="{{ route('logout') }}" method="POST" id="logoutForm">
@@ -93,12 +94,19 @@
             <h1 style="font-size: 1.4rem; font-weight: 800;">Agency Oversight</h1>
             <p style="color: var(--grey); font-size: 0.85rem;">Hospitals, responder units, and partner agencies</p>
         </div>
-        <div style="display: flex; align-items: center; gap: 14px;">
+        <div class="topbar-actions">
             @include('partials.lang-switcher')
             <a href="{{ route('admin.command-center') }}" class="btn-primary" style="padding: 9px 18px; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; text-decoration: none;">
                 <i data-lucide="radar" style="width: 16px; height: 16px;"></i>
                 LIVE COMMAND
             </a>
+            <form action="{{ route('logout') }}" method="POST" class="topbar-logout-form">
+                @csrf
+                <button type="submit" class="topbar-logout">
+                    <i data-lucide="log-out" style="width:16px;height:16px;"></i>
+                    Logout
+                </button>
+            </form>
             <button id="themeToggle" class="theme-toggle" aria-label="Toggle Dark Mode">
                 <i data-lucide="sun" id="themeIcon"></i>
             </button>

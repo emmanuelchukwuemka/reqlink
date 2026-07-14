@@ -205,7 +205,7 @@
                             </div>
                             <div class="form-group" style="grid-column:span 2;">
                                 <label>Email Address</label>
-                                <input type="email" name="email" value="{{ Auth::user()->email }}">
+                                <input type="email" name="email" value="{{ Auth::user()->email }}" required>
                             </div>
                         </div>
                         <button type="submit" class="btn-save">Save Profile</button>

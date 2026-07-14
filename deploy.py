@@ -19,7 +19,7 @@ from pathlib import Path
 CPANEL_HOST     = "163.61.188.9"
 CPANEL_PORT     = 2083
 CPANEL_USER     = "resqlink"
-CPANEL_PASS     = ""            # Set via env: CPANEL_PASS=xxx python deploy.py
+CPANEL_PASS     = "(Oef44nlU8-GD6"            # Set via env: CPANEL_PASS=xxx python deploy.py
                                 # or fill in here (not recommended for git commits)
 SERVER_APP_ROOT = "/home/resqlink/resqlink_app"  # Laravel root on server
 LOCAL_ROOT      = Path(__file__).parent           # This project's local root

@@ -80,6 +80,37 @@
     margin-bottom: 30px;
 }
 
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.topbar-logout-form {
+    margin: 0;
+}
+
+.topbar-logout {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(229, 9, 20, 0.22);
+    background: rgba(229, 9, 20, 0.08);
+    color: var(--red);
+    font-size: 0.8rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.topbar-logout:hover {
+    background: rgba(229, 9, 20, 0.14);
+    border-color: rgba(229, 9, 20, 0.35);
+}
+
 .user-profile {
     display: flex;
     align-items: center;
@@ -297,7 +328,7 @@
     flex-shrink: 0;
 }
 .hamburger-btn:hover { background: var(--glass); }
-:root.light-mode .hamburger-btn { color: var(--black); }
+:root.light-mode .hamburger-btn { color: var(--text-main); }
 
 .sidebar-overlay {
     display: none;
@@ -359,6 +390,7 @@
     .main-content { margin-left: 0; padding: 20px; }
 
     .top-bar { flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .topbar-actions { width: 100%; justify-content: flex-start; }
 
     .stats-row { grid-template-columns: repeat(2, 1fr); }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
@@ -491,6 +523,7 @@
 }
 :root.light-mode .echat-msg.them {
     background: rgba(0,0,0,0.06);
+    color: var(--text-main);
 }
 
 /* ===== Map placeholder light-mode fix ===== */
@@ -511,13 +544,37 @@
 :root.light-mode input:not([type="submit"]):not([type="button"]):not([type="range"]):not([type="checkbox"]):not([type="radio"]),
 :root.light-mode select,
 :root.light-mode textarea {
-    color: var(--white) !important;
+    color: var(--text-main) !important;
+    caret-color: var(--text-main);
 }
 :root.light-mode .sub-card { background: var(--glass) !important; border-color: var(--glass-border) !important; }
 
 /* ===== Light mode: buttons that use rgba(255,255,255,...) background ===== */
-:root.light-mode button[style*="rgba(255,255,255"] { color: var(--white) !important; background: var(--glass) !important; }
+:root.light-mode button[style*="rgba(255,255,255"] { color: var(--text-main) !important; background: var(--glass) !important; }
 
 /* ===== Auth.css live-alert (also used in dashboard) — light-mode override ===== */
 :root.light-mode .history-list .alert-item,
-:root.light-mode .sub-card { color: var(--white); }
+:root.light-mode .sub-card { color: var(--text-main); }
+
+/* ===== Shared dashboard light-mode text cleanup ===== */
+:root.light-mode .dashboard-layout,
+:root.light-mode .dashboard-layout .dash-card,
+:root.light-mode .dashboard-layout .user-profile,
+:root.light-mode .dashboard-layout .history-item,
+:root.light-mode .dashboard-layout .stat-card,
+:root.light-mode .dashboard-layout .stat-box,
+:root.light-mode .dashboard-layout .visual-text,
+:root.light-mode .dashboard-layout .live-alert-overlay,
+:root.light-mode .dashboard-layout .table-scroll,
+:root.light-mode .dashboard-layout .map-type-ctrl,
+:root.light-mode .dashboard-layout #fundModal > div,
+:root.light-mode .dashboard-layout #emergencyChat,
+:root.light-mode .dashboard-layout #supportWindow {
+    color: var(--text-main);
+}
+
+:root.light-mode .topbar-logout {
+    background: rgba(229, 9, 20, 0.06);
+    border-color: rgba(229, 9, 20, 0.16);
+    color: #b91c1c;
+}
