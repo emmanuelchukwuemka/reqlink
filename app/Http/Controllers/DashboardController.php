@@ -235,6 +235,38 @@ class DashboardController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function toggleMamaCare(Request $request)
+    {
+        $user = Auth::user();
+
+        $user->update([
+            'mama_care_active' => $request->input('active', false)
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function updateMamaCareProfile(Request $request)
+    {
+        $user = Auth::user();
+        
+        $request->validate([
+            'pregnancy_due_date' => 'nullable|date',
+            'pregnancy_high_risk' => 'boolean',
+            'preferred_maternity_hospital' => 'nullable|string|max:255',
+            'obgyn_contact' => 'nullable|string|max:255'
+        ]);
+
+        $user->update([
+            'pregnancy_due_date' => $request->pregnancy_due_date,
+            'pregnancy_high_risk' => $request->boolean('pregnancy_high_risk'),
+            'preferred_maternity_hospital' => $request->preferred_maternity_hospital,
+            'obgyn_contact' => $request->obgyn_contact,
+        ]);
+
+        return redirect()->back()->with('success', 'Mama Care profile updated successfully.');
+    }
+
     public function updateUserRole(Request $request, $id)
     {
         $request->validate(['role' => 'required|in:civilian,ambulance,fire,security,hospital,admin']);

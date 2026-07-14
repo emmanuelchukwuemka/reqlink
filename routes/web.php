@@ -98,6 +98,8 @@ Route::put('/admin/blog/{blogPost}', [BlogController::class, 'update'])->name('a
 Route::delete('/admin/blog/{blogPost}', [BlogController::class, 'destroy'])->name('admin.blog.destroy')->middleware('auth');
 Route::post('/settings', [\App\Http\Controllers\SettingsController::class, 'update'])->name('settings.update')->middleware('auth');
 Route::post('/user/toggle-samaritan', [DashboardController::class, 'toggleSamaritan'])->middleware('auth');
+Route::post('/user/toggle-mamacare', [DashboardController::class, 'toggleMamaCare'])->middleware('auth');
+Route::post('/user/update-mamacare-profile', [DashboardController::class, 'updateMamaCareProfile'])->middleware('auth');
 // Public so the landing-page AI widget works for visitors who aren't logged in yet
 Route::post('/api/chat/openai', [\App\Http\Controllers\OpenAiController::class, 'chat'])
     ->name('api.chat.openai')

@@ -578,3 +578,162 @@
     border-color: rgba(229, 9, 20, 0.16);
     color: #b91c1c;
 }
+
+/* ===== Mama Care Feature Styles ===== */
+.mama-care-card {
+    border: 1px solid rgba(236, 72, 153, 0.3); /* Pink border */
+    background: linear-gradient(145deg, rgba(236, 72, 153, 0.05), var(--dark));
+    position: relative;
+    overflow: hidden;
+}
+:root.light-mode .mama-care-card {
+    background: linear-gradient(145deg, rgba(236, 72, 153, 0.08), #fff);
+    border-color: rgba(236, 72, 153, 0.2);
+}
+
+.mama-care-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.mama-care-header h3 {
+    color: #ec4899; /* Pink color */
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Toggle specific for Mama Care */
+.mama-care-toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(236, 72, 153, 0.1);
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(236, 72, 153, 0.2);
+}
+.mama-care-toggle-container span {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #ec4899;
+}
+
+.mama-care-content {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+.mama-care-content.active {
+    display: block;
+}
+
+/* Form Styles */
+.mama-care-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px dashed rgba(255,255,255,0.1);
+}
+:root.light-mode .mama-care-form { border-bottom-color: rgba(0,0,0,0.1); }
+
+@media(max-width: 600px) {
+    .mama-care-form { grid-template-columns: 1fr; }
+}
+
+.mc-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.mc-form-group label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--grey);
+}
+.mc-form-group input, .mc-form-group select {
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    color: var(--white);
+    outline: none;
+}
+:root.light-mode .mc-form-group input, :root.light-mode .mc-form-group select {
+    background: rgba(0,0,0,0.03);
+    color: var(--black);
+}
+
+/* Labor SOS */
+.labor-sos-btn {
+    width: 100%;
+    padding: 16px;
+    background: #ec4899;
+    color: white;
+    font-weight: 800;
+    font-size: 1rem;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-bottom: 20px;
+}
+.labor-sos-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(236, 72, 153, 0.6);
+}
+
+/* Tools Grid */
+.mc-tools-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+@media(max-width: 600px) {
+    .mc-tools-grid { grid-template-columns: 1fr; }
+}
+
+.mc-tool-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+}
+.mc-tool-card h4 {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    color: var(--white);
+}
+:root.light-mode .mc-tool-card h4 { color: var(--text-main); }
+.mc-tool-value {
+    font-size: 2rem;
+    font-weight: 900;
+    color: #ec4899;
+    margin-bottom: 10px;
+}
+.mc-tool-btn {
+    background: transparent;
+    border: 1px solid #ec4899;
+    color: #ec4899;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.mc-tool-btn:hover {
+    background: #ec4899;
+    color: white;
+}

@@ -158,6 +158,75 @@
             </div>
         </div>
 
+        <!-- MAMA CARE FEATURE -->
+        <div class="dash-card mama-care-card" style="margin-bottom: 24px;">
+            <div class="mama-care-header">
+                <h3>
+                    <i data-lucide="baby"></i>
+                    Mama Care
+                </h3>
+                <label class="mama-care-toggle-container">
+                    <span id="mamaCareText">{{ Auth::user()->mama_care_active ? 'ACTIVE' : 'OFF' }}</span>
+                    <label class="duty-toggle" style="width: 36px; height: 18px; margin: 0;">
+                        <input type="checkbox" id="mamaCareSwitch" {{ Auth::user()->mama_care_active ? 'checked' : '' }} onchange="toggleMamaCare(this)">
+                        <span class="duty-slider" style="border-radius: 20px;"></span>
+                    </label>
+                </label>
+            </div>
+
+            <div id="mamaCareContent" class="mama-care-content {{ Auth::user()->mama_care_active ? 'active' : '' }}">
+                <p style="color: var(--grey); font-size: 0.85rem; margin-bottom: 20px;">
+                    Maternal emergency tools are active. In case of labor or complications, responders will be alerted with your priority status.
+                </p>
+
+                <!-- Profile Form -->
+                <form action="/user/update-mamacare-profile" method="POST" class="mama-care-form">
+                    @csrf
+                    <div class="mc-form-group">
+                        <label>Expected Due Date</label>
+                        <input type="date" name="pregnancy_due_date" value="{{ Auth::user()->pregnancy_due_date }}">
+                    </div>
+                    <div class="mc-form-group">
+                        <label>Preferred Maternity Hospital</label>
+                        <input type="text" name="preferred_maternity_hospital" value="{{ Auth::user()->preferred_maternity_hospital }}" placeholder="e.g. Lagos Island Maternity">
+                    </div>
+                    <div class="mc-form-group">
+                        <label>OB/GYN Contact (Optional)</label>
+                        <input type="tel" name="obgyn_contact" value="{{ Auth::user()->obgyn_contact }}" placeholder="Phone number">
+                    </div>
+                    <div class="mc-form-group" style="flex-direction: row; align-items: center; gap: 10px; margin-top: 20px;">
+                        <input type="checkbox" name="pregnancy_high_risk" value="1" {{ Auth::user()->pregnancy_high_risk ? 'checked' : '' }} style="width: auto; padding: 0;">
+                        <label style="margin: 0; color: #ec4899;">Mark as High-Risk Pregnancy</label>
+                    </div>
+                    <div style="grid-column: 1 / -1; text-align: right;">
+                        <button type="submit" class="mc-tool-btn" style="background: rgba(236,72,153,0.1);">Save Profile</button>
+                    </div>
+                </form>
+
+                <!-- Labor SOS Button -->
+                <button class="labor-sos-btn" id="laborSosBtn">
+                    <i data-lucide="siren"></i>
+                    TRIGGER LABOR / MATERNITY SOS
+                </button>
+
+                <!-- Interactive Tools -->
+                <div class="mc-tools-grid">
+                    <div class="mc-tool-card">
+                        <h4>Contraction Timer</h4>
+                        <div class="mc-tool-value" id="contractionTimerDisplay">00:00</div>
+                        <button class="mc-tool-btn" id="contractionBtn" onclick="toggleContractionTimer()">Start Timer</button>
+                        <p id="contractionLog" style="font-size: 0.7rem; color: var(--grey); margin-top: 10px;"></p>
+                    </div>
+                    <div class="mc-tool-card">
+                        <h4>Kick Counter</h4>
+                        <div class="mc-tool-value" id="kickCounterDisplay">0</div>
+                        <button class="mc-tool-btn" onclick="recordKick()">Record Kick</button>
+                        <button class="mc-tool-btn" style="border: none; color: var(--grey); margin-left: 5px;" onclick="resetKicks()">Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="dashboard-grid">
             <div class="dash-card">
                 <h3><i data-lucide="map"></i> Real-time Network</h3>
@@ -1139,6 +1208,137 @@
     }
 </script>
 
+<!-- MAMA CARE LOGIC -->
+<script>
+    function toggleMamaCare(checkbox) {
+        const isActive = checkbox.checked;
+        const textLabel = document.getElementById('mamaCareText');
+        const contentArea = document.getElementById('mamaCareContent');
+        
+        textLabel.textContent = isActive ? 'ACTIVE' : 'OFF';
+        if (isActive) {
+            contentArea.classList.add('active');
+        } else {
+            contentArea.classList.remove('active');
+        }
+
+        fetch('/user/toggle-mamacare', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ active: isActive })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(!data.success) {
+                console.error("Failed to toggle Mama Care");
+            }
+        });
+    }
+
+    // Labor SOS Trigger
+    document.getElementById('laborSosBtn')?.addEventListener('click', () => {
+        if (!navigator.geolocation) {
+            alert('Location services are required to trigger an SOS.');
+            return;
+        }
+
+        const btn = document.getElementById('laborSosBtn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i data-lucide="loader" class="spin"></i> DISPATCHING...';
+        btn.disabled = true;
+
+        navigator.geolocation.getCurrentPosition(position => {
+            const payload = {
+                type_id: 1, // Usually Medical
+                subtype: 'Labor / Maternity',
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude
+            };
+
+            fetch('{{ route("emergency.trigger") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    window.location.reload();
+                } else {
+                    alert('SOS Failed: ' + data.message);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Connection error. Please try again.');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }, error => {
+            alert('Failed to get location. Please enable GPS.');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    });
+
+    // Kick Counter
+    let kicks = 0;
+    function recordKick() {
+        kicks++;
+        document.getElementById('kickCounterDisplay').textContent = kicks;
+    }
+    function resetKicks() {
+        kicks = 0;
+        document.getElementById('kickCounterDisplay').textContent = kicks;
+    }
+
+    // Contraction Timer
+    let contractionInterval = null;
+    let contractionStartTime = null;
+    let isContractionRunning = false;
+
+    function toggleContractionTimer() {
+        const btn = document.getElementById('contractionBtn');
+        const display = document.getElementById('contractionTimerDisplay');
+        const log = document.getElementById('contractionLog');
+
+        if (!isContractionRunning) {
+            // Start
+            isContractionRunning = true;
+            contractionStartTime = new Date();
+            btn.textContent = "Stop Timer";
+            btn.style.background = "#ec4899";
+            btn.style.color = "white";
+
+            contractionInterval = setInterval(() => {
+                const now = new Date();
+                const diff = Math.floor((now - contractionStartTime) / 1000);
+                const m = String(Math.floor(diff / 60)).padStart(2, '0');
+                const s = String(diff % 60).padStart(2, '0');
+                display.textContent = m + ':' + s;
+            }, 1000);
+        } else {
+            // Stop
+            clearInterval(contractionInterval);
+            isContractionRunning = false;
+            btn.textContent = "Start Timer";
+            btn.style.background = "transparent";
+            btn.style.color = "#ec4899";
+
+            const duration = display.textContent;
+            log.innerHTML = `Last: ${duration} <br> ${log.innerHTML}`;
+            display.textContent = "00:00";
+        }
+    }
+</script>
 @include('partials.profile-modal')
 </body>
 </html>
