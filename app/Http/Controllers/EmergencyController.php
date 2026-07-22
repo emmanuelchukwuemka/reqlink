@@ -81,7 +81,20 @@ class EmergencyController extends Controller
                 'assigned_responder_id' => null, // Not a mobile responder yet
                 'status' => 'pending',
                 'description' => 'Routing to ' . $nearestHospital->name,
+                'target_hospital_id' => $nearestHospital->id,
             ]);
+
+            // Email is a best-effort side notification — a mail/SMTP failure must never
+            // break the core emergency dispatch flow (that would be far worse than a
+            // hospital missing one email; they still see it live on their dashboard).
+            try {
+                $hospitalRecord = \App\Domains\Responders\Models\Hospital::find($nearestHospital->id);
+                if ($hospitalRecord && $hospitalRecord->user) {
+                    $hospitalRecord->user->notify(new \App\Notifications\NewEmergencyRoutedToHospital($emergency));
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Failed to send hospital emergency-routed notification: ' . $e->getMessage());
+            }
 
             return response()->json([
                 'message' => 'No mobile responders available. Routing to ' . $nearestHospital->name,
@@ -158,6 +171,26 @@ class EmergencyController extends Controller
         $emergency->update([
             'assigned_responder_id' => $responder->id,
             'status' => 'enroute',
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function saveResponderNotes(Request $request, $uuid)
+    {
+        $request->validate(['responder_notes' => 'nullable|string|max:2000']);
+        $emergency = Emergency::where('uuid', $uuid)->firstOrFail();
+        $emergency->update(['responder_notes' => $request->responder_notes]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function requestDoctorConsult(Request $request, $uuid)
+    {
+        $emergency = Emergency::where('uuid', $uuid)->firstOrFail();
+
+        $emergency->update([
+            'doctor_consult_requested_at' => now(),
         ]);
 
         return response()->json(['success' => true]);

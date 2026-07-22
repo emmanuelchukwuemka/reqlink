@@ -142,7 +142,7 @@
         @endif
     </div>
 
-    <form class="auth-form" action="{{ route('register') }}" method="POST" enctype="multipart/form-data">
+    <form class="auth-form" action="{{ route('register') }}" method="POST">
         @csrf
         
         <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
@@ -170,7 +170,6 @@
                         <div class="custom-select-option {{ old('role') === 'doctor' ? 'selected' : '' }}" data-value="doctor">Private Practitioner (Doctor)</div>
                         <div class="custom-select-option {{ old('role') === 'hospital' ? 'selected' : '' }}" data-value="hospital">Hospital / Clinic</div>
                         <div class="custom-select-option {{ old('role') === 'ambulance' ? 'selected' : '' }}" data-value="ambulance">Ambulance Service Provider</div>
-                        <div class="custom-select-option {{ old('role') === 'security' ? 'selected' : '' }}" data-value="security">Security &amp; Rapid Response</div>
                         <div class="custom-select-option {{ old('role') === 'fire' ? 'selected' : '' }}" data-value="fire">Fire Service Unit</div>
                     </div>
                 </div>
@@ -195,28 +194,14 @@
 
             <div class="form-group">
                 <label class="field-label"><i data-lucide="file-check" class="lucide-icon sm"></i> Primary License</label>
-                <div class="file-upload-wrapper">
-                    <input type="file" name="license" required onchange="updateFileName(this)">
-                    <div class="file-upload-design">
-                        <i data-lucide="upload-cloud"></i>
-                        <span class="upload-text">Click to Upload License</span>
-                        <span class="upload-hint">PDF, JPG, or PNG (Max 5MB)</span>
-                    </div>
-                    <div class="file-name-display"></div>
-                </div>
+                <input type="url" name="license" value="{{ old('license') }}" placeholder="https://drive.google.com/... (link to your license)" required>
+                <span class="upload-hint">Paste a shareable link (Google Drive, Dropbox, etc.) to your PDF, JPG, or PNG</span>
             </div>
 
             <div class="form-group">
                 <label class="field-label"><i data-lucide="files" class="lucide-icon sm"></i> Supporting Docs</label>
-                <div class="file-upload-wrapper">
-                    <input type="file" name="additional_docs" required onchange="updateFileName(this)">
-                    <div class="file-upload-design">
-                        <i data-lucide="folder-plus"></i>
-                        <span class="upload-text">Attach Other Files</span>
-                        <span class="upload-hint">CAC, ID, or Certificates</span>
-                    </div>
-                    <div class="file-name-display"></div>
-                </div>
+                <input type="url" name="additional_docs" value="{{ old('additional_docs') }}" placeholder="https://drive.google.com/... (link to CAC, ID, etc.)" required>
+                <span class="upload-hint">Paste a shareable link to your CAC, ID, or Certificates</span>
             </div>
 
             <!-- ===== SECTION 3: SECURITY ===== -->
@@ -252,7 +237,7 @@
 
     <div class="auth-footer">
         Looking for individual access? <a href="{{ route('register') }}">Register as User</a><br>
-        Already a partner? <a href="{{ route('login') }}">Partner Login</a>
+        Already a partner? <a href="{{ route('login') }}">Responder</a>
     </div>
 </div>
 
@@ -265,22 +250,6 @@
         input.type  = show ? 'text' : 'password';
         icon.setAttribute('data-lucide', show ? 'eye-off' : 'eye');
         lucide.createIcons();
-    }
-
-    function updateFileName(input) {
-        const display = input.parentElement.querySelector('.file-name-display');
-        const design = input.parentElement.querySelector('.file-upload-design');
-        
-        if (input.files && input.files[0]) {
-            display.textContent = 'Selected: ' + input.files[0].name;
-            display.style.display = 'block';
-            design.style.borderColor = 'var(--red)';
-            design.style.background = 'rgba(229, 9, 20, 0.08)';
-        } else {
-            display.style.display = 'none';
-            design.style.borderColor = '';
-            design.style.background = '';
-        }
     }
 
     // Custom select dropdown logic

@@ -229,10 +229,10 @@
             <select id="roleFilter" onchange="filterTable()">
                 <option value="">All Roles</option>
                 <option value="civilian">Civilian</option>
+                <option value="doctor">Doctor</option>
+                <option value="hospital">Hospital</option>
                 <option value="ambulance">Ambulance</option>
                 <option value="fire">Fire</option>
-                <option value="security">Security</option>
-                <option value="hospital">Hospital</option>
                 <option value="admin">Admin</option>
             </select>
             <select id="statusFilter" onchange="filterTable()">
@@ -308,18 +308,6 @@
                                 <button type="submit" style="width:100%;background:transparent;border:1px solid {{ $user->is_suspended ? '#22c55e' : 'var(--red)' }};color:{{ $user->is_suspended ? '#22c55e' : 'var(--red)' }};padding:4px 10px;border-radius:6px;font-size:0.68rem;font-weight:700;cursor:pointer;">
                                     {{ $user->is_suspended ? 'ACTIVATE' : 'SUSPEND' }}
                                 </button>
-                            </form>
-                            <form action="{{ route('admin.user.role', $user->id) }}" method="POST" class="role-select-form">
-                                @csrf
-                                <select name="role">
-                                    <option value="civilian"  {{ $user->role === 'civilian'  ? 'selected' : '' }}>Civilian</option>
-                                    <option value="ambulance" {{ $user->role === 'ambulance' ? 'selected' : '' }}>Ambulance</option>
-                                    <option value="fire"      {{ $user->role === 'fire'      ? 'selected' : '' }}>Fire</option>
-                                    <option value="security"  {{ $user->role === 'security'  ? 'selected' : '' }}>Security</option>
-                                    <option value="hospital"  {{ $user->role === 'hospital'  ? 'selected' : '' }}>Hospital</option>
-                                    <option value="admin"     {{ $user->role === 'admin'     ? 'selected' : '' }}>Admin</option>
-                                </select>
-                                <button type="submit" title="Update role">✓</button>
                             </form>
                         </div>
                         @else

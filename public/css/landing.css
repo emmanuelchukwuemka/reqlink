@@ -30,6 +30,12 @@
   --glass-border: rgba(0,0,0,0.12);
 }
 
+/* Logo has white text/detailing that disappears on a light background —
+   only needed in light mode since dark mode already gives it contrast. */
+:root.light-mode img[src$="logo.png"] {
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.45));
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html { scroll-behavior: smooth; scroll-padding-top: 80px; }

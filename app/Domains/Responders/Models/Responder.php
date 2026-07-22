@@ -20,6 +20,7 @@ class Responder extends Model
         'is_available',
         'is_on_duty',
         'last_ping',
+        'specialty',
     ];
 
     protected $casts = [

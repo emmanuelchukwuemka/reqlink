@@ -27,6 +27,20 @@ class Emergency extends Model
         'eta_minutes',
         'resolved_at',
         'triggered_via',
+        'target_hospital_id',
+        'hospital_accepted_at',
+        'evidence_file',
+        'triage_data',
+        'doctor_notes',
+        'doctor_consult_requested_at',
+        'consult_fee_paid_at',
+        'hospital_decline_reason',
+        'responder_notes',
+        'admission_fee_paid_at',
+    ];
+
+    protected $casts = [
+        'triage_data' => 'array',
     ];
 
     protected static function boot()

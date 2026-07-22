@@ -4,14 +4,16 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Domains\Responders\Models\Hospital;
+use App\Domains\Emergencies\Models\Emergency;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class HospitalController extends Controller
 {
     public function update(Request $request)
     {
         $hospital = Hospital::where('user_id', Auth::id())->first();
-        
+
         if (!$hospital) {
             return redirect()->back()->with('error', 'Hospital record not found.');
         }
@@ -23,7 +25,26 @@ class HospitalController extends Controller
             'lng' => 'required|numeric',
             'available_beds' => 'required|integer|min:0',
             'icu_beds' => 'required|integer|min:0',
+            'specialties' => 'nullable|string|max:500',
+            'resources' => 'nullable|string|max:1000',
         ]);
+
+        $specialties = collect(explode(',', (string) $request->specialties))
+            ->map(fn($s) => trim($s))
+            ->filter()
+            ->values()
+            ->all();
+
+        $resources = [];
+        foreach (explode("\n", (string) $request->resources) as $line) {
+            if (!str_contains($line, ':')) continue;
+            [$key, $value] = explode(':', $line, 2);
+            $key = trim($key);
+            $value = trim($value);
+            if ($key !== '') {
+                $resources[$key] = $value;
+            }
+        }
 
         $hospital->update([
             'name' => $request->name,
@@ -32,15 +53,17 @@ class HospitalController extends Controller
             'lng' => $request->lng,
             'available_beds' => $request->available_beds,
             'icu_beds' => $request->icu_beds,
+            'specialties' => $specialties,
+            'resources' => $resources,
         ]);
 
         return redirect()->back()->with('success', 'Facility profile updated successfully.');
     }
 
-    public function acceptPatient($uuid)
+    public function acceptPatient(Request $request, $uuid)
     {
         $hospital = Hospital::where('user_id', Auth::id())->firstOrFail();
-        $emergency = \App\Domains\Emergencies\Models\Emergency::where('uuid', $uuid)
+        $emergency = Emergency::where('uuid', $uuid)
             ->where('target_hospital_id', $hospital->id)
             ->firstOrFail();
 
@@ -48,6 +71,130 @@ class HospitalController extends Controller
             'hospital_accepted_at' => now(),
         ]);
 
+        if ($hospital->available_beds > 0) {
+            $hospital->decrement('available_beds');
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+
         return redirect()->back()->with('success', 'Patient admission acknowledged. Emergency team notified.');
+    }
+
+    public function declinePatient(Request $request, $uuid)
+    {
+        $request->validate(['reason' => 'nullable|string|max:500']);
+
+        $hospital = Hospital::where('user_id', Auth::id())->firstOrFail();
+        $emergency = Emergency::where('uuid', $uuid)
+            ->where('target_hospital_id', $hospital->id)
+            ->firstOrFail();
+
+        $emergency->update([
+            'hospital_decline_reason' => $request->reason ?: 'No reason given',
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function dischargePatient($uuid)
+    {
+        $hospital = Hospital::where('user_id', Auth::id())->firstOrFail();
+        $emergency = Emergency::where('uuid', $uuid)
+            ->where('target_hospital_id', $hospital->id)
+            ->firstOrFail();
+
+        if ($emergency->admission_fee_paid_at) {
+            return response()->json(['success' => false, 'message' => 'This patient has already been discharged.'], 422);
+        }
+
+        $fee = 5000.00;
+
+        DB::transaction(function () use ($emergency, $hospital, $fee) {
+            $emergency->update([
+                'status' => 'resolved',
+                'resolved_at' => $emergency->resolved_at ?? now(),
+                'admission_fee_paid_at' => now(),
+            ]);
+
+            if ($hospital->available_beds < $hospital->total_beds) {
+                $hospital->increment('available_beds');
+            }
+
+            $hospitalUser = \App\Domains\Users\Models\User::lockForUpdate()->find($hospital->user_id);
+            $newBalance = $hospitalUser->wallet_balance + $fee;
+            $hospitalUser->wallet_balance = $newBalance;
+            $hospitalUser->save();
+
+            \App\Models\WalletTransaction::create([
+                'user_id'       => $hospitalUser->id,
+                'type'          => 'credit',
+                'amount'        => $fee,
+                'balance_after' => $newBalance,
+                'reference'     => 'admission_' . $emergency->uuid,
+                'description'   => 'Admission fee',
+                'status'        => 'success',
+            ]);
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Patient discharged. ₦' . number_format($fee, 2) . ' credited to your wallet.',
+        ]);
+    }
+
+    public function incomingLocations()
+    {
+        $hospital = Hospital::where('user_id', Auth::id())->firstOrFail();
+
+        $emergencies = Emergency::where('target_hospital_id', $hospital->id)
+            ->whereIn('status', ['dispatched', 'enroute', 'arrived'])
+            ->whereNotNull('assigned_responder_id')
+            ->with('assignedResponder')
+            ->get();
+
+        $locations = $emergencies
+            ->filter(fn($e) => $e->assignedResponder && $e->assignedResponder->current_lat && $e->assignedResponder->current_lng)
+            ->map(fn($e) => [
+                'uuid' => $e->uuid,
+                'lat'  => (float) $e->assignedResponder->current_lat,
+                'lng'  => (float) $e->assignedResponder->current_lng,
+                'type' => $e->assignedResponder->responder_type,
+            ])
+            ->values();
+
+        return response()->json($locations);
+    }
+
+    public function exportAdmissions(Request $request)
+    {
+        $hospital = Hospital::where('user_id', Auth::id())->firstOrFail();
+
+        $query = $hospital->emergencies()->whereNotNull('hospital_accepted_at')->with('user', 'emergencyType');
+
+        if ($request->date_from) {
+            $query->whereDate('hospital_accepted_at', '>=', $request->date_from);
+        }
+        if ($request->date_to) {
+            $query->whereDate('hospital_accepted_at', '<=', $request->date_to);
+        }
+
+        $admissions = $query->orderBy('hospital_accepted_at', 'desc')->get();
+
+        return response()->streamDownload(function () use ($admissions) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['Patient', 'Emergency Type', 'Status', 'Admitted At', 'Discharged At']);
+            foreach ($admissions as $e) {
+                fputcsv($out, [
+                    $e->user->name ?? 'Unknown',
+                    $e->emergencyType->name ?? 'General',
+                    strtoupper($e->status),
+                    $e->hospital_accepted_at,
+                    $e->status === 'resolved' ? $e->resolved_at : '',
+                ]);
+            }
+            fclose($out);
+        }, 'admissions.csv', ['Content-Type' => 'text/csv']);
     }
 }

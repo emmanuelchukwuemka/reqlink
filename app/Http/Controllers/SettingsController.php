@@ -66,4 +66,37 @@ class SettingsController extends Controller
 
         return back()->with('status', 'Profile updated successfully!');
     }
+
+    public function deleteAccount(Request $request)
+    {
+        $user = Auth::user();
+
+        if ($user->role === 'admin') {
+            abort(403, 'Admin accounts cannot be self-deleted.');
+        }
+
+        $request->validate([
+            'password' => 'required|string',
+        ]);
+
+        if (!Hash::check($request->input('password'), $user->password)) {
+            $error = ['password' => ['Password is incorrect.']];
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['errors' => $error], 422);
+            }
+            return back()->withErrors($error);
+        }
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        $user->delete();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['status' => 'Account deleted.', 'redirect' => route('login')]);
+        }
+
+        return redirect()->route('login');
+    }
 }

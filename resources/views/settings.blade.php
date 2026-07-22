@@ -394,7 +394,7 @@
                                 <div style="font-weight:600;font-size:0.9rem;">Delete Account</div>
                                 <div style="font-size:0.8rem;color:var(--grey);margin-top:2px;">Permanently delete your account and all data. This cannot be undone.</div>
                             </div>
-                            <button class="btn-danger" onclick="if(confirm('Permanently delete your account? This cannot be undone.')) alert('Please contact support@resqlink.org.ng to request account deletion.')">Delete Account</button>
+                            <button class="btn-danger" onclick="deleteAccount()">Delete Account</button>
                         </div>
                     </div>
                 </div>
@@ -470,6 +470,32 @@ function submitSettings(formId, toastId, extraFields) {
         btn.disabled = false; btn.textContent = btn.dataset.label || 'Save';
         setTimeout(() => toast.style.display = 'none', 4000);
     });
+}
+
+function deleteAccount() {
+    if (!confirm('Permanently delete your account? This cannot be undone.')) return;
+    const password = prompt('Re-enter your password to confirm account deletion:');
+    if (!password) return;
+
+    fetch('{{ route("settings.delete-account") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ password }),
+    })
+    .then(r => r.json().then(data => ({ ok: r.ok, data })))
+    .then(({ ok, data }) => {
+        if (ok && data.redirect) {
+            window.location.href = data.redirect;
+        } else {
+            const errs = data.errors ? Object.values(data.errors).flat().join(' ') : (data.message || 'Could not delete account.');
+            alert(errs);
+        }
+    })
+    .catch(() => alert('Network error. Please try again.'));
 }
 
 document.getElementById('form-profile').addEventListener('submit', e => {

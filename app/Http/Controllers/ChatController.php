@@ -44,7 +44,7 @@ class ChatController extends Controller
         $user = Auth::user();
         $role = match(true) {
             $user->role === 'admin'    => 'admin',
-            in_array($user->role, ['ambulance','fire','security']) => 'responder',
+            in_array($user->role, ['ambulance','fire','security','doctor','hospital']) => 'responder',
             default                    => 'user',
         };
 

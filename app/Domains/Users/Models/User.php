@@ -56,6 +56,13 @@ class User extends Authenticatable
         'last_known_lat',
         'last_known_lng',
         'wallet_balance',
+        'license_path',
+        'additional_docs_path',
+        'mama_care_active',
+        'pregnancy_due_date',
+        'pregnancy_high_risk',
+        'preferred_maternity_hospital',
+        'obgyn_contact',
     ];
 
     /**
@@ -80,6 +87,9 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_verified' => 'boolean',
             'is_suspended' => 'boolean',
+            'mama_care_active' => 'boolean',
+            'pregnancy_due_date' => 'date',
+            'pregnancy_high_risk' => 'boolean',
         ];
     }
 }

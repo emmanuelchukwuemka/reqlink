@@ -72,6 +72,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/responder/update-location', [ResponderController::class, 'updateLocation'])->name('responder.update-location');
     Route::post('/hospital/update', [HospitalController::class, 'update'])->name('hospital.update');
     Route::post('/hospital/accept/{uuid}', [HospitalController::class, 'acceptPatient'])->name('hospital.accept');
+    Route::post('/hospital/decline/{uuid}', [HospitalController::class, 'declinePatient'])->name('hospital.decline');
+    Route::post('/hospital/discharge/{uuid}', [HospitalController::class, 'dischargePatient'])->name('hospital.discharge');
+    Route::get('/hospital/incoming-locations', [HospitalController::class, 'incomingLocations'])->name('hospital.incoming-locations');
+    Route::get('/hospital/export-admissions', [HospitalController::class, 'exportAdmissions'])->name('hospital.export-admissions');
+    Route::post('/emergency/responder-notes/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'saveResponderNotes'])->name('emergency.responder-notes');
     Route::get('/emergency/status/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'getStatus'])->name('emergency.status');
     Route::post('/emergency/update-location/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'updateUserLocation'])->name('emergency.update-location');
     Route::post('/emergency/accept/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'acceptMission'])->name('emergency.accept');
@@ -97,9 +102,14 @@ Route::post('/admin/blog/media-upload', [BlogController::class, 'uploadMedia'])-
 Route::put('/admin/blog/{blogPost}', [BlogController::class, 'update'])->name('admin.blog.update')->middleware('auth');
 Route::delete('/admin/blog/{blogPost}', [BlogController::class, 'destroy'])->name('admin.blog.destroy')->middleware('auth');
 Route::post('/settings', [\App\Http\Controllers\SettingsController::class, 'update'])->name('settings.update')->middleware('auth');
+Route::post('/settings/delete-account', [\App\Http\Controllers\SettingsController::class, 'deleteAccount'])->name('settings.delete-account')->middleware('auth');
 Route::post('/user/toggle-samaritan', [DashboardController::class, 'toggleSamaritan'])->middleware('auth');
 Route::post('/user/toggle-mamacare', [DashboardController::class, 'toggleMamaCare'])->middleware('auth');
 Route::post('/user/update-mamacare-profile', [DashboardController::class, 'updateMamaCareProfile'])->middleware('auth');
+Route::post('/user/update-specialty', [DashboardController::class, 'updateSpecialty'])->middleware('auth');
+Route::post('/emergency/request-doctor-consult/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'requestDoctorConsult'])->name('emergency.request-doctor-consult')->middleware('auth');
+Route::post('/emergency/doctor-notes/{uuid}', [DashboardController::class, 'saveDoctorNotes'])->name('doctor.notes.save')->middleware('auth');
+Route::post('/emergency/complete-consult/{uuid}', [DashboardController::class, 'completeConsult'])->name('doctor.consult.complete')->middleware('auth');
 // Public so the landing-page AI widget works for visitors who aren't logged in yet
 Route::post('/api/chat/openai', [\App\Http\Controllers\OpenAiController::class, 'chat'])
     ->name('api.chat.openai')

@@ -737,3 +737,15 @@
     background: #ec4899;
     color: white;
 }
+
+/* ===== Admin filter selects: explicit bg/text so options aren't invisible
+   white-on-white in the browser's native dropdown popup (dark theme's global
+   white text color otherwise carries into the option list unchanged) ===== */
+.filter-bar select {
+    background: #fff;
+    color: #111;
+    border: 1px solid var(--glass-border, rgba(255,255,255,0.15));
+    border-radius: 6px;
+    padding: 4px 6px;
+    font-size: 0.72rem;
+}

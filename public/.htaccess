@@ -1,3 +1,12 @@
+<IfModule mod_headers.c>
+    # Force browsers to revalidate static assets on every request instead of
+    # trusting the host's default 7-day cache — otherwise CSS/JS/image edits
+    # silently don't show up until each visitor's cache happens to expire.
+    <FilesMatch "\.(css|js|jpg|jpeg|png|gif|svg|webp|ico)$">
+        Header set Cache-Control "no-cache, must-revalidate"
+    </FilesMatch>
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes

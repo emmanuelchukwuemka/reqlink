@@ -66,8 +66,8 @@ class WebAuthController extends Controller
             'blood_group' => 'nullable|string|max:10',
             'allergies' => 'nullable|string|max:255',
             'emergency_contact_phone' => 'nullable|string|max:20',
-            'license' => 'required_if:role,doctor,hospital,ambulance,security,fire|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'additional_docs' => 'required_if:role,doctor,hospital,ambulance,security,fire|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'license' => 'required_if:role,doctor,hospital,ambulance,security,fire|url|max:2048',
+            'additional_docs' => 'required_if:role,doctor,hospital,ambulance,security,fire|url|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -83,8 +83,8 @@ class WebAuthController extends Controller
             'blood_group' => $request->blood_group,
             'allergies' => $request->allergies,
             'emergency_contact_phone' => $request->emergency_contact_phone,
-            'license_path' => $request->hasFile('license') ? $request->file('license')->store('partner_docs', 'public') : null,
-            'additional_docs_path' => $request->hasFile('additional_docs') ? $request->file('additional_docs')->store('partner_docs', 'public') : null,
+            'license_path' => $request->license,
+            'additional_docs_path' => $request->additional_docs,
         ]);
 
         // Create corresponding partner records so they appear in the Admin Panel
