@@ -15,13 +15,6 @@
         .admin-table td { padding: 12px 15px; border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border); }
         .admin-table td:first-child { border-left: 1px solid var(--glass-border); border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
         .admin-table td:last-child { border-right: 1px solid var(--glass-border); border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
-        .role-badge { padding: 3px 10px; border-radius: 100px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
-        .role-civilian  { background: rgba(59,130,246,0.12); color: #3b82f6; }
-        .role-responder { background: rgba(34,197,94,0.12);  color: #22c55e; }
-        .role-admin     { background: rgba(229,9,20,0.12);   color: var(--red); }
-        .role-hospital  { background: rgba(168,85,247,0.12); color: #a855f7; }
-        .role-fire      { background: rgba(245,158,11,0.12); color: #f59e0b; }
-        .role-security  { background: rgba(14,165,233,0.12); color: #0ea5e9; }
         .theme-toggle { background: transparent; border: none; color: var(--grey); cursor: pointer; padding: 8px; border-radius: 50%; transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
         .theme-toggle:hover { background: var(--glass); color: var(--white); }
         :root.light-mode .theme-toggle:hover { background: rgba(0,0,0,0.05); }
@@ -109,13 +102,6 @@
                 </a>
                 <span class="sos-badge-count" id="cmdBadge" style="display:none;">0</span>
             </div>
-            <form action="{{ route('logout') }}" method="POST" class="topbar-logout-form">
-                @csrf
-                <button type="submit" class="topbar-logout">
-                    <i data-lucide="log-out" style="width:16px;height:16px;"></i>
-                    Logout
-                </button>
-            </form>
             <button id="themeToggle" class="theme-toggle" aria-label="Toggle Dark Mode">
                 <i data-lucide="sun" id="themeIcon"></i>
             </button>
@@ -139,14 +125,14 @@
     <!-- Stats Grid -->
     <div class="stats-grid-lg">
         <div class="stat-card-sm">
-            <div class="stat-icon" style="background:rgba(59,130,246,0.12);color:#3b82f6;">
+            <div class="stat-icon" style="background:var(--glass);color:var(--text-main);">
                 <i data-lucide="user" style="width:18px;height:18px;"></i>
             </div>
             <div class="stat-value">{{ $users->where('role', 'civilian')->count() }}</div>
             <div class="stat-label">Civilians</div>
         </div>
         <div class="stat-card-sm">
-            <div class="stat-icon" style="background:rgba(168,85,247,0.12);color:#a855f7;">
+            <div class="stat-icon" style="background:var(--glass);color:var(--text-main);">
                 <i data-lucide="building-2" style="width:18px;height:18px;"></i>
             </div>
             <div class="stat-value">{{ $hospitalsCount }}</div>
@@ -156,18 +142,18 @@
             <div class="stat-icon" style="background:rgba(34,197,94,0.12);color:#22c55e;">
                 <i data-lucide="truck" style="width:18px;height:18px;"></i>
             </div>
-            <div class="stat-value" style="color:#22c55e;">{{ $onDutyRespondersCount }}</div>
+            <div class="stat-value positive">{{ $onDutyRespondersCount }}</div>
             <div class="stat-label">Units On-Duty</div>
         </div>
         <div class="stat-card-sm">
             <div class="stat-icon" style="background:rgba(229,9,20,0.1);color:var(--red);">
                 <i data-lucide="siren" style="width:18px;height:18px;"></i>
             </div>
-            <div class="stat-value" style="color:var(--red);">{{ $activeEmergenciesCount }}</div>
+            <div class="stat-value critical">{{ $activeEmergenciesCount }}</div>
             <div class="stat-label">Active Incidents</div>
         </div>
         <div class="stat-card-sm">
-            <div class="stat-icon" style="background:rgba(245,158,11,0.12);color:#f59e0b;">
+            <div class="stat-icon" style="background:var(--glass);color:var(--text-main);">
                 <i data-lucide="shield" style="width:18px;height:18px;"></i>
             </div>
             <div class="stat-value">{{ $respondersCount }}</div>
@@ -177,7 +163,7 @@
             <div class="stat-icon" style="background:rgba(34,197,94,0.12);color:#22c55e;">
                 <i data-lucide="check-circle-2" style="width:18px;height:18px;"></i>
             </div>
-            <div class="stat-value" style="color:#22c55e;">{{ $resolvedTodayCount }}</div>
+            <div class="stat-value positive">{{ $resolvedTodayCount }}</div>
             <div class="stat-label">Resolved Today</div>
         </div>
     </div>
@@ -276,7 +262,7 @@
                         </div>
                     </td>
                     <td>
-                        <span class="role-badge role-{{ in_array($user->role, ['ambulance','fire','security']) ? 'responder' : ($user->role === 'hospital' ? 'hospital' : ($user->role === 'fire' ? 'fire' : ($user->role === 'security' ? 'security' : $user->role))) }}">
+                        <span class="badge {{ $user->role === 'admin' ? 'badge-critical' : 'badge-neutral' }}">
                             {{ $user->role }}
                         </span>
                     </td>
@@ -367,9 +353,8 @@
     let toastTimer = null;
 
     function statusColor(s) {
-        if (s === 'dispatched' || s === 'enroute') return '#22c55e';
-        if (s === 'pending') return '#f59e0b';
-        if (s === 'arrived') return '#a855f7';
+        if (s === 'pending') return 'var(--red)';
+        if (s === 'resolved') return '#22c55e';
         return 'var(--grey)';
     }
 

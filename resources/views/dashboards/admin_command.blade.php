@@ -586,7 +586,11 @@
         let sat = false;
         const satLayer = L.tileLayer(
             'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-            { attribution: 'Tiles &copy; Esri', maxZoom: 19 }
+            // Esri's free imagery has real coverage everywhere only up to ~z13; beyond that,
+            // many regions return a grey "Map data not yet available" placeholder instead of a
+            // tile. Capping maxNativeZoom makes Leaflet re-scale the last real tile instead of
+            // requesting zoom levels Esri doesn't have.
+            { attribution: 'Tiles &copy; Esri', maxZoom: 19, maxNativeZoom: 13 }
         );
         const ctrl = document.createElement('div');
         ctrl.className = 'map-type-ctrl';

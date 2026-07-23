@@ -76,6 +76,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/hospital/discharge/{uuid}', [HospitalController::class, 'dischargePatient'])->name('hospital.discharge');
     Route::get('/hospital/incoming-locations', [HospitalController::class, 'incomingLocations'])->name('hospital.incoming-locations');
     Route::get('/hospital/export-admissions', [HospitalController::class, 'exportAdmissions'])->name('hospital.export-admissions');
+    Route::post('/hospital/patients', [HospitalController::class, 'storePatient'])->name('hospital.patients.store');
+    Route::post('/hospital/patients/{id}/discharge', [HospitalController::class, 'dischargeManualPatient'])->name('hospital.patients.discharge');
+    Route::delete('/hospital/patients/{id}', [HospitalController::class, 'destroyPatient'])->name('hospital.patients.destroy');
+    Route::post('/hospital/reservations', [HospitalController::class, 'storeReservation'])->name('hospital.reservations.store');
+    Route::post('/hospital/reservations/{id}/cancel', [HospitalController::class, 'cancelReservation'])->name('hospital.reservations.cancel');
+    Route::post('/hospital/reservations/{id}/admit', [HospitalController::class, 'admitReservation'])->name('hospital.reservations.admit');
     Route::post('/emergency/responder-notes/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'saveResponderNotes'])->name('emergency.responder-notes');
     Route::get('/emergency/status/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'getStatus'])->name('emergency.status');
     Route::post('/emergency/update-location/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'updateUserLocation'])->name('emergency.update-location');

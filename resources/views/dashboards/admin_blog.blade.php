@@ -11,36 +11,7 @@
     <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/super-build/ckeditor.js"></script>
     <style>
         .page-shell { display: flex; flex-direction: column; gap: 24px; }
-        .page-hero {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            padding: 22px;
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            background:
-                radial-gradient(circle at top right, rgba(229,9,20,0.14), transparent 36%),
-                linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
-        }
-        .page-kicker {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 7px 12px;
-            border-radius: 999px;
-            background: rgba(229,9,20,0.1);
-            color: var(--red);
-            font-size: 0.74rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.7px;
-            margin-bottom: 12px;
-        }
-        .page-hero h2 { font-size: 1.5rem; line-height: 1.15; margin: 0 0 6px; max-width: 760px; }
-        .page-hero p { margin: 0; color: var(--grey); max-width: 760px; line-height: 1.65; font-size: 0.88rem; }
-        .page-hero-main { display: flex; flex-direction: column; gap: 12px; }
-        .page-hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
-        .page-meta-inline { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+        .page-stats-row { display: flex; gap: 10px; flex-wrap: wrap; }
         .page-meta-pill {
             display: inline-flex;
             align-items: center;
@@ -54,54 +25,6 @@
             font-weight: 700;
         }
         .page-meta-pill strong { color: var(--white); font-size: 0.84rem; }
-        .page-hero-side {
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 16px;
-            padding: 14px 16px;
-            background: rgba(8, 11, 18, 0.58);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-width: 420px;
-        }
-        .hero-side-label {
-            font-size: 0.72rem;
-            color: var(--grey);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 800;
-        }
-        .hero-side-value {
-            font-size: 1.6rem;
-            line-height: 1;
-            font-weight: 900;
-            color: var(--white);
-        }
-        .hero-side-copy {
-            color: var(--grey);
-            font-size: 0.82rem;
-            line-height: 1.55;
-        }
-        .hero-side-list {
-            margin-top: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .hero-side-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            padding-top: 10px;
-            border-top: 1px solid var(--glass-border);
-            font-size: 0.82rem;
-            color: var(--grey);
-        }
-        .hero-side-row strong {
-            color: var(--white);
-            font-size: 0.88rem;
-        }
         .workspace-grid {
             display: block;
             gap: 24px;
@@ -123,17 +46,6 @@
             font-weight: 800;
         }
         .section-copy { color: var(--grey); font-size: 0.84rem; line-height: 1.7; margin: 0 0 22px; }
-        .section-badge {
-            padding: 7px 11px;
-            border-radius: 999px;
-            border: 1px solid var(--glass-border);
-            background: rgba(255,255,255,0.03);
-            color: var(--grey);
-            font-size: 0.72rem;
-            font-weight: 800;
-            letter-spacing: 0.6px;
-            text-transform: uppercase;
-        }
         .compose-card { padding-bottom: 22px; }
         .compose-form { display: flex; flex-direction: column; gap: 18px; }
         .form-section {
@@ -284,15 +196,6 @@
             border: none;
             flex-shrink: 0;
         }
-        .editor-note {
-            color: var(--grey);
-            font-size: 0.76rem;
-            line-height: 1.6;
-            padding: 12px 14px;
-            border: 1px solid rgba(125, 211, 252, 0.16);
-            border-radius: 14px;
-            background: rgba(125, 211, 252, 0.05);
-        }
         .checkbox-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; color: var(--grey); font-size: 0.88rem; }
         .checkbox-row input { width: auto; }
         .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
@@ -367,7 +270,7 @@
         .post-toggle i { transition: transform 0.2s ease; }
         .post-status { padding: 5px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
         .post-status.published { background: rgba(34,197,94,0.12); color: #22c55e; }
-        .post-status.draft { background: rgba(245,158,11,0.12); color: #f59e0b; }
+        .post-status.draft { background: var(--glass); color: var(--text-muted); }
         .post-body { padding: 0 20px 20px; border-top: 1px solid var(--glass-border); }
         .post-edit-shell { padding-top: 20px; }
         .post-actions { display: flex; gap: 10px; align-items: center; }
@@ -408,22 +311,15 @@
         :root.light-mode .media-tool-card { background: #ffffff; border-color: rgba(15, 23, 42, 0.08); }
         :root.light-mode .media-tool-title,
         :root.light-mode .file-selected strong { color: #0f172a; }
-        :root.light-mode .editor-note { background: rgba(37, 99, 235, 0.05); border-color: rgba(37, 99, 235, 0.12); }
-        :root.light-mode .page-hero,
-        :root.light-mode .page-hero-side,
         :root.light-mode .panel-card,
         :root.light-mode .post-card,
         :root.light-mode .posts-count { background: #ffffff; border-color: rgba(15, 23, 42, 0.08); }
         :root.light-mode .form-section { background: #ffffff; border-color: rgba(15, 23, 42, 0.08); }
-        :root.light-mode .page-meta-pill,
-        :root.light-mode .section-badge,
-        :root.light-mode .hero-side-row { border-color: rgba(15, 23, 42, 0.08); }
+        :root.light-mode .page-meta-pill { border-color: rgba(15, 23, 42, 0.08); }
         :root.light-mode .form-group input,
         :root.light-mode .form-group textarea,
         :root.light-mode .btn-soft,
         :root.light-mode .post-toggle { background: #ffffff; }
-        @media (max-width: 1180px) { .page-hero { padding: 20px; } }
-        @media (max-width: 1024px) { .page-hero-actions { justify-content: flex-start; } }
         @media (max-width: 768px) { .post-summary { flex-direction: column; align-items: flex-start; } .post-summary-side { width: 100%; justify-content: space-between; } .media-tool-row { flex-direction: column; align-items: stretch; } .editor-shell .ck.ck-editor__main > .ck-editor__editable, .editor-shell .ck-content iframe, .editor-shell .ck-content video { min-height: 240px; } }
     </style>
     <script src="/js/theme.js"></script>
@@ -472,13 +368,6 @@
                 <i data-lucide="external-link" style="width: 16px; height: 16px;"></i>
                 VIEW BLOG
             </a>
-            <form action="{{ route('logout') }}" method="POST" class="topbar-logout-form">
-                @csrf
-                <button type="submit" class="topbar-logout">
-                    <i data-lucide="log-out" style="width:16px;height:16px;"></i>
-                    Logout
-                </button>
-            </form>
             <button id="themeToggle" class="theme-toggle" aria-label="Toggle Dark Mode">
                 <i data-lucide="sun" id="themeIcon"></i>
             </button>
@@ -502,60 +391,19 @@
     @endif
 
     <div class="page-shell">
-        <section class="page-hero">
-            <div class="page-hero-main">
-                <div class="page-kicker"><i data-lucide="newspaper" style="width:14px;height:14px;"></i> Publishing Workspace</div>
-                <h2>Write faster, publish cleanly, and manage your public updates from one professional workspace.</h2>
-                <p>Create blog posts, upload media, keep drafts organized, and update live news without the page feeling crowded or hard to control.</p>
-                <div class="page-meta-inline">
-                    <span class="page-meta-pill"><strong>{{ $stats['total'] }}</strong> total posts</span>
-                    <span class="page-meta-pill"><strong>{{ $stats['published'] }}</strong> live</span>
-                    <span class="page-meta-pill"><strong>{{ $stats['drafts'] }}</strong> drafts</span>
-                </div>
-                <div class="page-hero-actions">
-                    <a href="{{ route('blog.index') }}" class="btn-primary" style="padding: 11px 18px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
-                        <i data-lucide="external-link" style="width:16px;height:16px;"></i>
-                        Open Public Blog
-                    </a>
-                </div>
-            </div>
-            <div class="page-hero-side">
-                <div class="hero-side-label">Publishing overview</div>
-                <div class="hero-side-value">{{ $stats['published'] }}</div>
-                <div class="hero-side-copy">Posts are currently live on the public blog and visible to visitors.</div>
-                <div class="hero-side-list">
-                    <div class="hero-side-row">
-                        <span>Draft queue</span>
-                        <strong>{{ $stats['drafts'] }}</strong>
-                    </div>
-                    <div class="hero-side-row">
-                        <span>Created this month</span>
-                        <strong>{{ $stats['this_month'] }}</strong>
-                    </div>
-                    <div class="hero-side-row">
-                        <span>Editing style</span>
-                        <strong>Rich editor</strong>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <div class="page-stats-row">
+            <span class="page-meta-pill"><strong>{{ $stats['total'] }}</strong> total</span>
+            <span class="page-meta-pill"><strong>{{ $stats['published'] }}</strong> published</span>
+            <span class="page-meta-pill"><strong>{{ $stats['drafts'] }}</strong> drafts</span>
+        </div>
 
         <div class="workspace-grid">
             <section class="panel-card compose-card">
-                <div class="section-head">
-                    <div>
-                        <h3 class="section-title"><i data-lucide="square-pen"></i> Create New Post</h3>
-                        <p class="section-copy" style="margin:8px 0 0;">Build a clean post with headline, cover image, rich content, and publishing state in one flow.</p>
-                    </div>
-                    <span class="section-badge">Composer</span>
-                </div>
+                <h3 class="section-title" style="margin-bottom: 18px;"><i data-lucide="square-pen"></i> Create New Post</h3>
             <form action="{{ route('admin.blog.store') }}" method="POST" enctype="multipart/form-data" class="compose-form">
                 @csrf
                 <div class="form-section">
-                    <div class="form-section-head">
-                        <div class="form-section-title">Post Details</div>
-                        <div class="form-section-copy">Add the title, slug, and short excerpt used across the public blog listing.</div>
-                    </div>
+                    <div class="form-section-title" style="margin-bottom: 14px;">Post Details</div>
                     <div class="form-grid">
                         <div class="form-group">
                             <label>Title</label>
@@ -573,86 +421,63 @@
                 </div>
 
                 <div class="form-section">
-                    <div class="form-section-head">
-                        <div class="form-section-title">Cover Media</div>
-                        <div class="form-section-copy">Use either a direct image URL or upload a cover image from your device.</div>
-                    </div>
+                    <div class="form-section-title" style="margin-bottom: 14px;">Cover Image</div>
                     <div class="form-grid">
                         <div class="form-group" style="grid-column: 1 / -1;">
-                            <label>Cover Image URL</label>
-                            <input type="url" name="cover_image" value="{{ old('cover_image') }}" placeholder="https://example.com/image.jpg">
-                        </div>
-                        <div class="form-group" style="grid-column: 1 / -1;">
-                            <label>Upload Cover Image</label>
                             <input type="file" name="cover_image_file" id="createCoverImageFile" class="file-input-native" accept=".jpg,.jpeg,.png,.webp,.gif,image/*">
                             <label for="createCoverImageFile" class="upload-card">
                                 <span class="upload-icon"><i data-lucide="image-plus" style="width:20px;height:20px;"></i></span>
                                 <span class="upload-copy">
                                     <span class="upload-title">Choose a cover image</span>
-                                    <span class="upload-subtitle">Select a clean featured image from your device for this blog post.</span>
+                                    <span class="upload-subtitle">JPG, PNG, WEBP, or GIF — max 5MB</span>
                                 </span>
                                 <span class="upload-badge">Browse</span>
                             </label>
                             <div class="file-selected" id="createCoverImageFileName">No file selected</div>
-                            <div class="file-hint">Supported: JPG, PNG, WEBP, GIF. Max 5MB. Uploaded image overrides the URL field.</div>
+                            <label style="margin-top: 10px; display: block;">Or paste an image URL instead</label>
+                            <input type="url" name="cover_image" value="{{ old('cover_image') }}" placeholder="https://example.com/image.jpg">
                         </div>
                     </div>
                 </div>
 
                 <div class="form-section">
-                    <div class="form-section-head">
-                        <div class="form-section-title">Article Content</div>
-                        <div class="form-section-copy">Write in the editor below, paste images directly, or upload and insert media into the post.</div>
-                    </div>
+                    <div class="form-section-title" style="margin-bottom: 14px;">Content</div>
                     <div class="form-grid">
                         <div class="form-group" style="grid-column: 1 / -1;">
-                            <label>Content</label>
                             <div class="editor-block">
                                 <textarea name="content" id="contentCreate" class="editor-source" data-editor-id="blogEditorCreate" required>{{ old('content') }}</textarea>
                                 <div id="blogEditorCreate" class="editor-shell"></div>
                                 <div class="editor-tools">
                                     <div class="media-tool-card">
-                                        <div class="media-tool-title">Upload Media Into Content</div>
-                                        <div class="media-tool-copy">Paste screenshots directly into the editor, or upload images, videos, audio, PDFs, and office files and insert them where your cursor is.</div>
+                                        <div class="media-tool-title">Insert media at cursor</div>
                                         <input type="file" id="contentMediaFileCreate" class="file-input-native" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip">
                                         <label for="contentMediaFileCreate" class="upload-card">
                                             <span class="upload-icon"><i data-lucide="files" style="width:20px;height:20px;"></i></span>
                                             <span class="upload-copy">
-                                                <span class="upload-title">Upload and insert media</span>
-                                                <span class="upload-subtitle">The uploaded file is inserted into the content editor automatically.</span>
+                                                <span class="upload-title">Upload a file</span>
+                                                <span class="upload-subtitle">Images, video, audio, or documents</span>
                                             </span>
                                             <span class="upload-badge">Insert</span>
                                         </label>
                                         <div class="file-selected" id="contentMediaFileCreateName">No file selected</div>
-                                    </div>
-                                    <div class="media-tool-card">
-                                        <div class="media-tool-title">Insert Media URL</div>
-                                        <div class="media-tool-copy">Paste an image link, video link, audio file, document URL, YouTube link, or Vimeo link and insert it directly into the article.</div>
-                                        <div class="media-tool-row">
-                                            <input type="url" id="contentMediaUrlCreate" placeholder="https://example.com/image.jpg or YouTube link">
-                                            <button type="button" class="btn-soft insert-media-url" data-editor-ref="blogEditorCreate" data-url-input="contentMediaUrlCreate">Insert URL</button>
+                                        <div class="media-tool-row" style="margin-top: 12px;">
+                                            <input type="url" id="contentMediaUrlCreate" placeholder="Or paste a media/YouTube/Vimeo link">
+                                            <button type="button" class="btn-soft insert-media-url" data-editor-ref="blogEditorCreate" data-url-input="contentMediaUrlCreate">Insert</button>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="editor-note">Supports professional rich content: headings, links, tables, pasted images, uploaded media, and external media URLs. Pasted images upload automatically.</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-section">
-                    <div class="form-section-head">
-                        <div class="form-section-title">Publishing</div>
-                        <div class="form-section-copy">Choose whether this post should go live now or remain in draft while you continue editing.</div>
-                    </div>
+                    <div class="form-section-title" style="margin-bottom: 14px;">Publishing</div>
                     <div class="compose-submit-row">
-                        <div>
-                            <label class="checkbox-row" style="margin-top:0;">
-                                <input type="checkbox" name="is_published" value="1" {{ old('is_published') ? 'checked' : '' }}>
-                                Publish immediately
-                            </label>
-                            <div class="compose-submit-note">Leave this unchecked if you want the post saved as a draft for later review.</div>
-                        </div>
+                        <label class="checkbox-row" style="margin-top:0;">
+                            <input type="checkbox" name="is_published" value="1" {{ old('is_published') ? 'checked' : '' }}>
+                            Publish immediately (unchecked = save as draft)
+                        </label>
                         <div class="btn-row" style="margin-top:0;">
                             <button type="submit" class="btn-primary" style="border:none;">Create Post</button>
                         </div>
@@ -665,10 +490,7 @@
 
         <section class="panel-card manage-card">
             <div class="posts-toolbar">
-                <div>
-                    <h3 class="section-title" style="margin:0;"><i data-lucide="files"></i> Manage Posts</h3>
-                    <p class="section-copy" style="margin:8px 0 0;">Review published posts, open only the one you want to edit, and keep the publishing workspace tidy.</p>
-                </div>
+                <h3 class="section-title" style="margin:0;"><i data-lucide="files"></i> Manage Posts</h3>
                 <span class="posts-count">{{ $posts->total() }} post(s)</span>
             </div>
 
@@ -717,25 +539,22 @@
                                                 <textarea name="excerpt">{{ $post->excerpt }}</textarea>
                                             </div>
                                             <div class="form-group" style="grid-column: 1 / -1;">
-                                                <label>Cover Image URL</label>
-                                                <input type="url" name="cover_image" value="{{ $post->cover_image }}">
+                                                <label>Cover Image</label>
                                                 @if($post->cover_image)
                                                     <img src="{{ $post->cover_image }}" alt="{{ $post->title }}" class="cover-preview">
                                                 @endif
-                                            </div>
-                                            <div class="form-group" style="grid-column: 1 / -1;">
-                                                <label>Upload New Cover Image</label>
                                                 <input type="file" name="cover_image_file" id="coverImageFile{{ $post->id }}" class="file-input-native" accept=".jpg,.jpeg,.png,.webp,.gif,image/*">
                                                 <label for="coverImageFile{{ $post->id }}" class="upload-card">
                                                     <span class="upload-icon"><i data-lucide="upload" style="width:20px;height:20px;"></i></span>
                                                     <span class="upload-copy">
                                                         <span class="upload-title">Replace cover image</span>
-                                                        <span class="upload-subtitle">Choose a new image to refresh the look of this published or draft post.</span>
+                                                        <span class="upload-subtitle">JPG, PNG, WEBP, or GIF — max 5MB</span>
                                                     </span>
                                                     <span class="upload-badge">Upload</span>
                                                 </label>
                                                 <div class="file-selected" id="coverImageFileName{{ $post->id }}">No new file selected</div>
-                                                <div class="file-hint">Choose a file from your device to replace the current cover image. Uploaded image overrides the URL field.</div>
+                                                <label style="margin-top: 10px; display: block;">Or paste an image URL instead</label>
+                                                <input type="url" name="cover_image" value="{{ $post->cover_image }}">
                                             </div>
                                             <div class="form-group" style="grid-column: 1 / -1;">
                                                 <label>Content</label>
@@ -744,29 +563,23 @@
                                                     <div id="blogEditor{{ $post->id }}" class="editor-shell"></div>
                                                     <div class="editor-tools">
                                                         <div class="media-tool-card">
-                                                            <div class="media-tool-title">Upload Media Into Content</div>
-                                                            <div class="media-tool-copy">Add screenshots, flyers, videos, audio clips, or document files directly inside this post content.</div>
+                                                            <div class="media-tool-title">Insert media at cursor</div>
                                                             <input type="file" id="contentMediaFile{{ $post->id }}" class="file-input-native" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip">
                                                             <label for="contentMediaFile{{ $post->id }}" class="upload-card">
                                                                 <span class="upload-icon"><i data-lucide="files" style="width:20px;height:20px;"></i></span>
                                                                 <span class="upload-copy">
-                                                                    <span class="upload-title">Upload and insert media</span>
-                                                                    <span class="upload-subtitle">The uploaded file is placed into the editor at the current cursor position.</span>
+                                                                    <span class="upload-title">Upload a file</span>
+                                                                    <span class="upload-subtitle">Images, video, audio, or documents</span>
                                                                 </span>
                                                                 <span class="upload-badge">Insert</span>
                                                             </label>
                                                             <div class="file-selected" id="contentMediaFileName{{ $post->id }}">No file selected</div>
-                                                        </div>
-                                                        <div class="media-tool-card">
-                                                            <div class="media-tool-title">Insert Media URL</div>
-                                                            <div class="media-tool-copy">Paste an image or media link and insert it directly into the article body.</div>
-                                                            <div class="media-tool-row">
-                                                                <input type="url" id="contentMediaUrl{{ $post->id }}" placeholder="https://example.com/file or embed link">
-                                                                <button type="button" class="btn-soft insert-media-url" data-editor-ref="blogEditor{{ $post->id }}" data-url-input="contentMediaUrl{{ $post->id }}">Insert URL</button>
+                                                            <div class="media-tool-row" style="margin-top: 12px;">
+                                                                <input type="url" id="contentMediaUrl{{ $post->id }}" placeholder="Or paste a media/YouTube/Vimeo link">
+                                                                <button type="button" class="btn-soft insert-media-url" data-editor-ref="blogEditor{{ $post->id }}" data-url-input="contentMediaUrl{{ $post->id }}">Insert</button>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="editor-note">Images from clipboard and drag/drop are supported here too. Remote media links are inserted without removing your formatting.</div>
                                                 </div>
                                             </div>
                                         </div>

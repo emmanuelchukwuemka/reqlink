@@ -436,7 +436,7 @@
                 <p style="font-size: 1.3rem; font-weight: 800; margin: 0;">₦{{ number_format($walletTransactions->where('type','debit')->sum('amount'), 2) }}</p>
             </div>
             <div class="dash-card" style="text-align: center; padding: 20px;">
-                <i data-lucide="receipt" style="color: #f59e0b; width:28px; height:28px; margin-bottom: 8px;"></i>
+                <i data-lucide="receipt" style="color: var(--text-main); width:28px; height:28px; margin-bottom: 8px;"></i>
                 <p style="color: var(--grey); font-size: 0.75rem; margin: 0 0 4px; text-transform: uppercase;">Transactions</p>
                 <p style="font-size: 1.3rem; font-weight: 800; margin: 0;">{{ $walletTransactions->count() }}</p>
             </div>
@@ -570,7 +570,11 @@
         let sat = false;
         const satLayer = L.tileLayer(
             'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-            { attribution: 'Tiles &copy; Esri', maxZoom: 19 }
+            // Esri's free imagery has real coverage everywhere only up to ~z13; beyond that,
+            // many regions return a grey "Map data not yet available" placeholder instead of a
+            // tile. Capping maxNativeZoom makes Leaflet re-scale the last real tile instead of
+            // requesting zoom levels Esri doesn't have.
+            { attribution: 'Tiles &copy; Esri', maxZoom: 19, maxNativeZoom: 13 }
         );
         const ctrl = document.createElement('div');
         ctrl.className = 'map-type-ctrl';

@@ -309,7 +309,7 @@
             <button onclick="acceptMission()" style="background: var(--red); color: #fff; border: none; padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 10px 20px rgba(229, 9, 20, 0.3);">Accept</button>
             <button onclick="openResponderChat()" style="background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">Chat</button>
         </div>
-        <button onclick="requestDoctorConsult()" style="width: 100%; margin-top: 10px; background: rgba(168,85,247,0.12); color: #a855f7; border: 1px solid rgba(168,85,247,0.3); padding: 12px; border-radius: 12px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <button onclick="requestDoctorConsult()" style="width: 100%; margin-top: 10px; background: rgba(59,130,246,0.12); color: #3b82f6; border: 1px solid rgba(59,130,246,0.3); padding: 12px; border-radius: 12px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
             <i data-lucide="stethoscope" style="width: 16px; height: 16px;"></i> Request Doctor Consult
         </button>
         <a id="navLink" href="#" target="_blank" style="display: none; background: #2563eb; color: #fff; text-decoration: none; padding: 12px; border-radius: 12px; font-weight: 700; font-size: 0.8rem; align-items: center; justify-content: center; gap: 8px; margin-top: 10px;">
@@ -352,7 +352,11 @@
         let sat = false;
         const satLayer = L.tileLayer(
             'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-            { attribution: 'Tiles &copy; Esri', maxZoom: 19 }
+            // Esri's free imagery has real coverage everywhere only up to ~z13; beyond that,
+            // many regions return a grey "Map data not yet available" placeholder instead of a
+            // tile. Capping maxNativeZoom makes Leaflet re-scale the last real tile instead of
+            // requesting zoom levels Esri doesn't have.
+            { attribution: 'Tiles &copy; Esri', maxZoom: 19, maxNativeZoom: 13 }
         );
         const ctrl = document.createElement('div');
         ctrl.className = 'map-type-ctrl';

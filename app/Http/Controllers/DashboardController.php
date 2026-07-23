@@ -37,7 +37,9 @@ class DashboardController extends Controller
                     ->latest()
                     ->limit(50)
                     ->get();
-                return view('dashboards.hospital', compact('hospital', 'incomingEmergencies', 'hospitalEmergencies', 'bedReservationHistory'));
+                $hospitalPatients = $hospital->hospitalPatients()->latest('admitted_at')->get();
+                $manualReservations = $hospital->manualReservations()->latest()->get();
+                return view('dashboards.hospital', compact('hospital', 'incomingEmergencies', 'hospitalEmergencies', 'bedReservationHistory', 'hospitalPatients', 'manualReservations'));
             case 'ambulance':
             case 'security':
             case 'fire':

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Domains\Responders\Models\Hospital;
 use App\Domains\Emergencies\Models\Emergency;
+use App\Models\HospitalPatient;
+use App\Models\HospitalReservation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -165,6 +167,154 @@ class HospitalController extends Controller
             ->values();
 
         return response()->json($locations);
+    }
+
+    // ── Manually added (walk-in) patients ──────────────────────────
+
+    public function storePatient(Request $request)
+    {
+        $hospital = Hospital::where('user_id', Auth::id())->firstOrFail();
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'reason' => 'nullable|string|max:255',
+            'bed_type' => 'required|in:general,icu',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        HospitalPatient::create([
+            'hospital_id' => $hospital->id,
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'reason' => $request->reason,
+            'bed_type' => $request->bed_type,
+            'notes' => $request->notes,
+            'status' => 'admitted',
+            'admitted_at' => now(),
+        ]);
+
+        if ($request->bed_type === 'icu') {
+            if ($hospital->icu_beds > 0) $hospital->decrement('icu_beds');
+        } else {
+            if ($hospital->available_beds > 0) $hospital->decrement('available_beds');
+        }
+
+        return redirect()->back()->with('success', 'Patient added.');
+    }
+
+    public function dischargeManualPatient($id)
+    {
+        $hospital = Hospital::where('user_id', Auth::id())->firstOrFail();
+        $patient = HospitalPatient::where('hospital_id', $hospital->id)->findOrFail($id);
+
+        if ($patient->status === 'discharged') {
+            return response()->json(['success' => false, 'message' => 'This patient has already been discharged.'], 422);
+        }
+
+        $patient->update(['status' => 'discharged', 'discharged_at' => now()]);
+
+        if ($patient->bed_type === 'icu') {
+            if ($hospital->icu_beds < $hospital->total_beds) $hospital->increment('icu_beds');
+        } else {
+            if ($hospital->available_beds < $hospital->total_beds) $hospital->increment('available_beds');
+        }
+
+        return response()->json(['success' => true, 'message' => 'Patient discharged.']);
+    }
+
+    public function destroyPatient($id)
+    {
+        $hospital = Hospital::where('user_id', Auth::id())->firstOrFail();
+        $patient = HospitalPatient::where('hospital_id', $hospital->id)->findOrFail($id);
+
+        if ($patient->status === 'admitted') {
+            if ($patient->bed_type === 'icu') {
+                if ($hospital->icu_beds < $hospital->total_beds) $hospital->increment('icu_beds');
+            } else {
+                if ($hospital->available_beds < $hospital->total_beds) $hospital->increment('available_beds');
+            }
+        }
+
+        $patient->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    // ── Manually added bed reservations ──────────────────────────
+
+    public function storeReservation(Request $request)
+    {
+        $hospital = Hospital::where('user_id', Auth::id())->firstOrFail();
+
+        $request->validate([
+            'patient_name' => 'required|string|max:255',
+            'bed_type' => 'required|in:general,icu',
+            'expected_at' => 'nullable|date',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        HospitalReservation::create([
+            'hospital_id' => $hospital->id,
+            'patient_name' => $request->patient_name,
+            'bed_type' => $request->bed_type,
+            'expected_at' => $request->expected_at,
+            'notes' => $request->notes,
+            'status' => 'reserved',
+        ]);
+
+        if ($request->bed_type === 'icu') {
+            if ($hospital->icu_beds > 0) $hospital->decrement('icu_beds');
+        } else {
+            if ($hospital->available_beds > 0) $hospital->decrement('available_beds');
+        }
+
+        return redirect()->back()->with('success', 'Bed reserved.');
+    }
+
+    public function cancelReservation($id)
+    {
+        $hospital = Hospital::where('user_id', Auth::id())->firstOrFail();
+        $reservation = HospitalReservation::where('hospital_id', $hospital->id)->findOrFail($id);
+
+        if ($reservation->status !== 'reserved') {
+            return response()->json(['success' => false, 'message' => 'This reservation can no longer be cancelled.'], 422);
+        }
+
+        $reservation->update(['status' => 'cancelled']);
+
+        if ($reservation->bed_type === 'icu') {
+            if ($hospital->icu_beds < $hospital->total_beds) $hospital->increment('icu_beds');
+        } else {
+            if ($hospital->available_beds < $hospital->total_beds) $hospital->increment('available_beds');
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    public function admitReservation($id)
+    {
+        $hospital = Hospital::where('user_id', Auth::id())->firstOrFail();
+        $reservation = HospitalReservation::where('hospital_id', $hospital->id)->findOrFail($id);
+
+        if ($reservation->status !== 'reserved') {
+            return response()->json(['success' => false, 'message' => 'This reservation can no longer be admitted.'], 422);
+        }
+
+        DB::transaction(function () use ($reservation) {
+            HospitalPatient::create([
+                'hospital_id' => $reservation->hospital_id,
+                'name' => $reservation->patient_name,
+                'bed_type' => $reservation->bed_type,
+                'notes' => $reservation->notes,
+                'status' => 'admitted',
+                'admitted_at' => now(),
+            ]);
+
+            $reservation->update(['status' => 'admitted']);
+        });
+
+        return response()->json(['success' => true, 'message' => 'Reservation admitted as a patient.']);
     }
 
     public function exportAdmissions(Request $request)
