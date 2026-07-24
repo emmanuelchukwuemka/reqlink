@@ -16,12 +16,18 @@ class SettingsController extends Controller
             return view('settings_admin');
         }
 
-        return view('settings');
+        $responder = in_array($user->role, ['ambulance', 'fire', 'security'], true)
+            ? \App\Domains\Responders\Models\Responder::where('user_id', $user->id)->first()
+            : null;
+
+        return view('settings', compact('responder'));
     }
 
     public function update(Request $request)
     {
         $user = Auth::user();
+
+        $responderRoles = ['ambulance', 'fire', 'security'];
 
         $rules = [
             'name'  => 'required|string|max:255',
@@ -33,6 +39,11 @@ class SettingsController extends Controller
             'emergency_contact_name'    => 'nullable|string|max:255',
             'emergency_contact_phone'   => 'nullable|string|max:20',
         ];
+
+        if (in_array($user->role, $responderRoles, true)) {
+            $rules['vehicle_reg'] = 'nullable|string|max:20';
+            $rules['capacity'] = 'nullable|integer|min:1|max:20';
+        }
 
         $changingPassword = filled($request->input('current_password')) || filled($request->input('new_password'));
 
@@ -59,6 +70,18 @@ class SettingsController extends Controller
         }
 
         $user->update($fields);
+
+        if (in_array($user->role, $responderRoles, true)) {
+            $responder = \App\Domains\Responders\Models\Responder::where('user_id', $user->id)->first();
+            if ($responder) {
+                $responder->update([
+                    'vehicle_reg' => $validated['vehicle_reg'] ?? null,
+                    // capacity is NOT NULL in the database — keep the existing value
+                    // rather than crashing the update if the field is left blank.
+                    'capacity' => $validated['capacity'] ?? $responder->capacity,
+                ]);
+            }
+        }
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json(['status' => 'Profile updated successfully!']);

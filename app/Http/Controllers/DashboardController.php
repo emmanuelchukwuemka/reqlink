@@ -59,7 +59,22 @@ class DashboardController extends Controller
                         ->latest()
                         ->first()
                     : null;
-                return view('dashboards.responder', compact('responder', 'hospitals', 'ambulances', 'fireUnits', 'missionsDone', 'totalUnits', 'activeEmergencyForBed'));
+                $missionHistory = $responder
+                    ? \App\Domains\Emergencies\Models\Emergency::where('assigned_responder_id', $responder->id)
+                        ->whereIn('status', ['resolved', 'cancelled'])
+                        ->with('user', 'emergencyType')
+                        ->latest()
+                        ->limit(30)
+                        ->get()
+                    : collect();
+                $responderReviews = $responder
+                    ? \App\Models\Review::where('responder_id', $responder->id)->with('user')->latest()->limit(20)->get()
+                    : collect();
+                $avgRating = $responderReviews->count() ? round($responderReviews->avg('rating'), 1) : null;
+                $myBackupRequests = $responder
+                    ? \App\Models\BackupRequest::where('responder_id', $responder->id)->latest()->limit(20)->get()
+                    : collect();
+                return view('dashboards.responder', compact('responder', 'hospitals', 'ambulances', 'fireUnits', 'missionsDone', 'totalUnits', 'activeEmergencyForBed', 'missionHistory', 'responderReviews', 'avgRating', 'myBackupRequests'));
             case 'doctor':
                 $responder = \App\Domains\Responders\Models\Responder::where('user_id', Auth::id())->first();
                 $hospitals  = \App\Domains\Responders\Models\Hospital::all();
@@ -163,6 +178,8 @@ class DashboardController extends Controller
             'status'                => 'dispatched',
         ]);
         $responder->update(['is_available' => false]);
+
+        \App\Services\WebPushService::sendToUsers([$responder->user_id]);
 
         return response()->json([
             'success' => true,
@@ -487,6 +504,9 @@ class DashboardController extends Controller
         $emergency->update(['status' => $request->status]);
         if ($request->status === 'resolved' && !$emergency->resolved_at) {
             $emergency->update(['resolved_at' => now()]);
+        }
+        if (in_array($request->status, ['resolved', 'cancelled'], true)) {
+            $emergency->freeAssignedResponder();
         }
         \App\Models\AdminActivityLog::record('incident_status_changed', "Set incident #{$emergency->id} status to {$request->status}", $emergency);
 

@@ -34,7 +34,7 @@ class ResponderController extends Controller
         ]);
 
         $responder = Responder::where('user_id', Auth::id())->first();
-        
+
         if ($responder && $responder->is_on_duty) {
             $responder->update([
                 'current_lat' => $request->latitude,
@@ -42,6 +42,24 @@ class ResponderController extends Controller
                 'last_ping' => now(),
             ]);
         }
+
+        return response()->json(['success' => true]);
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $request->validate([
+            'vehicle_reg' => 'nullable|string|max:20',
+            'capacity' => 'nullable|integer|min:1|max:20',
+        ]);
+
+        $responder = Responder::where('user_id', Auth::id())->firstOrFail();
+        $responder->update([
+            'vehicle_reg' => $request->vehicle_reg,
+            // capacity is NOT NULL in the database — keep the existing value
+            // rather than crashing the update if the field is left blank.
+            'capacity' => $request->capacity ?: $responder->capacity,
+        ]);
 
         return response()->json(['success' => true]);
     }

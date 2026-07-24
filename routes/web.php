@@ -67,9 +67,16 @@ Route::middleware(['auth'])->group(function () {
     // Push subscriptions
     Route::post('/push/subscribe', [\App\Http\Controllers\PushController::class, 'subscribe'])->name('push.subscribe');
     Route::post('/push/unsubscribe', [\App\Http\Controllers\PushController::class, 'unsubscribe'])->name('push.unsubscribe');
+    Route::get('/push/vapid-public-key', [\App\Http\Controllers\PushController::class, 'vapidPublicKey'])->name('push.vapid-key');
 
     Route::post('/responder/toggle-duty', [ResponderController::class, 'toggleDuty'])->name('responder.toggle-duty');
     Route::post('/responder/update-location', [ResponderController::class, 'updateLocation'])->name('responder.update-location');
+    Route::post('/responder/update-profile', [ResponderController::class, 'updateProfile'])->name('responder.update-profile');
+    Route::post('/backup-requests', [\App\Http\Controllers\BackupRequestController::class, 'store'])->name('backup-requests.store');
+    Route::get('/backup-requests', [\App\Http\Controllers\BackupRequestController::class, 'index'])->name('backup-requests.index');
+    Route::get('/backup-requests/mine', [\App\Http\Controllers\BackupRequestController::class, 'mine'])->name('backup-requests.mine');
+    Route::post('/backup-requests/{id}/acknowledge', [\App\Http\Controllers\BackupRequestController::class, 'acknowledge'])->name('backup-requests.acknowledge');
+    Route::post('/backup-requests/{id}/resolve', [\App\Http\Controllers\BackupRequestController::class, 'resolve'])->name('backup-requests.resolve');
     Route::post('/hospital/update', [HospitalController::class, 'update'])->name('hospital.update');
     Route::post('/hospital/accept/{uuid}', [HospitalController::class, 'acceptPatient'])->name('hospital.accept');
     Route::post('/hospital/decline/{uuid}', [HospitalController::class, 'declinePatient'])->name('hospital.decline');
@@ -86,6 +93,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/emergency/status/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'getStatus'])->name('emergency.status');
     Route::post('/emergency/update-location/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'updateUserLocation'])->name('emergency.update-location');
     Route::post('/emergency/accept/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'acceptMission'])->name('emergency.accept');
+    Route::post('/emergency/decline/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'declineMission'])->name('emergency.decline');
+    Route::post('/emergency/arrived/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'markArrived'])->name('emergency.arrived');
     Route::post('/emergency/evidence/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'uploadEvidence'])->name('emergency.evidence');
     Route::post('/emergency/triage/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'updateTriage'])->name('emergency.triage');
     Route::post('/emergency/resolve/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'resolveEmergency'])->name('emergency.resolve');

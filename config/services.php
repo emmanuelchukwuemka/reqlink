@@ -45,6 +45,12 @@ return [
         'vapid_key'  => env('FIREBASE_VAPID_KEY'),
     ],
 
+    'vapid' => [
+        'public_key' => env('VAPID_PUBLIC_KEY'),
+        'private_key_pem_b64' => env('VAPID_PRIVATE_KEY_PEM_B64'),
+        'subject' => env('VAPID_SUBJECT', 'mailto:support@resqlink.org.ng'),
+    ],
+
     'openai' => [
         'key' => env('OPENAI_API_KEY'),
     ],

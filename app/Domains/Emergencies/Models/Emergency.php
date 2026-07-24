@@ -70,4 +70,18 @@ class Emergency extends Model
     {
         return $this->belongsTo(\App\Domains\Responders\Models\Hospital::class, 'target_hospital_id');
     }
+
+    /**
+     * Free the assigned responder's availability so auto-dispatch can route new
+     * emergencies to them again. Must be called whenever a mission ends (resolved,
+     * cancelled, or declined) — without this the responder stays permanently
+     * unavailable since nothing else in the app resets this flag.
+     */
+    public function freeAssignedResponder(): void
+    {
+        if ($this->assigned_responder_id) {
+            \App\Domains\Responders\Models\Responder::where('id', $this->assigned_responder_id)
+                ->update(['is_available' => true]);
+        }
+    }
 }

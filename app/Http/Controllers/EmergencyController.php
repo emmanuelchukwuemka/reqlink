@@ -55,6 +55,8 @@ class EmergencyController extends Controller
 
             $nearestResponder->update(['is_available' => false]);
 
+            \App\Services\WebPushService::sendToUsers([$nearestResponder->user_id]);
+
             return response()->json([
                 'message' => 'Emergency alert received. ' . ucfirst($nearestResponder->responder_type) . ' unit dispatched.',
                 'uuid' => $emergency->uuid,
@@ -65,6 +67,13 @@ class EmergencyController extends Controller
                 ]
             ]);
         }
+
+        // No mobile unit was free to auto-assign — this emergency stays unassigned
+        // and broadcasts to every on-duty responder (see fetchAlerts()). Push all
+        // of them too, since in-tab polling alone misses a backgrounded/locked phone.
+        $onDutyUserIds = \App\Domains\Responders\Models\Responder::where('is_on_duty', true)
+            ->pluck('user_id')->toArray();
+        \App\Services\WebPushService::sendToUsers($onDutyUserIds);
 
         // 3. Fallback to nearest Hospital if no active mobile responders
         $nearestHospital = DB::table('hospitals')
@@ -164,7 +173,7 @@ class EmergencyController extends Controller
     public function acceptMission(Request $request, $uuid)
     {
         $emergency = Emergency::where('uuid', $uuid)->firstOrFail();
-        
+
         // Find the responder record for the current user
         $responder = \App\Domains\Responders\Models\Responder::where('user_id', Auth::id())->firstOrFail();
 
@@ -172,6 +181,49 @@ class EmergencyController extends Controller
             'assigned_responder_id' => $responder->id,
             'status' => 'enroute',
         ]);
+
+        // Mark unavailable immediately on accept — not just when the auto-dispatch
+        // algorithm assigns someone. Without this, a responder who manually accepts
+        // a broadcast (unassigned) alert could still be auto-routed a second,
+        // unrelated emergency while already mid-mission.
+        $responder->update(['is_available' => false]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function declineMission(Request $request, $uuid)
+    {
+        $responder = \App\Domains\Responders\Models\Responder::where('user_id', Auth::id())->firstOrFail();
+        $emergency = Emergency::where('uuid', $uuid)->first();
+
+        if (!$emergency) {
+            return response()->json(['success' => true]);
+        }
+
+        // Only actually change anything server-side if this emergency was
+        // specifically assigned to this responder (auto-dispatch or admin
+        // dispatch). If it's still an unassigned broadcast alert, every other
+        // on-duty responder needs to keep seeing it — declining is purely a
+        // local "stop alerting me about this one" action in that case.
+        if ($emergency->assigned_responder_id === $responder->id) {
+            $emergency->update([
+                'assigned_responder_id' => null,
+                'status' => 'pending',
+            ]);
+            $responder->update(['is_available' => true]);
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    public function markArrived(Request $request, $uuid)
+    {
+        $responder = \App\Domains\Responders\Models\Responder::where('user_id', Auth::id())->firstOrFail();
+        $emergency = Emergency::where('uuid', $uuid)
+            ->where('assigned_responder_id', $responder->id)
+            ->firstOrFail();
+
+        $emergency->update(['status' => 'arrived']);
 
         return response()->json(['success' => true]);
     }
@@ -198,12 +250,19 @@ class EmergencyController extends Controller
 
     public function resolveEmergency(Request $request, $uuid)
     {
-        $emergency = Emergency::where('uuid', $uuid)->firstOrFail();
-        
+        $responder = \App\Domains\Responders\Models\Responder::where('user_id', Auth::id())->first();
+
+        $query = Emergency::where('uuid', $uuid);
+        if ($responder) {
+            $query->where('assigned_responder_id', $responder->id);
+        }
+        $emergency = $query->firstOrFail();
+
         $emergency->update([
             'status' => 'resolved',
             'resolved_at' => now(),
         ]);
+        $emergency->freeAssignedResponder();
 
         return response()->json(['success' => true]);
     }
@@ -213,15 +272,20 @@ class EmergencyController extends Controller
         $responder = \App\Domains\Responders\Models\Responder::where('user_id', Auth::id())->first();
 
         $emergencies = Emergency::where(function ($q) use ($responder) {
-                // Unassigned emergencies (any on-duty responder can take)
-                $q->whereNull('assigned_responder_id');
-                // OR assigned specifically to this responder by admin
+                // Unassigned broadcast alerts any on-duty responder can take
+                $q->whereNull('assigned_responder_id')->whereIn('status', ['pending', 'dispatched']);
+                // OR this responder's own mission at any stage up to resolution —
+                // otherwise it drops out of the list the moment they accept it
+                // ('enroute'/'arrived' aren't in the broadcast statuses above), and
+                // they'd lose access to handoff notes, chat, and completion actions.
                 if ($responder) {
-                    $q->orWhere('assigned_responder_id', $responder->id);
+                    $q->orWhere(function ($q2) use ($responder) {
+                        $q2->where('assigned_responder_id', $responder->id)
+                            ->whereIn('status', ['pending', 'dispatched', 'enroute', 'arrived']);
+                    });
                 }
             })
-            ->whereIn('status', ['pending', 'dispatched'])
-            ->with('user')
+            ->with('user', 'targetHospital')
             ->orderBy('created_at', 'desc')
             ->get();
 

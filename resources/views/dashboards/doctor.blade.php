@@ -12,6 +12,8 @@
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
         .mission-grid { display: grid; grid-template-columns: 1fr 350px; gap: 24px; }
         @media (max-width: 900px) { .mission-grid { grid-template-columns: 1fr; } }
         @media (max-width: 768px) { .top-bar { flex-wrap: wrap; gap: 8px; } .duty-status-container { order: 3; } }

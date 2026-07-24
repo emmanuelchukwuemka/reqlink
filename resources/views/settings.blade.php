@@ -207,6 +207,16 @@
                                 <label>Email Address</label>
                                 <input type="email" name="email" value="{{ Auth::user()->email }}" required>
                             </div>
+                            @if($responder ?? null)
+                            <div class="form-group">
+                                <label>Vehicle Registration</label>
+                                <input type="text" name="vehicle_reg" value="{{ $responder->vehicle_reg }}" placeholder="e.g. LND-234-XY">
+                            </div>
+                            <div class="form-group">
+                                <label>Capacity (patients/crew)</label>
+                                <input type="number" name="capacity" value="{{ $responder->capacity }}" min="1" max="20" placeholder="e.g. 2">
+                            </div>
+                            @endif
                         </div>
                         <button type="submit" class="btn-save">Save Profile</button>
                     </form>

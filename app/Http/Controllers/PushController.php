@@ -3,11 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\PushSubscription;
+use App\Services\WebPushService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PushController extends Controller
 {
+    public function vapidPublicKey()
+    {
+        return response()->json(['key' => config('services.vapid.public_key')]);
+    }
+
     public function subscribe(Request $request)
     {
         $request->validate([
@@ -35,33 +41,10 @@ class PushController extends Controller
         return response()->json(['success' => true]);
     }
 
-    // Send FCM push to all subscribers of a given role
-    public static function sendToRole(string $role, string $title, string $body, array $data = []): void
+    // Send a real Web Push (VAPID) notification to every subscriber with the given role
+    public static function sendToRole(string $role): void
     {
-        $serverKey = config('services.firebase.server_key');
-        if (!$serverKey) return;
-
-        $userIds = \App\Domains\Users\Models\User::where('role', $role)->pluck('id');
-        $tokens = PushSubscription::whereIn('user_id', $userIds)->pluck('endpoint')->toArray();
-        if (empty($tokens)) return;
-
-        $payload = json_encode([
-            'registration_ids' => $tokens,
-            'notification' => ['title' => $title, 'body' => $body, 'icon' => '/images/logo.png'],
-            'data' => $data,
-        ]);
-
-        $ch = curl_init('https://fcm.googleapis.com/fcm/send');
-        curl_setopt_array($ch, [
-            CURLOPT_POST           => true,
-            CURLOPT_POSTFIELDS     => $payload,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER     => [
-                'Authorization: key=' . $serverKey,
-                'Content-Type: application/json',
-            ],
-        ]);
-        curl_exec($ch);
-        curl_close($ch);
+        $userIds = \App\Domains\Users\Models\User::where('role', $role)->pluck('id')->toArray();
+        WebPushService::sendToUsers($userIds);
     }
 }

@@ -119,6 +119,7 @@ class HospitalController extends Controller
                 'resolved_at' => $emergency->resolved_at ?? now(),
                 'admission_fee_paid_at' => now(),
             ]);
+            $emergency->freeAssignedResponder();
 
             if ($hospital->available_beds < $hospital->total_beds) {
                 $hospital->increment('available_beds');
