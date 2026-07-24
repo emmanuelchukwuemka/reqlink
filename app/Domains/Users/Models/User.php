@@ -63,6 +63,8 @@ class User extends Authenticatable
         'pregnancy_high_risk',
         'preferred_maternity_hospital',
         'obgyn_contact',
+        'verification_rejected_reason',
+        'verification_reviewed_at',
     ];
 
     /**
@@ -90,6 +92,7 @@ class User extends Authenticatable
             'mama_care_active' => 'boolean',
             'pregnancy_due_date' => 'date',
             'pregnancy_high_risk' => 'boolean',
+            'verification_reviewed_at' => 'datetime',
         ];
     }
 }

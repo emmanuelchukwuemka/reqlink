@@ -170,6 +170,8 @@
         </div>
     </header>
 
+    @include('partials.announcement-banner')
+
     @if(session('success'))
         <div style="background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid rgba(34, 197, 94, 0.2);">
             {{ session('success') }}

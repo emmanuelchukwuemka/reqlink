@@ -277,6 +277,8 @@ class DashboardController extends Controller
         ]);
 
         $status = $user->is_suspended ? 'suspended' : 're-activated';
+        \App\Models\AdminActivityLog::record('user_' . ($user->is_suspended ? 'suspended' : 'reactivated'), "User {$user->name} has been {$status}", $user);
+
         return redirect()->back()->with('success', "User {$user->name} has been {$status}.");
     }
 
@@ -392,8 +394,57 @@ class DashboardController extends Controller
         if ($user->id === Auth::id()) {
             return redirect()->back()->with('error', 'You cannot change your own role.');
         }
+        $oldRole = $user->role;
         $user->update(['role' => $request->role]);
+        \App\Models\AdminActivityLog::record('user_role_changed', "Changed {$user->name}'s role from {$oldRole} to {$request->role}", $user);
+
         return redirect()->back()->with('success', "Role for {$user->name} updated to {$request->role}.");
+    }
+
+    public function exportUsers()
+    {
+        $users = \App\Domains\Users\Models\User::orderBy('created_at', 'desc')->get();
+
+        return response()->streamDownload(function () use ($users) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['Name', 'Email', 'Phone', 'Role', 'Verified', 'Suspended', 'Joined']);
+            foreach ($users as $user) {
+                fputcsv($out, [
+                    $user->name,
+                    $user->email,
+                    $user->phone,
+                    $user->role,
+                    $user->is_verified ? 'YES' : 'NO',
+                    $user->is_suspended ? 'YES' : 'NO',
+                    $user->created_at->format('Y-m-d H:i:s'),
+                ]);
+            }
+            fclose($out);
+        }, 'users.csv', ['Content-Type' => 'text/csv']);
+    }
+
+    public function bulkUserAction(Request $request)
+    {
+        $request->validate([
+            'user_ids' => 'required|array|min:1',
+            'user_ids.*' => 'integer|exists:users,id',
+            'bulk_action' => 'required|in:suspend,unsuspend,verify',
+        ]);
+
+        $userIds = array_diff($request->user_ids, [Auth::id()]);
+        $users = \App\Domains\Users\Models\User::whereIn('id', $userIds)->get();
+
+        foreach ($users as $user) {
+            match ($request->bulk_action) {
+                'suspend' => $user->update(['is_suspended' => true]),
+                'unsuspend' => $user->update(['is_suspended' => false]),
+                'verify' => $user->update(['is_verified' => true, 'verification_reviewed_at' => now()]),
+            };
+        }
+
+        \App\Models\AdminActivityLog::record('bulk_user_action', "Bulk {$request->bulk_action} applied to " . count($users) . ' user(s)');
+
+        return redirect()->back()->with('success', 'Bulk action applied to ' . count($users) . ' user(s).');
     }
 
     public function globalIncidents(Request $request)
@@ -437,6 +488,7 @@ class DashboardController extends Controller
         if ($request->status === 'resolved' && !$emergency->resolved_at) {
             $emergency->update(['resolved_at' => now()]);
         }
+        \App\Models\AdminActivityLog::record('incident_status_changed', "Set incident #{$emergency->id} status to {$request->status}", $emergency);
 
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json([

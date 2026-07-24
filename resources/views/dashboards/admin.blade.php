@@ -70,8 +70,10 @@
         <a href="{{ route('admin.command-center') }}" class="nav-item"><i data-lucide="shield-alert" style="color: var(--red);"></i> Command Center</a>
         <a href="{{ route('admin.incidents') }}" class="nav-item"><i data-lucide="activity"></i> Global Incidents</a>
         <a href="{{ route('admin.agencies') }}" class="nav-item"><i data-lucide="building-2"></i> Agency Oversight</a>
+        <a href="{{ route('admin.verifications.index') }}" class="nav-item"><i data-lucide="badge-check"></i> Verifications</a>
         <a href="{{ route('admin.analytics') }}" class="nav-item"><i data-lucide="bar-chart-3"></i> System Analytics</a>
         <a href="{{ route('admin.blog.index') }}" class="nav-item"><i data-lucide="newspaper"></i> Blog & News</a>
+        <a href="{{ route('admin.tools') }}" class="nav-item"><i data-lucide="wrench"></i> Platform Tools</a>
         <a href="{{ route('settings') }}" class="nav-item"><i data-lucide="settings"></i> Settings</a>
     </nav>
     <div class="sidebar-footer">
@@ -114,6 +116,8 @@
             </div>
         </div>
     </header>
+
+    @include('partials.announcement-banner')
 
     @if(session('success'))
     <div class="flash-success"><i data-lucide="check-circle" style="width:16px;height:16px;flex-shrink:0;"></i> {{ session('success') }}</div>
@@ -206,7 +210,12 @@
     <div class="dash-card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
             <h3 style="margin:0;">User Registry</h3>
-            <span style="font-size:0.78rem;color:var(--grey);" id="tableCount"></span>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:0.78rem;color:var(--grey);" id="tableCount"></span>
+                <a href="{{ route('admin.users.export') }}" class="mini-btn" style="background: rgba(59,130,246,0.1); color: #3b82f6; border-color: rgba(59,130,246,0.3); text-decoration: none; display:inline-flex; align-items:center; gap:6px;">
+                    <i data-lucide="download" style="width:12px;height:12px;"></i> Export CSV
+                </a>
+            </div>
         </div>
 
         <!-- Filters -->
@@ -228,10 +237,23 @@
             </select>
         </div>
 
+        <form id="bulkActionForm" action="{{ route('admin.users.bulk-action') }}" method="POST">
+            @csrf
+            <div id="bulkActionBar" style="display:none; align-items:center; gap:10px; margin-bottom: 14px; padding: 10px 14px; background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.2); border-radius: 10px; flex-wrap: wrap;">
+                <span style="font-size:0.8rem; font-weight:700;"><span id="bulkSelectedCount">0</span> selected</span>
+                <select name="bulk_action" style="background: var(--glass); border: 1px solid var(--glass-border); color: var(--white); padding: 6px 10px; border-radius: 8px; font-size: 0.8rem;">
+                    <option value="verify">Verify</option>
+                    <option value="suspend">Suspend</option>
+                    <option value="unsuspend">Unsuspend</option>
+                </select>
+                <button type="submit" class="mini-btn" style="background: #3b82f6; color: white;" onclick="return confirm('Apply this action to the selected users?');">Apply</button>
+            </div>
+
         <div class="table-scroll">
         <table class="admin-table" style="min-width: 800px;" id="userTable">
             <thead>
                 <tr>
+                    <th style="width:32px;"><input type="checkbox" id="selectAllUsers" onchange="toggleSelectAll(this)"></th>
                     <th>User</th>
                     <th>Role</th>
                     <th>Contact</th>
@@ -250,6 +272,11 @@
                     data-role="{{ $user->role }}"
                     data-status="{{ $user->is_suspended ? 'suspended' : 'active' }}"
                 >
+                    <td>
+                        @if($user->id !== Auth::id())
+                        <input type="checkbox" class="user-select-checkbox" name="user_ids[]" value="{{ $user->id }}" form="bulkActionForm" onchange="updateBulkBar()">
+                        @endif
+                    </td>
                     <td>
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <div class="avatar sm" style="background: {{ $user->role === 'civilian' ? '#3b82f6' : ($user->role === 'admin' ? 'var(--red)' : '#22c55e') }}">
@@ -305,6 +332,7 @@
             </tbody>
         </table>
         </div>
+        </form>
         <div id="noResults" style="display:none;text-align:center;padding:30px;opacity:0.5;">No users match the current filters.</div>
     </div>
 </main>
@@ -347,6 +375,20 @@
 
     // Init count
     document.getElementById('tableCount').textContent = document.querySelectorAll('#userTableBody tr').length + ' users';
+
+    // Bulk selection
+    function toggleSelectAll(checkbox) {
+        document.querySelectorAll('.user-select-checkbox').forEach((cb) => {
+            if (cb.closest('tr').style.display !== 'none') cb.checked = checkbox.checked;
+        });
+        updateBulkBar();
+    }
+
+    function updateBulkBar() {
+        const checked = document.querySelectorAll('.user-select-checkbox:checked').length;
+        document.getElementById('bulkSelectedCount').textContent = checked;
+        document.getElementById('bulkActionBar').style.display = checked > 0 ? 'flex' : 'none';
+    }
 
     // Live polling
     const knownIds = new Set();

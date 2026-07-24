@@ -140,6 +140,8 @@
         </div>
     </header>
 
+    @include('partials.announcement-banner')
+
     <!-- OVERVIEW TAB -->
     <div id="overview" class="tab-pane active">
         <!-- SOS TRIGGER -->

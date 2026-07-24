@@ -25,11 +25,6 @@
             font-weight: 700;
         }
         .page-meta-pill strong { color: var(--white); font-size: 0.84rem; }
-        .workspace-grid {
-            display: block;
-            gap: 24px;
-            align-items: start;
-        }
         .panel-card {
             background: var(--dark);
             border: 1px solid var(--glass-border);
@@ -46,8 +41,21 @@
             font-weight: 800;
         }
         .section-copy { color: var(--grey); font-size: 0.84rem; line-height: 1.7; margin: 0 0 22px; }
+        .section-head-icon { display: flex; align-items: flex-start; gap: 14px; }
+        .section-subtitle { margin: 4px 0 0; font-size: 0.82rem; color: var(--grey); }
+        .icon-box { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .icon-box i { width: 20px; height: 20px; }
+        .icon-box-sm { width: 34px; height: 34px; border-radius: 10px; }
+        .icon-box-sm i { width: 16px; height: 16px; }
+        .icon-box-red { background: rgba(229,9,20,0.12); color: var(--red); }
+        .icon-box-green { background: rgba(34,197,94,0.12); color: #22c55e; }
+        .icon-box-purple { background: rgba(139,92,246,0.12); color: #8b5cf6; }
+        .icon-box-blue { background: rgba(59,130,246,0.12); color: #3b82f6; }
+        .icon-box-neutral { background: var(--glass); color: var(--text-muted); }
         .compose-card { padding-bottom: 22px; }
         .compose-form { display: flex; flex-direction: column; gap: 18px; }
+        .compose-layout { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
+        .compose-main, .compose-sidebar { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
         .form-section {
             border: 1px solid var(--glass-border);
             border-radius: 16px;
@@ -62,6 +70,7 @@
             justify-content: space-between;
             margin-bottom: 14px;
         }
+        .form-section-head-icon { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
         .form-section-title {
             font-size: 0.92rem;
             font-weight: 800;
@@ -72,63 +81,78 @@
             color: var(--grey);
             line-height: 1.5;
         }
+        .field-hint { font-size: 0.74rem; color: var(--grey); line-height: 1.5; }
+        .req { color: var(--red); }
         .form-grid { display: flex; flex-direction: column; gap: 14px; }
+        .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
         .form-group { display: flex; flex-direction: column; gap: 8px; }
-        .form-group label { font-size: 0.72rem; color: var(--grey); font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; }
-        .form-group input, .form-group textarea { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); color: var(--white); padding: 12px 14px; border-radius: 14px; font-size: 0.9rem; outline: none; }
+        .form-group label { font-size: 0.72rem; color: var(--grey); font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; gap: 6px; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); color: var(--white); padding: 12px 14px; border-radius: 14px; font-size: 0.9rem; outline: none; }
         .form-group textarea { min-height: 150px; resize: vertical; }
-        .form-group input:focus, .form-group textarea:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(229,9,20,0.08); }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(229,9,20,0.08); }
+        .char-counter { text-align: right; font-size: 0.72rem; color: var(--grey); margin-top: 4px; }
+        .char-counter.over-limit { color: #f59e0b; }
         .file-hint { color: var(--grey); font-size: 0.76rem; line-height: 1.5; }
         .cover-preview { width: 100%; max-width: 220px; height: 120px; object-fit: cover; border-radius: 12px; border: 1px solid var(--glass-border); margin-top: 10px; background: rgba(255,255,255,0.03); }
         .file-input-native { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-        .upload-card {
+        .dropzone {
             display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 16px;
-            border: 1px dashed rgba(229,9,20,0.35);
-            border-radius: 16px;
-            background: linear-gradient(135deg, rgba(229,9,20,0.08), rgba(255,255,255,0.02));
-            cursor: pointer;
-            transition: all 0.25s ease;
-            text-transform: none;
-            letter-spacing: normal;
-            font-weight: 400;
-        }
-        .upload-card:hover {
-            border-color: var(--red);
-            background: linear-gradient(135deg, rgba(229,9,20,0.12), rgba(255,255,255,0.04));
-            transform: translateY(-1px);
-        }
-        .upload-card:focus-within {
-            border-color: var(--red);
-            box-shadow: 0 0 0 3px rgba(229,9,20,0.12);
-        }
-        .upload-icon {
-            width: 46px;
-            height: 46px;
-            border-radius: 14px;
-            background: rgba(229,9,20,0.14);
-            color: var(--red);
-            display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
+            gap: 6px;
+            padding: 28px 16px;
+            border: 2px dashed var(--glass-border);
+            border-radius: 16px;
+            background: rgba(255,255,255,0.02);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+            color: var(--grey);
         }
+        .dropzone:hover, .dropzone.dragover { border-color: var(--red); background: rgba(229,9,20,0.05); }
+        .dropzone-title { font-size: 0.84rem; color: var(--white); font-weight: 600; }
+        .dropzone-or { font-size: 0.74rem; color: var(--grey); }
+        .dropzone-btn { margin-top: 4px; pointer-events: none; }
+        .media-upload-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.02);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .media-upload-row:hover { border-color: #8b5cf6; background: rgba(139,92,246,0.05); }
+        .upload-icon-sm { width: 36px; height: 36px; border-radius: 10px; background: rgba(139,92,246,0.12); color: #8b5cf6; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .upload-icon-sm i { width: 16px; height: 16px; }
+        .btn-soft-sm { padding: 7px 12px; border-radius: 8px; border: 1px solid rgba(139,92,246,0.3); background: rgba(139,92,246,0.12); color: #8b5cf6; font-size: 0.76rem; font-weight: 700; white-space: nowrap; cursor: pointer; pointer-events: none; }
+        .publish-options { display: flex; flex-direction: column; gap: 10px; }
+        .publish-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 14px;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.02);
+            transition: all 0.2s ease;
+        }
+        .publish-option:has(input:checked), .publish-option.selected { border-color: #22c55e; background: rgba(34,197,94,0.06); }
+        .publish-option input[type="radio"] { width: auto; margin-top: 3px; accent-color: #22c55e; }
+        .publish-option span { display: flex; flex-direction: column; gap: 2px; }
+        .publish-option strong { font-size: 0.86rem; color: var(--white); }
+        .publish-option small { font-size: 0.74rem; color: var(--grey); }
+        .schedule-datetime-row { margin-top: 2px; padding: 12px 14px; border: 1px solid var(--glass-border); border-radius: 12px; background: rgba(255,255,255,0.02); }
+        .schedule-datetime-row label { display: block; font-size: 0.72rem; color: var(--grey); font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; }
+        .schedule-datetime-row input { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); color: var(--white); padding: 10px 12px; border-radius: 10px; }
+        .compose-actions-bar { display: flex; justify-content: flex-end; gap: 12px; margin-top: 4px; padding-top: 20px; border-top: 1px solid var(--glass-border); flex-wrap: wrap; }
         .upload-copy { min-width: 0; flex: 1; }
         .upload-title { display: block; font-size: 0.9rem; font-weight: 800; color: var(--white); margin-bottom: 4px; }
         .upload-subtitle { display: block; font-size: 0.78rem; color: var(--grey); line-height: 1.5; }
-        .upload-badge {
-            padding: 7px 12px;
-            border-radius: 999px;
-            background: rgba(229,9,20,0.12);
-            color: var(--red);
-            font-size: 0.72rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            white-space: nowrap;
-        }
         .file-selected { margin-top: 10px; font-size: 0.78rem; color: var(--grey); }
         .file-selected strong { color: var(--white); }
         .editor-source { display: none; }
@@ -178,15 +202,6 @@
             border-radius: 16px;
         }
         .editor-shell .ck-content audio { width: 100%; }
-        .editor-tools { display: flex; flex-direction: column; gap: 14px; }
-        .media-tool-card {
-            padding: 16px;
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            background: rgba(255,255,255,0.03);
-        }
-        .media-tool-title { color: var(--white); font-size: 0.88rem; font-weight: 800; margin-bottom: 6px; }
-        .media-tool-copy { color: var(--grey); font-size: 0.78rem; line-height: 1.6; margin-bottom: 12px; }
         .media-tool-row { display: flex; gap: 10px; align-items: center; }
         .media-tool-row input[type="url"] {
             flex: 1;
@@ -196,24 +211,7 @@
             border: none;
             flex-shrink: 0;
         }
-        .checkbox-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; color: var(--grey); font-size: 0.88rem; }
-        .checkbox-row input { width: auto; }
-        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
-        .compose-submit-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 14px;
-            flex-wrap: wrap;
-            margin-top: 2px;
-        }
-        .compose-submit-note {
-            color: var(--grey);
-            font-size: 0.8rem;
-            line-height: 1.55;
-            max-width: 430px;
-        }
-        .btn-soft { padding: 11px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03); color: var(--white); font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+        .btn-soft { padding: 11px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03); color: var(--white); font-size: 0.82rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
         .flash-success { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3); color: #22c55e; padding: 12px 18px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; font-size: 0.85rem; font-weight: 600; }
         .flash-error { background: rgba(229,9,20,0.1); border: 1px solid rgba(229,9,20,0.3); color: var(--red); padding: 12px 18px; border-radius: 10px; margin-bottom: 20px; }
         .post-list { display: flex; flex-direction: column; gap: 18px; }
@@ -270,6 +268,7 @@
         .post-toggle i { transition: transform 0.2s ease; }
         .post-status { padding: 5px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
         .post-status.published { background: rgba(34,197,94,0.12); color: #22c55e; }
+        .post-status.scheduled { background: rgba(59,130,246,0.12); color: #3b82f6; }
         .post-status.draft { background: var(--glass); color: var(--text-muted); }
         .post-body { padding: 0 20px 20px; border-top: 1px solid var(--glass-border); }
         .post-edit-shell { padding-top: 20px; }
@@ -308,8 +307,6 @@
         :root.light-mode .editor-shell .ck-content,
         :root.light-mode .editor-shell .ck-content * { color: #0f172a; }
         :root.light-mode .editor-shell .ck-content a { color: #dc2626; }
-        :root.light-mode .media-tool-card { background: #ffffff; border-color: rgba(15, 23, 42, 0.08); }
-        :root.light-mode .media-tool-title,
         :root.light-mode .file-selected strong { color: #0f172a; }
         :root.light-mode .panel-card,
         :root.light-mode .post-card,
@@ -318,9 +315,16 @@
         :root.light-mode .page-meta-pill { border-color: rgba(15, 23, 42, 0.08); }
         :root.light-mode .form-group input,
         :root.light-mode .form-group textarea,
+        :root.light-mode .form-group select,
         :root.light-mode .btn-soft,
         :root.light-mode .post-toggle { background: #ffffff; }
-        @media (max-width: 768px) { .post-summary { flex-direction: column; align-items: flex-start; } .post-summary-side { width: 100%; justify-content: space-between; } .media-tool-row { flex-direction: column; align-items: stretch; } .editor-shell .ck.ck-editor__main > .ck-editor__editable, .editor-shell .ck-content iframe, .editor-shell .ck-content video { min-height: 240px; } }
+        :root.light-mode .dropzone,
+        :root.light-mode .publish-option,
+        :root.light-mode .media-upload-row,
+        :root.light-mode .schedule-datetime-row { background: #ffffff; border-color: rgba(15, 23, 42, 0.08); }
+        :root.light-mode .schedule-datetime-row input { background: #ffffff; }
+        @media (max-width: 1100px) { .compose-layout { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .post-summary { flex-direction: column; align-items: flex-start; } .post-summary-side { width: 100%; justify-content: space-between; } .media-tool-row { flex-direction: column; align-items: stretch; } .form-grid-2 { grid-template-columns: 1fr; } .compose-actions-bar { justify-content: stretch !important; } .compose-actions-bar button, .compose-actions-bar > div { width: 100%; } .editor-shell .ck.ck-editor__main > .ck-editor__editable, .editor-shell .ck-content iframe, .editor-shell .ck-content video { min-height: 240px; } }
     </style>
     <script src="/js/theme.js"></script>
 </head>
@@ -339,8 +343,10 @@
         <a href="{{ route('admin.command-center') }}" class="nav-item"><i data-lucide="shield-alert" style="color: var(--red);"></i> Command Center</a>
         <a href="{{ route('admin.incidents') }}" class="nav-item"><i data-lucide="activity"></i> Global Incidents</a>
         <a href="{{ route('admin.agencies') }}" class="nav-item"><i data-lucide="building-2"></i> Agency Oversight</a>
+        <a href="{{ route('admin.verifications.index') }}" class="nav-item"><i data-lucide="badge-check"></i> Verifications</a>
         <a href="{{ route('admin.analytics') }}" class="nav-item"><i data-lucide="bar-chart-3"></i> System Analytics</a>
         <a href="{{ route('admin.blog.index') }}" class="nav-item active"><i data-lucide="newspaper"></i> Blog & News</a>
+        <a href="{{ route('admin.tools') }}" class="nav-item"><i data-lucide="wrench"></i> Platform Tools</a>
         <a href="{{ route('settings') }}" class="nav-item"><i data-lucide="settings"></i> Settings</a>
     </nav>
     <div class="sidebar-footer">
@@ -394,99 +400,142 @@
         <div class="page-stats-row">
             <span class="page-meta-pill"><strong>{{ $stats['total'] }}</strong> total</span>
             <span class="page-meta-pill"><strong>{{ $stats['published'] }}</strong> published</span>
+            <span class="page-meta-pill"><strong>{{ $stats['scheduled'] }}</strong> scheduled</span>
             <span class="page-meta-pill"><strong>{{ $stats['drafts'] }}</strong> drafts</span>
         </div>
 
-        <div class="workspace-grid">
-            <section class="panel-card compose-card">
-                <h3 class="section-title" style="margin-bottom: 18px;"><i data-lucide="square-pen"></i> Create New Post</h3>
-            <form action="{{ route('admin.blog.store') }}" method="POST" enctype="multipart/form-data" class="compose-form">
+        <section class="panel-card compose-card">
+            <div class="section-head-icon" style="margin-bottom: 22px;">
+                <span class="icon-box icon-box-red"><i data-lucide="square-pen"></i></span>
+                <div>
+                    <h3 class="section-title" style="margin: 0;">Create New Post</h3>
+                    <p class="section-subtitle">Share important updates with your audience.</p>
+                </div>
+            </div>
+            <form action="{{ route('admin.blog.store') }}" method="POST" enctype="multipart/form-data" class="compose-form" id="createPostForm">
                 @csrf
-                <div class="form-section">
-                    <div class="form-section-title" style="margin-bottom: 14px;">Post Details</div>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Title</label>
-                            <input type="text" name="title" value="{{ old('title') }}" required>
+                <div class="compose-layout">
+                    <div class="compose-main">
+                        <div class="form-section">
+                            <div class="form-section-head-icon">
+                                <span class="icon-box icon-box-red icon-box-sm"><i data-lucide="file-text"></i></span>
+                                <div class="form-section-title">Post Information</div>
+                            </div>
+                            <div class="form-grid-2">
+                                <div class="form-group">
+                                    <label>Post Title <span class="req">*</span></label>
+                                    <input type="text" name="title" value="{{ old('title') }}" required placeholder="Enter an engaging title for your post">
+                                </div>
+                                <div class="form-group">
+                                    <label><i data-lucide="info" style="width:12px;height:12px;"></i> Slug (URL)</label>
+                                    <input type="text" name="slug" value="{{ old('slug') }}" placeholder="post-url-slug (optional)">
+                                    <span class="field-hint">A URL-friendly version of the title.</span>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-top: 14px;">
+                                <label>Excerpt</label>
+                                <span class="field-hint" style="margin-bottom: 2px;">Write a short summary that will appear in blog cards and previews.</span>
+                                <textarea name="excerpt" id="excerptCreate" maxlength="500" placeholder="Write a short summary of your post...">{{ old('excerpt') }}</textarea>
+                                <div class="char-counter" data-counter-for="excerptCreate"><span class="char-count">0</span> / 160</div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Slug</label>
-                            <input type="text" name="slug" value="{{ old('slug') }}" placeholder="optional-auto-generated">
-                        </div>
-                        <div class="form-group" style="grid-column: 1 / -1;">
-                            <label>Excerpt</label>
-                            <textarea name="excerpt" placeholder="Short summary shown in blog cards">{{ old('excerpt') }}</textarea>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="form-section">
-                    <div class="form-section-title" style="margin-bottom: 14px;">Cover Image</div>
-                    <div class="form-grid">
-                        <div class="form-group" style="grid-column: 1 / -1;">
-                            <input type="file" name="cover_image_file" id="createCoverImageFile" class="file-input-native" accept=".jpg,.jpeg,.png,.webp,.gif,image/*">
-                            <label for="createCoverImageFile" class="upload-card">
-                                <span class="upload-icon"><i data-lucide="image-plus" style="width:20px;height:20px;"></i></span>
-                                <span class="upload-copy">
-                                    <span class="upload-title">Choose a cover image</span>
-                                    <span class="upload-subtitle">JPG, PNG, WEBP, or GIF — max 5MB</span>
-                                </span>
-                                <span class="upload-badge">Browse</span>
-                            </label>
-                            <div class="file-selected" id="createCoverImageFileName">No file selected</div>
-                            <label style="margin-top: 10px; display: block;">Or paste an image URL instead</label>
-                            <input type="url" name="cover_image" value="{{ old('cover_image') }}" placeholder="https://example.com/image.jpg">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-section">
-                    <div class="form-section-title" style="margin-bottom: 14px;">Content</div>
-                    <div class="form-grid">
-                        <div class="form-group" style="grid-column: 1 / -1;">
+                        <div class="form-section">
+                            <div class="form-section-head-icon">
+                                <span class="icon-box icon-box-red icon-box-sm"><i data-lucide="file-code-2"></i></span>
+                                <div class="form-section-title">Content <span class="req">*</span></div>
+                            </div>
                             <div class="editor-block">
                                 <textarea name="content" id="contentCreate" class="editor-source" data-editor-id="blogEditorCreate" required>{{ old('content') }}</textarea>
                                 <div id="blogEditorCreate" class="editor-shell"></div>
-                                <div class="editor-tools">
-                                    <div class="media-tool-card">
-                                        <div class="media-tool-title">Insert media at cursor</div>
-                                        <input type="file" id="contentMediaFileCreate" class="file-input-native" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip">
-                                        <label for="contentMediaFileCreate" class="upload-card">
-                                            <span class="upload-icon"><i data-lucide="files" style="width:20px;height:20px;"></i></span>
-                                            <span class="upload-copy">
-                                                <span class="upload-title">Upload a file</span>
-                                                <span class="upload-subtitle">Images, video, audio, or documents</span>
-                                            </span>
-                                            <span class="upload-badge">Insert</span>
-                                        </label>
-                                        <div class="file-selected" id="contentMediaFileCreateName">No file selected</div>
-                                        <div class="media-tool-row" style="margin-top: 12px;">
-                                            <input type="url" id="contentMediaUrlCreate" placeholder="Or paste a media/YouTube/Vimeo link">
-                                            <button type="button" class="btn-soft insert-media-url" data-editor-ref="blogEditorCreate" data-url-input="contentMediaUrlCreate">Insert</button>
-                                        </div>
-                                    </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="compose-sidebar">
+                        <div class="form-section">
+                            <div class="form-section-head-icon">
+                                <span class="icon-box icon-box-neutral icon-box-sm"><i data-lucide="image"></i></span>
+                                <div>
+                                    <div class="form-section-title">Cover Image</div>
+                                    <span class="field-hint">This image will be displayed at the top of your post.</span>
                                 </div>
+                            </div>
+                            <input type="file" name="cover_image_file" id="createCoverImageFile" class="file-input-native" accept=".jpg,.jpeg,.png,.webp,.gif,image/*">
+                            <label for="createCoverImageFile" class="dropzone" id="createDropzone">
+                                <i data-lucide="upload-cloud" style="width: 28px; height: 28px;"></i>
+                                <span class="dropzone-title">Drag &amp; drop an image here</span>
+                                <span class="dropzone-or">or</span>
+                                <span class="btn-soft dropzone-btn">Choose Image</span>
+                            </label>
+                            <div class="file-selected" id="createCoverImageFileName">No file selected</div>
+                            <p class="field-hint" style="margin-top: 8px;">Recommended: JPG, PNG, WEBP or GIF. Max 5MB.</p>
+                            <div class="form-group" style="margin-top: 14px;">
+                                <label><i data-lucide="link" style="width: 12px; height: 12px;"></i> Image URL (optional)</label>
+                                <input type="url" name="cover_image" value="{{ old('cover_image') }}" placeholder="https://example.com/image.jpg">
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <div class="form-section-head-icon">
+                                <span class="icon-box icon-box-purple icon-box-sm"><i data-lucide="sparkles"></i></span>
+                                <div class="form-section-title">Insert Media at Cursor</div>
+                            </div>
+                            <input type="file" id="contentMediaFileCreate" class="file-input-native" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip">
+                            <label for="contentMediaFileCreate" class="media-upload-row">
+                                <span class="upload-icon-sm"><i data-lucide="file-up"></i></span>
+                                <span class="upload-copy">
+                                    <span class="upload-title">Upload a file</span>
+                                    <span class="upload-subtitle">Images, video, audio, or documents</span>
+                                </span>
+                                <span class="btn-soft-sm">Upload File</span>
+                            </label>
+                            <div class="file-selected" id="contentMediaFileCreateName">No file selected</div>
+                            <p class="field-hint" style="margin: 12px 0 6px;">Or paste a media/YouTube/Vimeo link</p>
+                            <div class="media-tool-row">
+                                <input type="url" id="contentMediaUrlCreate" placeholder="https://youtube.com/watch?v=...">
+                                <button type="button" class="btn-soft insert-media-url" data-editor-ref="blogEditorCreate" data-url-input="contentMediaUrlCreate">Insert Link</button>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <div class="form-section-head-icon">
+                                <span class="icon-box icon-box-green icon-box-sm"><i data-lucide="calendar-check"></i></span>
+                                <div>
+                                    <div class="form-section-title">Publishing Options</div>
+                                    <span class="field-hint">Choose when and how to publish this post.</span>
+                                </div>
+                            </div>
+                            <div class="publish-options" data-scope="Create">
+                                <label class="publish-option">
+                                    <input type="radio" name="publish_mode" value="now" checked>
+                                    <span><strong>Publish immediately</strong><small>Post will go live right away.</small></span>
+                                </label>
+                                <label class="publish-option">
+                                    <input type="radio" name="publish_mode" value="draft">
+                                    <span><strong>Save as draft</strong><small>Save for later review and publishing.</small></span>
+                                </label>
+                                <label class="publish-option">
+                                    <input type="radio" name="publish_mode" value="schedule">
+                                    <span><strong>Schedule for later</strong><small>Select date and time to publish.</small></span>
+                                </label>
+                            </div>
+                            <div class="schedule-datetime-row" id="scheduleRowCreate" style="display: none;">
+                                <label>Publish date &amp; time</label>
+                                <input type="datetime-local" name="scheduled_at" id="scheduledAtCreate">
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="form-section">
-                    <div class="form-section-title" style="margin-bottom: 14px;">Publishing</div>
-                    <div class="compose-submit-row">
-                        <label class="checkbox-row" style="margin-top:0;">
-                            <input type="checkbox" name="is_published" value="1" {{ old('is_published') ? 'checked' : '' }}>
-                            Publish immediately (unchecked = save as draft)
-                        </label>
-                        <div class="btn-row" style="margin-top:0;">
-                            <button type="submit" class="btn-primary" style="border:none;">Create Post</button>
-                        </div>
-                    </div>
+                <div class="compose-actions-bar">
+                    <button type="button" class="btn-soft save-draft-btn" data-form-scope="Create"><i data-lucide="save" style="width:14px;height:14px;"></i> Save as Draft</button>
+                    <button type="submit" class="btn-primary submit-publish-btn" id="submitBtnCreate" style="border:none; display:flex; align-items:center; gap:8px;">
+                        <i data-lucide="send" style="width: 16px; height: 16px;"></i> <span>Publish Post</span>
+                    </button>
                 </div>
             </form>
-            </section>
-
-        </div>
+        </section>
 
         <section class="panel-card manage-card">
             <div class="posts-toolbar">
@@ -500,11 +549,18 @@
                         <details class="post-card">
                             <summary class="post-summary">
                                 <div class="post-summary-main">
+                                    @php
+                                        $postState = !$post->is_published ? 'draft' : (($post->published_at && $post->published_at->isFuture()) ? 'scheduled' : 'published');
+                                        $postStateLabel = ['published' => 'Published', 'scheduled' => 'Scheduled', 'draft' => 'Draft'][$postState];
+                                    @endphp
                                     <div class="post-title-row">
                                         <h4>{{ $post->title }}</h4>
-                                        <span class="post-status {{ $post->is_published ? 'published' : 'draft' }}">
-                                            {{ $post->is_published ? 'Published' : 'Draft' }}
+                                        <span class="post-status {{ $postState }}">
+                                            {{ $postStateLabel }}
                                         </span>
+                                        @if($postState === 'scheduled')
+                                        <span class="field-hint">for {{ $post->published_at->format('M d, Y g:i A') }}</span>
+                                        @endif
                                     </div>
                                     <div class="post-meta">
                                         <span>Slug: {{ $post->slug }}</span>
@@ -522,78 +578,132 @@
                             </summary>
                             <div class="post-body">
                                 <div class="post-edit-shell">
-                                    <form action="{{ route('admin.blog.update', $post) }}" method="POST" enctype="multipart/form-data">
+                                    <form action="{{ route('admin.blog.update', $post) }}" method="POST" enctype="multipart/form-data" id="editForm{{ $post->id }}">
                                         @csrf
                                         @method('PUT')
-                                        <div class="form-grid">
-                                            <div class="form-group">
-                                                <label>Title</label>
-                                                <input type="text" name="title" value="{{ $post->title }}" required>
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Slug</label>
-                                                <input type="text" name="slug" value="{{ $post->slug }}">
-                                            </div>
-                                            <div class="form-group" style="grid-column: 1 / -1;">
-                                                <label>Excerpt</label>
-                                                <textarea name="excerpt">{{ $post->excerpt }}</textarea>
-                                            </div>
-                                            <div class="form-group" style="grid-column: 1 / -1;">
-                                                <label>Cover Image</label>
-                                                @if($post->cover_image)
-                                                    <img src="{{ $post->cover_image }}" alt="{{ $post->title }}" class="cover-preview">
-                                                @endif
-                                                <input type="file" name="cover_image_file" id="coverImageFile{{ $post->id }}" class="file-input-native" accept=".jpg,.jpeg,.png,.webp,.gif,image/*">
-                                                <label for="coverImageFile{{ $post->id }}" class="upload-card">
-                                                    <span class="upload-icon"><i data-lucide="upload" style="width:20px;height:20px;"></i></span>
-                                                    <span class="upload-copy">
-                                                        <span class="upload-title">Replace cover image</span>
-                                                        <span class="upload-subtitle">JPG, PNG, WEBP, or GIF — max 5MB</span>
-                                                    </span>
-                                                    <span class="upload-badge">Upload</span>
-                                                </label>
-                                                <div class="file-selected" id="coverImageFileName{{ $post->id }}">No new file selected</div>
-                                                <label style="margin-top: 10px; display: block;">Or paste an image URL instead</label>
-                                                <input type="url" name="cover_image" value="{{ $post->cover_image }}">
-                                            </div>
-                                            <div class="form-group" style="grid-column: 1 / -1;">
-                                                <label>Content</label>
-                                                <div class="editor-block">
-                                                    <textarea name="content" id="content{{ $post->id }}" class="editor-source" data-editor-id="blogEditor{{ $post->id }}" required>{{ $post->content }}</textarea>
-                                                    <div id="blogEditor{{ $post->id }}" class="editor-shell"></div>
-                                                    <div class="editor-tools">
-                                                        <div class="media-tool-card">
-                                                            <div class="media-tool-title">Insert media at cursor</div>
-                                                            <input type="file" id="contentMediaFile{{ $post->id }}" class="file-input-native" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip">
-                                                            <label for="contentMediaFile{{ $post->id }}" class="upload-card">
-                                                                <span class="upload-icon"><i data-lucide="files" style="width:20px;height:20px;"></i></span>
-                                                                <span class="upload-copy">
-                                                                    <span class="upload-title">Upload a file</span>
-                                                                    <span class="upload-subtitle">Images, video, audio, or documents</span>
-                                                                </span>
-                                                                <span class="upload-badge">Insert</span>
-                                                            </label>
-                                                            <div class="file-selected" id="contentMediaFileName{{ $post->id }}">No file selected</div>
-                                                            <div class="media-tool-row" style="margin-top: 12px;">
-                                                                <input type="url" id="contentMediaUrl{{ $post->id }}" placeholder="Or paste a media/YouTube/Vimeo link">
-                                                                <button type="button" class="btn-soft insert-media-url" data-editor-ref="blogEditor{{ $post->id }}" data-url-input="contentMediaUrl{{ $post->id }}">Insert</button>
-                                                            </div>
+                                        <div class="compose-layout">
+                                            <div class="compose-main">
+                                                <div class="form-section">
+                                                    <div class="form-section-head-icon">
+                                                        <span class="icon-box icon-box-red icon-box-sm"><i data-lucide="file-text"></i></span>
+                                                        <div class="form-section-title">Post Information</div>
+                                                    </div>
+                                                    <div class="form-grid-2">
+                                                        <div class="form-group">
+                                                            <label>Post Title <span class="req">*</span></label>
+                                                            <input type="text" name="title" value="{{ $post->title }}" required>
                                                         </div>
+                                                        <div class="form-group">
+                                                            <label><i data-lucide="info" style="width:12px;height:12px;"></i> Slug (URL)</label>
+                                                            <input type="text" name="slug" value="{{ $post->slug }}">
+                                                            <span class="field-hint">A URL-friendly version of the title.</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group" style="margin-top: 14px;">
+                                                        <label>Excerpt</label>
+                                                        <textarea name="excerpt" id="excerpt{{ $post->id }}" maxlength="500">{{ $post->excerpt }}</textarea>
+                                                        <div class="char-counter" data-counter-for="excerpt{{ $post->id }}"><span class="char-count">{{ strlen($post->excerpt ?? '') }}</span> / 160</div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-section">
+                                                    <div class="form-section-head-icon">
+                                                        <span class="icon-box icon-box-red icon-box-sm"><i data-lucide="file-code-2"></i></span>
+                                                        <div class="form-section-title">Content <span class="req">*</span></div>
+                                                    </div>
+                                                    <div class="editor-block">
+                                                        <textarea name="content" id="content{{ $post->id }}" class="editor-source" data-editor-id="blogEditor{{ $post->id }}" required>{{ $post->content }}</textarea>
+                                                        <div id="blogEditor{{ $post->id }}" class="editor-shell"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="compose-sidebar">
+                                                <div class="form-section">
+                                                    <div class="form-section-head-icon">
+                                                        <span class="icon-box icon-box-neutral icon-box-sm"><i data-lucide="image"></i></span>
+                                                        <div class="form-section-title">Cover Image</div>
+                                                    </div>
+                                                    @if($post->cover_image)
+                                                        <img src="{{ $post->cover_image }}" alt="{{ $post->title }}" class="cover-preview">
+                                                    @endif
+                                                    <input type="file" name="cover_image_file" id="coverImageFile{{ $post->id }}" class="file-input-native" accept=".jpg,.jpeg,.png,.webp,.gif,image/*">
+                                                    <label for="coverImageFile{{ $post->id }}" class="dropzone" id="dropzone{{ $post->id }}" style="margin-top: 10px;">
+                                                        <i data-lucide="upload-cloud" style="width: 24px; height: 24px;"></i>
+                                                        <span class="dropzone-title">Drag &amp; drop to replace</span>
+                                                        <span class="dropzone-or">or</span>
+                                                        <span class="btn-soft dropzone-btn">Choose Image</span>
+                                                    </label>
+                                                    <div class="file-selected" id="coverImageFileName{{ $post->id }}">No new file selected</div>
+                                                    <div class="form-group" style="margin-top: 14px;">
+                                                        <label><i data-lucide="link" style="width:12px;height:12px;"></i> Image URL (optional)</label>
+                                                        <input type="url" name="cover_image" value="{{ $post->cover_image }}">
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-section">
+                                                    <div class="form-section-head-icon">
+                                                        <span class="icon-box icon-box-purple icon-box-sm"><i data-lucide="sparkles"></i></span>
+                                                        <div class="form-section-title">Insert Media at Cursor</div>
+                                                    </div>
+                                                    <input type="file" id="contentMediaFile{{ $post->id }}" class="file-input-native" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip">
+                                                    <label for="contentMediaFile{{ $post->id }}" class="media-upload-row">
+                                                        <span class="upload-icon-sm"><i data-lucide="file-up"></i></span>
+                                                        <span class="upload-copy">
+                                                            <span class="upload-title">Upload a file</span>
+                                                            <span class="upload-subtitle">Images, video, audio, or documents</span>
+                                                        </span>
+                                                        <span class="btn-soft-sm">Upload File</span>
+                                                    </label>
+                                                    <div class="file-selected" id="contentMediaFileName{{ $post->id }}">No file selected</div>
+                                                    <p class="field-hint" style="margin: 12px 0 6px;">Or paste a media/YouTube/Vimeo link</p>
+                                                    <div class="media-tool-row">
+                                                        <input type="url" id="contentMediaUrl{{ $post->id }}" placeholder="https://youtube.com/watch?v=...">
+                                                        <button type="button" class="btn-soft insert-media-url" data-editor-ref="blogEditor{{ $post->id }}" data-url-input="contentMediaUrl{{ $post->id }}">Insert Link</button>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-section">
+                                                    <div class="form-section-head-icon">
+                                                        <span class="icon-box icon-box-green icon-box-sm"><i data-lucide="calendar-check"></i></span>
+                                                        <div class="form-section-title">Publishing Options</div>
+                                                    </div>
+                                                    <div class="publish-options" data-scope="{{ $post->id }}">
+                                                        <label class="publish-option">
+                                                            <input type="radio" name="publish_mode" value="now" {{ $postState !== 'draft' && $postState !== 'scheduled' ? 'checked' : '' }}>
+                                                            <span><strong>Publish immediately</strong><small>Post will go live right away.</small></span>
+                                                        </label>
+                                                        <label class="publish-option">
+                                                            <input type="radio" name="publish_mode" value="draft" {{ $postState === 'draft' ? 'checked' : '' }}>
+                                                            <span><strong>Save as draft</strong><small>Save for later review and publishing.</small></span>
+                                                        </label>
+                                                        <label class="publish-option">
+                                                            <input type="radio" name="publish_mode" value="schedule" {{ $postState === 'scheduled' ? 'checked' : '' }}>
+                                                            <span><strong>Schedule for later</strong><small>Select date and time to publish.</small></span>
+                                                        </label>
+                                                    </div>
+                                                    <div class="schedule-datetime-row" id="scheduleRow{{ $post->id }}" style="{{ $postState === 'scheduled' ? '' : 'display: none;' }}">
+                                                        <label>Publish date &amp; time</label>
+                                                        <input type="datetime-local" name="scheduled_at" id="scheduledAt{{ $post->id }}" value="{{ $postState === 'scheduled' ? $post->published_at->format('Y-m-d\TH:i') : '' }}">
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <label class="checkbox-row">
-                                            <input type="checkbox" name="is_published" value="1" {{ $post->is_published ? 'checked' : '' }}>
-                                            Published
-                                        </label>
-                                        <div class="btn-row">
-                                            <button type="submit" class="btn-primary" style="border:none;">Save Changes</button>
-                                            @if($post->is_published)
-                                                <a href="{{ route('blog.show', $post) }}" class="btn-soft" style="text-decoration:none;display:inline-flex;align-items:center;">Open Live Post</a>
-                                            @else
-                                                <span class="btn-soft" style="display:inline-flex;align-items:center;opacity:0.65;">Draft Preview Unavailable</span>
-                                            @endif
+
+                                        <div class="compose-actions-bar" style="justify-content: space-between;">
+                                            <div class="post-actions">
+                                                @if($postState === 'published')
+                                                    <a href="{{ route('blog.show', $post) }}" class="btn-soft" style="text-decoration:none;display:inline-flex;align-items:center;">Open Live Post</a>
+                                                @else
+                                                    <span class="btn-soft" style="display:inline-flex;align-items:center;opacity:0.65;">Preview Unavailable</span>
+                                                @endif
+                                            </div>
+                                            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                                                <button type="button" class="btn-soft save-draft-btn" data-form-scope="{{ $post->id }}"><i data-lucide="save" style="width:14px;height:14px;"></i> Save as Draft</button>
+                                                <button type="submit" class="btn-primary submit-publish-btn" id="submitBtn{{ $post->id }}" style="border:none; display:flex; align-items:center; gap:8px;">
+                                                    <i data-lucide="send" style="width: 16px; height: 16px;"></i> <span>Save Changes</span>
+                                                </button>
+                                            </div>
                                         </div>
                                     </form>
                                     <form action="{{ route('admin.blog.destroy', $post) }}" method="POST" style="margin-top:12px;" onsubmit="return confirm('Delete this post permanently?');">
@@ -882,11 +992,133 @@
         });
     }
 
+    function bindDropzone(fileInputId, dropzoneId) {
+        const input = document.getElementById(fileInputId);
+        const zone = document.getElementById(dropzoneId);
+
+        if (!input || !zone) {
+            return;
+        }
+
+        zone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            zone.classList.add('dragover');
+        });
+        zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+        zone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            zone.classList.remove('dragover');
+
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                input.files = e.dataTransfer.files;
+                input.dispatchEvent(new Event('change'));
+            }
+        });
+    }
+
+    function bindExcerptCounter(textareaId) {
+        const textarea = document.getElementById(textareaId);
+        const counter = document.querySelector('.char-counter[data-counter-for="' + textareaId + '"]');
+
+        if (!textarea || !counter) {
+            return;
+        }
+
+        const countEl = counter.querySelector('.char-count');
+
+        const update = () => {
+            const len = textarea.value.length;
+            countEl.textContent = len;
+            counter.classList.toggle('over-limit', len > 160);
+        };
+
+        textarea.addEventListener('input', update);
+        update();
+    }
+
+    function bindPublishOptions(scope) {
+        const group = document.querySelector('.publish-options[data-scope="' + scope + '"]');
+        const scheduleRow = document.getElementById('scheduleRow' + scope);
+        const scheduleInput = document.getElementById('scheduledAt' + scope);
+        const submitBtn = document.getElementById('submitBtn' + scope);
+
+        if (!group) {
+            return;
+        }
+
+        const labels = {
+            now: { text: scope === 'Create' ? 'Publish Post' : 'Save Changes', icon: 'send' },
+            draft: { text: 'Save as Draft', icon: 'save' },
+            schedule: { text: 'Schedule Post', icon: 'calendar-clock' },
+        };
+
+        const applyState = () => {
+            const options = group.querySelectorAll('.publish-option');
+            const checked = group.querySelector('input[type="radio"]:checked');
+            const mode = checked ? checked.value : 'now';
+
+            options.forEach((opt) => opt.classList.toggle('selected', opt.contains(checked)));
+
+            if (scheduleRow) {
+                scheduleRow.style.display = mode === 'schedule' ? '' : 'none';
+            }
+
+            if (scheduleInput) {
+                scheduleInput.required = mode === 'schedule';
+            }
+
+            if (submitBtn) {
+                const config = labels[mode] || labels.now;
+                submitBtn.querySelector('span').textContent = config.text;
+                const iconEl = submitBtn.querySelector('i');
+                if (iconEl) {
+                    iconEl.setAttribute('data-lucide', config.icon);
+                }
+                lucide.createIcons();
+            }
+        };
+
+        group.querySelectorAll('input[type="radio"]').forEach((radio) => {
+            radio.addEventListener('change', applyState);
+        });
+
+        applyState();
+    }
+
+    function bindSaveDraftButton(scope) {
+        const btn = document.querySelector('.save-draft-btn[data-form-scope="' + scope + '"]');
+        const group = document.querySelector('.publish-options[data-scope="' + scope + '"]');
+        const form = document.getElementById((scope === 'Create' ? 'createPostForm' : 'editForm' + scope));
+
+        if (!btn || !group || !form) {
+            return;
+        }
+
+        btn.addEventListener('click', () => {
+            const draftRadio = group.querySelector('input[value="draft"]');
+            if (draftRadio) {
+                draftRadio.checked = true;
+                draftRadio.dispatchEvent(new Event('change'));
+            }
+            // requestSubmit (not submit()) so the "submit" listener that syncs the
+            // CKEditor content into the hidden textarea still runs.
+            form.requestSubmit();
+        });
+    }
+
     bindFileName('createCoverImageFile', 'createCoverImageFileName', 'No file selected');
     bindFileName('contentMediaFileCreate', 'contentMediaFileCreateName', 'No file selected');
+    bindDropzone('createCoverImageFile', 'createDropzone');
+    bindExcerptCounter('excerptCreate');
+    bindPublishOptions('Create');
+    bindSaveDraftButton('Create');
     @foreach($posts as $post)
     bindFileName('coverImageFile{{ $post->id }}', 'coverImageFileName{{ $post->id }}', 'No new file selected');
     bindFileName('contentMediaFile{{ $post->id }}', 'contentMediaFileName{{ $post->id }}', 'No file selected');
+    bindDropzone('coverImageFile{{ $post->id }}', 'dropzone{{ $post->id }}');
+    bindExcerptCounter('excerpt{{ $post->id }}');
+    bindPublishOptions('{{ $post->id }}');
+    bindSaveDraftButton('{{ $post->id }}');
     @endforeach
 
     initializeBlogEditors().then(() => {

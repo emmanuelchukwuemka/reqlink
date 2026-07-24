@@ -107,6 +107,32 @@ Route::post('/admin/blog', [BlogController::class, 'store'])->name('admin.blog.s
 Route::post('/admin/blog/media-upload', [BlogController::class, 'uploadMedia'])->name('admin.blog.media-upload')->middleware('auth');
 Route::put('/admin/blog/{blogPost}', [BlogController::class, 'update'])->name('admin.blog.update')->middleware('auth');
 Route::delete('/admin/blog/{blogPost}', [BlogController::class, 'destroy'])->name('admin.blog.destroy')->middleware('auth');
+
+Route::get('/admin/verifications', [\App\Http\Controllers\AdminVerificationController::class, 'index'])->name('admin.verifications.index')->middleware('auth');
+Route::post('/admin/verifications/{id}/approve', [\App\Http\Controllers\AdminVerificationController::class, 'approve'])->name('admin.verifications.approve')->middleware('auth');
+Route::post('/admin/verifications/{id}/reject', [\App\Http\Controllers\AdminVerificationController::class, 'reject'])->name('admin.verifications.reject')->middleware('auth');
+
+Route::get('/admin/tools', [\App\Http\Controllers\AdminToolsController::class, 'index'])->name('admin.tools')->middleware('auth');
+
+Route::post('/admin/support/{id}/read', [\App\Http\Controllers\AdminSupportController::class, 'markRead'])->name('admin.support.read')->middleware('auth');
+Route::post('/admin/support/{id}/reply', [\App\Http\Controllers\AdminSupportController::class, 'reply'])->name('admin.support.reply')->middleware('auth');
+Route::delete('/admin/support/{id}', [\App\Http\Controllers\AdminSupportController::class, 'destroy'])->name('admin.support.destroy')->middleware('auth');
+
+Route::post('/admin/finance/{id}/flag', [\App\Http\Controllers\AdminFinanceController::class, 'flag'])->name('admin.finance.flag')->middleware('auth');
+Route::post('/admin/finance/{id}/unflag', [\App\Http\Controllers\AdminFinanceController::class, 'unflag'])->name('admin.finance.unflag')->middleware('auth');
+Route::get('/admin/finance/export', [\App\Http\Controllers\AdminFinanceController::class, 'export'])->name('admin.finance.export')->middleware('auth');
+
+Route::delete('/admin/reviews/{id}', [\App\Http\Controllers\AdminReviewController::class, 'destroy'])->name('admin.reviews.destroy')->middleware('auth');
+
+Route::post('/admin/announcements', [\App\Http\Controllers\AdminAnnouncementController::class, 'store'])->name('admin.announcements.store')->middleware('auth');
+Route::delete('/admin/announcements/{id}', [\App\Http\Controllers\AdminAnnouncementController::class, 'destroy'])->name('admin.announcements.destroy')->middleware('auth');
+
+Route::post('/admin/emergency-types', [\App\Http\Controllers\AdminEmergencyTypeController::class, 'store'])->name('admin.emergency-types.store')->middleware('auth');
+Route::put('/admin/emergency-types/{id}', [\App\Http\Controllers\AdminEmergencyTypeController::class, 'update'])->name('admin.emergency-types.update')->middleware('auth');
+Route::delete('/admin/emergency-types/{id}', [\App\Http\Controllers\AdminEmergencyTypeController::class, 'destroy'])->name('admin.emergency-types.destroy')->middleware('auth');
+
+Route::get('/admin/users/export', [DashboardController::class, 'exportUsers'])->name('admin.users.export')->middleware('auth');
+Route::post('/admin/users/bulk-action', [DashboardController::class, 'bulkUserAction'])->name('admin.users.bulk-action')->middleware('auth');
 Route::post('/settings', [\App\Http\Controllers\SettingsController::class, 'update'])->name('settings.update')->middleware('auth');
 Route::post('/settings/delete-account', [\App\Http\Controllers\SettingsController::class, 'deleteAccount'])->name('settings.delete-account')->middleware('auth');
 Route::post('/user/toggle-samaritan', [DashboardController::class, 'toggleSamaritan'])->middleware('auth');

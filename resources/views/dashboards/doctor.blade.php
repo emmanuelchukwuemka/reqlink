@@ -125,6 +125,8 @@
         </div>
     </header>
 
+    @include('partials.announcement-banner')
+
     <!-- MISSIONS TAB -->
     <div id="missions" class="tab-pane active">
         <div class="mission-grid">

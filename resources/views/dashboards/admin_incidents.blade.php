@@ -92,8 +92,10 @@
         <a href="{{ route('admin.command-center') }}" class="nav-item"><i data-lucide="shield-alert" style="color: var(--red);"></i> Command Center</a>
         <a href="{{ route('admin.incidents') }}" class="nav-item active"><i data-lucide="activity"></i> Global Incidents</a>
         <a href="{{ route('admin.agencies') }}" class="nav-item"><i data-lucide="building-2"></i> Agency Oversight</a>
+        <a href="{{ route('admin.verifications.index') }}" class="nav-item"><i data-lucide="badge-check"></i> Verifications</a>
         <a href="{{ route('admin.analytics') }}" class="nav-item"><i data-lucide="bar-chart-3"></i> System Analytics</a>
         <a href="{{ route('admin.blog.index') }}" class="nav-item"><i data-lucide="newspaper"></i> Blog & News</a>
+        <a href="{{ route('admin.tools') }}" class="nav-item"><i data-lucide="wrench"></i> Platform Tools</a>
     </nav>
     <div class="sidebar-footer">
         <form action="{{ route('logout') }}" method="POST" id="logoutForm">

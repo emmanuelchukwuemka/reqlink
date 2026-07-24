@@ -51,7 +51,14 @@ class BlogController extends Controller
 
         $stats = [
             'total' => BlogPost::count(),
-            'published' => BlogPost::where('is_published', true)->count(),
+            'published' => BlogPost::where('is_published', true)
+                ->where(function ($q) {
+                    $q->whereNull('published_at')->orWhere('published_at', '<=', now());
+                })->count(),
+            'scheduled' => BlogPost::where('is_published', true)
+                ->whereNotNull('published_at')
+                ->where('published_at', '>', now())
+                ->count(),
             'drafts' => BlogPost::where('is_published', false)->count(),
             'this_month' => BlogPost::whereMonth('created_at', now()->month)
                 ->whereYear('created_at', now()->year)
@@ -66,7 +73,8 @@ class BlogController extends Controller
         $this->ensureAdmin();
 
         $data = $this->validatedData($request);
-        BlogPost::create($this->buildPayload($data));
+        $post = BlogPost::create($this->buildPayload($data));
+        \App\Models\AdminActivityLog::record('blog_post_created', "Created blog post \"{$post->title}\"", $post);
 
         return redirect()->route('admin.blog.index')->with('success', 'Blog post created successfully.');
     }
@@ -77,6 +85,7 @@ class BlogController extends Controller
 
         $data = $this->validatedData($request, $blogPost);
         $blogPost->update($this->buildPayload($data, $blogPost));
+        \App\Models\AdminActivityLog::record('blog_post_updated', "Updated blog post \"{$blogPost->title}\"", $blogPost);
 
         return redirect()->route('admin.blog.index')->with('success', 'Blog post updated successfully.');
     }
@@ -108,7 +117,9 @@ class BlogController extends Controller
     {
         $this->ensureAdmin();
 
+        $title = $blogPost->title;
         $blogPost->delete();
+        \App\Models\AdminActivityLog::record('blog_post_deleted', "Deleted blog post \"{$title}\"");
 
         return redirect()->route('admin.blog.index')->with('success', 'Blog post deleted successfully.');
     }
@@ -127,15 +138,30 @@ class BlogController extends Controller
             'content' => ['required', 'string'],
             'cover_image' => ['nullable', 'url', 'max:2048'],
             'cover_image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],
+            'publish_mode' => ['nullable', 'in:now,draft,schedule'],
+            'scheduled_at' => ['nullable', 'required_if:publish_mode,schedule', 'date', 'after:now'],
         ]);
     }
 
     protected function buildPayload(array $data, ?BlogPost $blogPost = null): array
     {
-        $isPublished = request()->boolean('is_published');
+        // publish_mode drives the new Publishing Options UI (now / draft / schedule).
+        // Fall back to the legacy is_published checkbox for any older client.
+        $publishMode = $data['publish_mode'] ?? (request()->boolean('is_published') ? 'now' : 'draft');
         $slug = $this->generateUniqueSlug($data['slug'] ?: $data['title'], $blogPost?->id);
         $coverImage = $this->resolveCoverImage($data, $blogPost);
         $content = $this->sanitizeHtml($data['content']);
+
+        $isPublished = in_array($publishMode, ['now', 'schedule'], true);
+        $publishedAt = match ($publishMode) {
+            // Keep the original publish date across edits; only reset it to "now"
+            // if the post wasn't actually live yet (e.g. it was still scheduled).
+            'now' => ($blogPost?->published_at && $blogPost->published_at->lte(now()))
+                ? $blogPost->published_at
+                : now(),
+            'schedule' => $data['scheduled_at'],
+            default => null,
+        };
 
         return [
             'user_id' => $blogPost?->user_id ?? Auth::id(),
@@ -145,9 +171,7 @@ class BlogController extends Controller
             'content' => $content,
             'cover_image' => $coverImage,
             'is_published' => $isPublished,
-            'published_at' => $isPublished
-                ? ($blogPost?->published_at ?? now())
-                : null,
+            'published_at' => $publishedAt,
         ];
     }
 
