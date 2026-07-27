@@ -117,7 +117,13 @@
                     <span>{{ Auth::user()->name }}</span>
                     <small>Administrator</small>
                 </div>
-                <div class="avatar" style="background: var(--red)">{{ substr(Auth::user()->name, 0, 1) }}</div>
+                <div class="avatar" style="background: var(--red)">
+                    @if(Auth::user()->avatar)
+                        <img src="{{ Auth::user()->avatar }}" alt="">
+                    @else
+                        {{ substr(Auth::user()->name, 0, 1) }}
+                    @endif
+                </div>
             </div>
         </div>
     </header>

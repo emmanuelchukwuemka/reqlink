@@ -136,7 +136,7 @@ class WebAuthController extends Controller
             $user->sendPasswordResetNotification($code);
         } catch (\Symfony\Component\Mailer\Exception\TransportExceptionInterface $e) {
             DB::table('password_reset_tokens')->where('email', $request->email)->delete();
-            return back()->withErrors(['email' => 'Failed to send email. Gmail rejected your password. Please ensure your Google App Password is exactly 16 characters and correct in the .env file.']);
+            return back()->withErrors(['email' => 'Failed to send email. Please check the mail server configuration in the .env file.']);
         } catch (\Exception $e) {
             DB::table('password_reset_tokens')->where('email', $request->email)->delete();
             return back()->withErrors(['email' => 'Failed to send email due to a server error.']);

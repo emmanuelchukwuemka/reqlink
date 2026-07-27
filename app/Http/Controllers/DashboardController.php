@@ -281,6 +281,50 @@ class DashboardController extends Controller
         return view('dashboards.admin_command', compact('emergencies', 'responders'));
     }
 
+    public function userDetails($id)
+    {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $user = \App\Domains\Users\Models\User::findOrFail($id);
+
+        $extra = null;
+
+        if (in_array($user->role, ['ambulance', 'fire', 'security', 'doctor'], true)) {
+            $responder = \App\Domains\Responders\Models\Responder::where('user_id', $user->id)->first();
+            if ($responder) {
+                $extra = [
+                    'type' => 'responder',
+                    'responder_type' => $responder->responder_type,
+                    'vehicle_reg' => $responder->vehicle_reg,
+                    'capacity' => $responder->capacity,
+                    'specialty' => $responder->specialty,
+                    'is_on_duty' => $responder->is_on_duty,
+                    'is_available' => $responder->is_available,
+                ];
+            }
+        } elseif ($user->role === 'hospital') {
+            $hospital = \App\Domains\Responders\Models\Hospital::where('user_id', $user->id)->first();
+            if ($hospital) {
+                $extra = [
+                    'type' => 'hospital',
+                    'name' => $hospital->name,
+                    'total_beds' => $hospital->total_beds,
+                    'available_beds' => $hospital->available_beds,
+                    'icu_beds' => $hospital->icu_beds,
+                    'contact_phone' => $hospital->contact_phone,
+                    'specialties' => $hospital->specialties,
+                ];
+            }
+        }
+
+        return response()->json([
+            'user' => $user,
+            'extra' => $extra,
+        ]);
+    }
+
     public function toggleUserStatus($id)
     {
         $user = \App\Domains\Users\Models\User::findOrFail($id);

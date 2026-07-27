@@ -105,6 +105,7 @@ Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'ind
 
 Route::get('/settings', [\App\Http\Controllers\SettingsController::class, 'index'])->name('settings')->middleware('auth');
 Route::get('/admin/command-center', [DashboardController::class, 'commandCenter'])->name('admin.command-center')->middleware('auth');
+Route::get('/admin/user/{id}/details', [DashboardController::class, 'userDetails'])->name('admin.user.details')->middleware('auth');
 Route::post('/admin/user/{id}/toggle-status', [DashboardController::class, 'toggleUserStatus'])->name('admin.user.toggle-status')->middleware('auth');
 Route::post('/admin/user/{id}/role', [DashboardController::class, 'updateUserRole'])->name('admin.user.role')->middleware('auth');
 Route::get('/admin/incidents', [DashboardController::class, 'globalIncidents'])->name('admin.incidents')->middleware('auth');

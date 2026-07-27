@@ -74,6 +74,7 @@
 
     <nav class="sidebar-nav">
         <a class="nav-item active" data-tab="missions"><i data-lucide="layout-dashboard"></i> Missions</a>
+        <a class="nav-item" data-tab="livemap"><i data-lucide="map"></i> Live Map</a>
         <a class="nav-item" data-tab="triage"><i data-lucide="stethoscope"></i> Triage Review</a>
         <a class="nav-item" data-tab="consults"><i data-lucide="message-circle-heart"></i> Consult Requests</a>
         <a class="nav-item" data-tab="reviews"><i data-lucide="star"></i> Reviews</a>
@@ -122,7 +123,13 @@
                     <span>{{ Auth::user()->name }}</span>
                     <small>{{ Auth::user()->is_verified ? 'Verified Doctor' : 'Doctor' }}</small>
                 </div>
-                <div class="avatar" style="background: #22c55e">{{ substr(Auth::user()->name, 0, 1) }}</div>
+                <div class="avatar" style="background: #22c55e">
+                    @if(Auth::user()->avatar)
+                        <img src="{{ Auth::user()->avatar }}" alt="">
+                    @else
+                        {{ substr(Auth::user()->name, 0, 1) }}
+                    @endif
+                </div>
             </div>
         </div>
     </header>
@@ -160,12 +167,38 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <div class="dash-card">
-                    <h3><i data-lucide="map-pin"></i> Coverage Area</h3>
-                    <div id="responderMap" style="height: 350px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--dark2);"></div>
+    <!-- LIVE MAP TAB -->
+    <div id="livemap" class="tab-pane">
+        <div class="dash-card">
+            <div style="display:flex; align-items:flex-start; gap:14px; margin-bottom:16px;">
+                <div style="width:42px; height:42px; border-radius:12px; background:rgba(229,9,20,0.12); color:var(--red); display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i data-lucide="map-pin"></i></div>
+                <div>
+                    <h3 style="margin:0;">Live Map</h3>
+                    <p style="margin:4px 0 0; font-size:0.8rem; color:var(--grey);" id="liveMapSub">No active mission — showing your current location.</p>
                 </div>
             </div>
+
+            <div id="liveMapMissionPanel" style="display:none; background: rgba(229,9,20,0.06); border: 1px solid rgba(229,9,20,0.25); border-radius: 12px; padding: 14px 18px; margin-bottom: 16px;">
+                <p style="margin:0; font-weight:700;" id="liveMapPatientName">Patient: —</p>
+                <p style="margin:2px 0 0; font-size:0.8rem; color: var(--grey);" id="liveMapStatusText">Status: —</p>
+                <div style="display:flex; gap:10px; margin-top:12px; flex-wrap: wrap;">
+                    <a href="#" target="_blank" id="liveMapNavLink" style="display:flex; align-items:center; gap:6px; background:#2563eb; color:#fff; text-decoration:none; padding:10px 16px; border-radius:10px; font-weight:700; font-size:0.8rem;">
+                        <i data-lucide="navigation"></i> Navigate
+                    </a>
+                    <button onclick="markArrived()" id="liveMapArrivedBtn" style="display:flex; align-items:center; gap:6px; background: rgba(59,130,246,0.12); color: #3b82f6; border: 1px solid rgba(59,130,246,0.3); padding:10px 16px; border-radius:10px; font-weight:700; font-size:0.8rem; cursor:pointer;">
+                        <i data-lucide="map-pin-check"></i> Mark Arrived
+                    </button>
+                    <button onclick="completeMission()" style="display:flex; align-items:center; gap:6px; background:#22c55e; color:#fff; border:none; padding:10px 16px; border-radius:10px; font-weight:700; font-size:0.8rem; cursor:pointer;">
+                        <i data-lucide="check-circle-2"></i> Complete Mission
+                    </button>
+                </div>
+            </div>
+
+            <div id="responderMap" style="height: 65vh; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--dark2);"></div>
         </div>
     </div>
 
@@ -350,7 +383,7 @@
         <div style="width: 80px; height: 80px; background: rgba(229, 9, 20, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--red); margin: 0 auto 24px;">
             <i data-lucide="siren" style="width: 48px; height: 48px;"></i>
         </div>
-        <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 10px; color: var(--white);">CRITICAL ALERT</h2>
+        <h2 id="alertHeading" style="font-size: 2rem; font-weight: 900; margin-bottom: 10px; color: var(--white);">CRITICAL ALERT</h2>
         <p id="alertUser" style="font-size: 1.1rem; color: var(--grey); margin-bottom: 5px;">Patient: John Doe</p>
         <p id="alertLoc" style="font-size: 0.9rem; color: var(--red); font-weight: 700; margin-bottom: 30px;">LOCATION: 1.2km away</p>
 
@@ -360,14 +393,30 @@
             <div id="alertMamaCare" style="display:none; margin-top:12px; padding-top:12px; border-top:1px solid var(--glass-border);"></div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
-            <button onclick="closeAlert()" style="background: rgba(255,255,255,0.05); color: var(--white); border: 1px solid var(--glass-border); padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">Decline</button>
+        <!-- Pre-accept actions -->
+        <div id="preAcceptActions" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+            <button onclick="declineMission()" style="background: rgba(255,255,255,0.05); color: var(--white); border: 1px solid var(--glass-border); padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">Decline</button>
             <button onclick="acceptMission()" style="background: var(--red); color: #fff; border: none; padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 10px 20px rgba(229, 9, 20, 0.3);">Accept</button>
             <button onclick="openResponderChat()" style="background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">Chat</button>
         </div>
+
+        <!-- Post-accept actions (mission in progress) -->
+        <div id="activeMissionActions" style="display: none; flex-direction: column; gap: 10px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button id="markArrivedBtn" onclick="markArrived()" style="background: rgba(59,130,246,0.12); color: #3b82f6; border: 1px solid rgba(59,130,246,0.3); padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">
+                    <i data-lucide="map-pin-check" style="width:16px;height:16px;vertical-align:-3px;"></i> Mark Arrived
+                </button>
+                <button onclick="openResponderChat()" style="background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">Chat</button>
+            </div>
+            <button onclick="completeMission()" style="width: 100%; background: #22c55e; color: #fff; border: none; padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">
+                <i data-lucide="check-circle-2" style="width:16px;height:16px;vertical-align:-3px;"></i> Complete Mission
+            </button>
+        </div>
+
         <a id="navLink" href="#" target="_blank" style="display: none; background: #2563eb; color: #fff; text-decoration: none; padding: 12px; border-radius: 12px; font-weight: 700; font-size: 0.8rem; align-items: center; justify-content: center; gap: 8px; margin-top: 10px;">
             <i data-lucide="navigation"></i> Open Navigation
         </a>
+        <button onclick="closeAlert()" style="width: 100%; margin-top: 10px; background: transparent; color: var(--grey); border: none; padding: 8px; font-weight: 700; font-size: 0.8rem; cursor: pointer;">Close</button>
     </div>
 </div>
 
@@ -470,13 +519,16 @@
 
             document.getElementById('pageTitle').textContent = item.textContent.trim();
 
-            if (tabId === 'missions') {
+            if (tabId === 'livemap') {
                 setTimeout(() => responderMap.invalidateSize(), 100);
             }
         });
     });
 
     let currentAlertId = null;
+    let activeMissionUuid = null;
+    let modalOpen = false;
+    const dismissedAlerts = new Set();
     const siren = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
     siren.loop = true;
 
@@ -487,13 +539,53 @@
             .then(res => res.json())
             .then(data => {
                 renderMissionsList(data);
-                if (data.length > 0) {
-                    const latest = data[0];
-                    if (currentAlertId !== latest.uuid) {
-                        showEmergency(latest);
+
+                // Keep the Live Map tab in sync even across a page reload mid-mission --
+                // acceptMission() only starts tracking in the live tab it was clicked from,
+                // so resync here from whatever the backend says is actually active.
+                const mine = data.find(e => ['enroute', 'arrived'].includes(e.status));
+                if (mine) {
+                    if (activeMissionUuid !== mine.uuid) {
+                        activeMissionUuid = mine.uuid;
+                        startMissionTracking(mine.uuid);
                     }
+                    updateLiveMapPanel(mine);
+                } else if (activeMissionUuid) {
+                    activeMissionUuid = null;
+                    clearLiveMapPanel();
+                }
+
+                // Never yank the modal away from a doctor actively reviewing it --
+                // whether that's a fresh alert or a mission they reopened via "View".
+                if (modalOpen) return;
+
+                const next = data.find(e => !dismissedAlerts.has(e.uuid) && ['pending', 'dispatched'].includes(e.status));
+                if (next && currentAlertId !== next.uuid) {
+                    showEmergency(next);
                 }
             });
+    }
+
+    function updateLiveMapPanel(mission) {
+        document.getElementById('liveMapSub').textContent = 'Tracking active mission.';
+        document.getElementById('liveMapMissionPanel').style.display = 'block';
+        document.getElementById('liveMapPatientName').textContent = `Patient: ${mission.user ? mission.user.name : 'Unknown'}`;
+        document.getElementById('liveMapStatusText').textContent = `Status: ${mission.status.toUpperCase()}`;
+        document.getElementById('liveMapNavLink').href =
+            `https://www.google.com/maps/dir/?api=1&destination=${mission.latitude},${mission.longitude}`;
+
+        const arrivedBtn = document.getElementById('liveMapArrivedBtn');
+        arrivedBtn.disabled = mission.status === 'arrived';
+        arrivedBtn.style.opacity = mission.status === 'arrived' ? '0.6' : '1';
+        arrivedBtn.innerHTML = mission.status === 'arrived'
+            ? '<i data-lucide="map-pin-check"></i> Arrived ✓'
+            : '<i data-lucide="map-pin-check"></i> Mark Arrived';
+        lucide.createIcons();
+    }
+
+    function clearLiveMapPanel() {
+        document.getElementById('liveMapMissionPanel').style.display = 'none';
+        document.getElementById('liveMapSub').textContent = 'No active mission — showing your current location.';
     }
 
     function renderMissionsList(emergencies) {
@@ -521,6 +613,10 @@
 
     function showEmergency(alert) {
         currentAlertId = alert.uuid;
+        modalOpen = true;
+        const isActive = ['enroute', 'arrived'].includes(alert.status);
+
+        document.getElementById('alertHeading').textContent = isActive ? 'ACTIVE MISSION' : 'CRITICAL ALERT';
         document.getElementById('alertUser').textContent = `Patient: ${alert.user ? alert.user.name : 'Unknown'}`;
         document.getElementById('alertLoc').textContent = `LOCATION: ${alert.latitude}, ${alert.longitude}`;
         document.getElementById('alertMedical').textContent = `Blood: ${alert.user?.blood_group || 'N/A'} | Allergies: ${alert.user?.allergies || 'None'}`;
@@ -546,14 +642,48 @@
         navLink.href = `https://www.google.com/maps/dir/?api=1&destination=${alert.latitude},${alert.longitude}`;
         navLink.style.display = 'flex';
 
+        document.getElementById('preAcceptActions').style.display = isActive ? 'none' : 'grid';
+        document.getElementById('activeMissionActions').style.display = isActive ? 'flex' : 'none';
+        const arrivedBtn = document.getElementById('markArrivedBtn');
+        arrivedBtn.disabled = alert.status === 'arrived';
+        arrivedBtn.innerHTML = alert.status === 'arrived'
+            ? '<i data-lucide="map-pin-check" style="width:16px;height:16px;vertical-align:-3px;"></i> Arrived ✓'
+            : '<i data-lucide="map-pin-check" style="width:16px;height:16px;vertical-align:-3px;"></i> Mark Arrived';
+        arrivedBtn.style.opacity = alert.status === 'arrived' ? '0.6' : '1';
+
         document.getElementById('emergencyModal').style.display = 'flex';
-        siren.play().catch(e => console.log('Audio blocked'));
+        lucide.createIcons();
+
+        if (!isActive) {
+            siren.play().catch(e => console.log('Audio blocked'));
+        }
     }
 
     function closeAlert() {
         document.getElementById('emergencyModal').style.display = 'none';
+        modalOpen = false;
+        currentAlertId = null;
         siren.pause();
         siren.currentTime = 0;
+    }
+
+    function declineMission() {
+        if (!currentAlertId) return;
+        const uuid = currentAlertId;
+
+        fetch(`/emergency/decline/${uuid}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(res => res.json())
+        .then(() => {
+            dismissedAlerts.add(uuid);
+            closeAlert();
+        })
+        .catch(() => closeAlert());
     }
 
     function acceptMission() {
@@ -572,10 +702,66 @@
                 alert('Mission Accepted! Tracking user location...');
                 const navLink = document.getElementById('navLink');
                 window.open(navLink.href, '_blank');
+                const acceptedUuid = currentAlertId;
                 closeAlert();
-                startMissionTracking(currentAlertId);
+                activeMissionUuid = acceptedUuid;
+                startMissionTracking(acceptedUuid);
             }
         });
+    }
+
+    function markArrived() {
+        const uuid = currentAlertId || activeMissionUuid;
+        if (!uuid) return;
+        fetch(`/emergency/arrived/${uuid}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const arrivedBtn = document.getElementById('markArrivedBtn');
+                arrivedBtn.disabled = true;
+                arrivedBtn.innerHTML = '<i data-lucide="map-pin-check" style="width:16px;height:16px;vertical-align:-3px;"></i> Arrived ✓';
+                arrivedBtn.style.opacity = '0.6';
+
+                const liveMapArrivedBtn = document.getElementById('liveMapArrivedBtn');
+                liveMapArrivedBtn.disabled = true;
+                liveMapArrivedBtn.innerHTML = '<i data-lucide="map-pin-check"></i> Arrived ✓';
+                liveMapArrivedBtn.style.opacity = '0.6';
+                lucide.createIcons();
+            }
+        })
+        .catch(() => alert('Network error. Please try again.'));
+    }
+
+    function completeMission() {
+        const uuid = currentAlertId || activeMissionUuid;
+        if (!uuid) return;
+        if (!confirm('Complete this mission? This marks it resolved and frees you up for new dispatches.')) return;
+
+        fetch(`/emergency/resolve/${uuid}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Mission completed. You are now available for new dispatches.');
+                closeAlert();
+                activeMissionUuid = null;
+                clearLiveMapPanel();
+                if (missionPolling) { clearInterval(missionPolling); missionPolling = null; }
+                if (userMarker) { responderMap.removeLayer(userMarker); userMarker = null; }
+            }
+        })
+        .catch(() => alert('Network error. Please try again.'));
     }
 
     let missionPolling = null;
@@ -609,12 +795,23 @@
                         } else {
                             responderMap.setView(userPos, 15);
                         }
+
+                        const liveMapNavLink = document.getElementById('liveMapNavLink');
+                        if (liveMapNavLink) {
+                            liveMapNavLink.href = `https://www.google.com/maps/dir/?api=1&destination=${userPos[0]},${userPos[1]}`;
+                        }
                     }
+
+                    const liveMapStatusText = document.getElementById('liveMapStatusText');
+                    if (liveMapStatusText) liveMapStatusText.textContent = `Status: ${data.status.toUpperCase()}`;
 
                     if (data.status === 'resolved' || data.status === 'cancelled') {
                         clearInterval(missionPolling);
+                        missionPolling = null;
                         if (userMarker) responderMap.removeLayer(userMarker);
                         userMarker = null;
+                        activeMissionUuid = null;
+                        clearLiveMapPanel();
                         alert('Mission ended: ' + data.status);
                     }
                 });

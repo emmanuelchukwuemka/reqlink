@@ -135,7 +135,13 @@
             </a>
             <div class="user-profile">
                 <span style="font-size: 0.85rem; font-weight: 600;">Safety Status: Secure</span>
-                <div class="avatar-sm">{{ substr(Auth::user()->name, 0, 1) }}</div>
+                <div class="avatar-sm">
+                    @if(Auth::user()->avatar)
+                        <img src="{{ Auth::user()->avatar }}" alt="">
+                    @else
+                        {{ substr(Auth::user()->name, 0, 1) }}
+                    @endif
+                </div>
             </div>
         </div>
     </header>
@@ -539,7 +545,7 @@
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px;">
-            <button class="btn-primary" style="padding: 10px; font-size: 0.75rem; background: #2563eb;">Call Unit</button>
+            <button id="callUnitBtn" onclick="callUnit()" class="btn-primary" style="padding: 10px; font-size: 0.75rem; background: #2563eb;">Call Unit</button>
             <button onclick="openEmergencyChat()" style="padding: 10px; font-size: 0.75rem; background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; cursor: pointer;">Chat</button>
             <button onclick="cancelEmergency()" style="padding: 10px; font-size: 0.75rem; background: rgba(255,255,255,0.05); color: var(--white); border: 1px solid var(--glass-border); border-radius: 8px; cursor: pointer;">Cancel</button>
         </div>
@@ -752,8 +758,17 @@
     let activeEmergencyUuid = @json($activeEmergency ? $activeEmergency->uuid : null);
     let responderMarker = null;
     let pollingInterval = null;
+    let assignedResponderPhone = null;
 
     let sosTriggering = false;
+
+    function callUnit() {
+        if (!assignedResponderPhone) {
+            alert('Responder contact number is not available yet. Please try again shortly.');
+            return;
+        }
+        window.location.href = `tel:${assignedResponderPhone}`;
+    }
 
     function resetPanicBtn() {
         sosTriggering = false;
@@ -797,6 +812,7 @@
                     document.getElementById('emergencyStatus').textContent = data.message;
                     if (data.responder) {
                         document.getElementById('responderName').textContent = data.responder.name;
+                        assignedResponderPhone = data.responder.phone || null;
                     }
                 } else if (data.no_responders) {
                     panicBtn.innerHTML = '<span>...</span><small>Searching</small>';
@@ -942,6 +958,7 @@
             document.getElementById('responderName').textContent = data.responder.name;
             document.getElementById('responderETA').textContent = `ETA: ${data.eta || '5'} mins`;
             document.getElementById('responderAvatar').textContent = data.responder.name.charAt(0);
+            assignedResponderPhone = data.responder.phone || null;
             
             if (data.responder.lat && data.responder.lng) {
                 const pos = [data.responder.lat, data.responder.lng];
@@ -977,6 +994,7 @@
             responderMarker = null;
         }
         activeEmergencyUuid = null;
+        assignedResponderPhone = null;
     }
 
     function cancelEmergency() {

@@ -5,9 +5,21 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\File;
 
 class SettingsController extends Controller
 {
+    /**
+     * public_html is a separate, unlinked directory from this app's own public/
+     * folder on this host (see deploy.py) -- public_path() writes are invisible
+     * to the live site unless PUBLIC_HTML_PATH points uploads there directly.
+     */
+    private function avatarUploadDir(): string
+    {
+        $override = env('PUBLIC_HTML_PATH');
+        return $override ? rtrim($override, '/') . '/uploads/avatars' : public_path('uploads/avatars');
+    }
+
     public function index()
     {
         $user = Auth::user();
@@ -38,6 +50,10 @@ class SettingsController extends Controller
             'medical_conditions'        => 'nullable|string',
             'emergency_contact_name'    => 'nullable|string|max:255',
             'emergency_contact_phone'   => 'nullable|string|max:20',
+            // extensions: (not mimes:) -- mimes: sniffs real content type via php_fileinfo,
+            // which isn't enabled on this host and throws a fatal LogicException instead
+            // of a validation error. extensions: checks the filename only, no fileinfo needed.
+            'avatar'                    => 'nullable|file|extensions:jpg,jpeg,png,webp|max:3072',
         ];
 
         if (in_array($user->role, $responderRoles, true)) {
@@ -57,6 +73,26 @@ class SettingsController extends Controller
 
         $fields = collect($validated)->only(['name', 'email', 'phone', 'blood_group', 'allergies',
             'medical_conditions', 'emergency_contact_name', 'emergency_contact_phone'])->toArray();
+
+        if ($request->hasFile('avatar')) {
+            $dir = $this->avatarUploadDir();
+            if (!File::exists($dir)) {
+                File::makeDirectory($dir, 0755, true);
+            }
+
+            $oldAvatar = $user->avatar;
+
+            $filename = 'avatar-' . $user->id . '-' . time() . '.' . $request->file('avatar')->getClientOriginalExtension();
+            $request->file('avatar')->move($dir, $filename);
+            $fields['avatar'] = '/uploads/avatars/' . $filename;
+
+            if ($oldAvatar && str_starts_with($oldAvatar, '/uploads/avatars/')) {
+                $oldPath = $dir . '/' . basename($oldAvatar);
+                if (File::exists($oldPath)) {
+                    File::delete($oldPath);
+                }
+            }
+        }
 
         if ($changingPassword) {
             if (!Hash::check($request->input('current_password'), $user->password)) {
@@ -84,7 +120,10 @@ class SettingsController extends Controller
         }
 
         if ($request->ajax() || $request->wantsJson()) {
-            return response()->json(['status' => 'Profile updated successfully!']);
+            return response()->json([
+                'status' => 'Profile updated successfully!',
+                'avatar_url' => $user->fresh()->avatar,
+            ]);
         }
 
         return back()->with('status', 'Profile updated successfully!');

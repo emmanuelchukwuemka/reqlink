@@ -112,7 +112,13 @@
                     <span>{{ Auth::user()->name }}</span>
                     <small>System Administrator</small>
                 </div>
-                <div class="avatar" style="background: var(--red)">{{ substr(Auth::user()->name, 0, 1) }}</div>
+                <div class="avatar" style="background: var(--red)">
+                    @if(Auth::user()->avatar)
+                        <img src="{{ Auth::user()->avatar }}" alt="">
+                    @else
+                        {{ substr(Auth::user()->name, 0, 1) }}
+                    @endif
+                </div>
             </div>
         </div>
     </header>
@@ -280,7 +286,11 @@
                     <td>
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <div class="avatar sm" style="background: {{ $user->role === 'civilian' ? '#3b82f6' : ($user->role === 'admin' ? 'var(--red)' : '#22c55e') }}">
-                                {{ substr($user->name, 0, 1) }}
+                                @if($user->avatar)
+                                    <img src="{{ $user->avatar }}" alt="">
+                                @else
+                                    {{ substr($user->name, 0, 1) }}
+                                @endif
                             </div>
                             <div>
                                 <div style="font-weight: 700; font-size: 0.88rem;">{{ $user->name }}</div>
@@ -314,18 +324,21 @@
                         @endif
                     </td>
                     <td>
-                        @if($user->id !== Auth::id())
                         <div style="display:flex;flex-direction:column;gap:6px;">
+                            <button type="button" onclick="viewUserDetails({{ $user->id }})" style="width:100%;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);color:#3b82f6;padding:4px 10px;border-radius:6px;font-size:0.68rem;font-weight:700;cursor:pointer;">
+                                VIEW
+                            </button>
+                            @if($user->id !== Auth::id())
                             <form action="{{ route('admin.user.toggle-status', $user->id) }}" method="POST">
                                 @csrf
                                 <button type="submit" style="width:100%;background:transparent;border:1px solid {{ $user->is_suspended ? '#22c55e' : 'var(--red)' }};color:{{ $user->is_suspended ? '#22c55e' : 'var(--red)' }};padding:4px 10px;border-radius:6px;font-size:0.68rem;font-weight:700;cursor:pointer;">
                                     {{ $user->is_suspended ? 'ACTIVATE' : 'SUSPEND' }}
                                 </button>
                             </form>
+                            @else
+                            <span style="color:var(--grey);font-size:0.68rem;text-align:center;">You</span>
+                            @endif
                         </div>
-                        @else
-                        <span style="color:var(--grey);font-size:0.72rem;">You</span>
-                        @endif
                     </td>
                 </tr>
                 @endforeach
@@ -336,6 +349,24 @@
         <div id="noResults" style="display:none;text-align:center;padding:30px;opacity:0.5;">No users match the current filters.</div>
     </div>
 </main>
+
+<!-- USER DETAILS MODAL -->
+<div id="userDetailsModal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:20px;">
+    <div style="background:var(--dark2); border:1px solid var(--glass-border); border-radius:20px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:24px 28px 0;">
+            <div style="display:flex; align-items:center; gap:14px;">
+                <div id="udAvatar" style="width:52px; height:52px; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:1.4rem; font-weight:900; color:#fff; flex-shrink:0;"></div>
+                <div>
+                    <div id="udName" style="font-weight:700; font-size:1.1rem;"></div>
+                    <span id="udRoleBadge" class="badge"></span>
+                </div>
+            </div>
+            <button onclick="closeUserDetailsModal()" style="background:rgba(255,255,255,0.07); border:none; color:#fff; width:34px; height:34px; border-radius:50%; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center;">&times;</button>
+        </div>
+
+        <div id="udBody" style="padding:20px 28px 28px;"></div>
+    </div>
+</div>
 
 <script>
     lucide.createIcons();
@@ -348,6 +379,116 @@
         btn.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('active'); });
         overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('active'); });
     })();
+
+    // ── User details modal ──
+    function udRow(icon, label, value) {
+        if (value === null || value === undefined || value === '') return '';
+        return `<div style="display:flex;align-items:center;gap:10px;font-size:0.86rem;padding:8px 0;border-bottom:1px solid var(--glass-border);">
+            <i data-lucide="${icon}" style="width:15px;height:15px;color:var(--grey);flex-shrink:0;"></i>
+            <span style="color:var(--grey);min-width:140px;">${label}</span>
+            <span style="font-weight:600;text-align:right;flex:1;">${value}</span>
+        </div>`;
+    }
+
+    function udSection(title, rowsHtml) {
+        const rows = rowsHtml.filter(r => r).join('');
+        if (!rows) return '';
+        return `<div style="margin-bottom:22px;">
+            <div style="font-size:0.7rem;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">${title}</div>
+            <div>${rows}</div>
+        </div>`;
+    }
+
+    function viewUserDetails(id) {
+        const modal = document.getElementById('userDetailsModal');
+        modal.style.display = 'flex';
+        document.getElementById('udBody').innerHTML = '<div style="text-align:center;padding:30px;color:var(--grey);">Loading…</div>';
+
+        fetch(`/admin/user/${id}/details`)
+            .then(res => res.json())
+            .then(({ user, extra }) => {
+                const roleColor = user.role === 'civilian' ? '#3b82f6' : (user.role === 'admin' ? 'var(--red)' : '#22c55e');
+                const avatar = document.getElementById('udAvatar');
+                avatar.style.background = roleColor;
+                avatar.innerHTML = user.avatar ? `<img src="${user.avatar}" alt="" style="width:100%;height:100%;object-fit:cover;">` : user.name.charAt(0).toUpperCase();
+
+                document.getElementById('udName').textContent = user.name;
+                const badge = document.getElementById('udRoleBadge');
+                badge.textContent = user.role;
+                badge.className = 'badge ' + (user.role === 'admin' ? 'badge-critical' : 'badge-neutral');
+
+                const joined = new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+
+                let html = '';
+
+                html += udSection('Contact & Account', [
+                    udRow('mail', 'Email', user.email),
+                    udRow('phone', 'Phone', user.phone),
+                    udRow('calendar', 'Joined', joined),
+                    udRow('badge-check', 'Verified', user.is_verified ? 'Yes' : 'No'),
+                    udRow('shield', 'Status', user.is_suspended ? '<span style="color:var(--red);">Suspended</span>' : '<span style="color:#22c55e;">Active</span>'),
+                    udRow('wallet', 'Wallet Balance', user.wallet_balance !== undefined ? '₦' + Number(user.wallet_balance).toLocaleString() : null),
+                ]);
+
+                html += udSection('Medical ID', [
+                    udRow('droplet', 'Blood Group', user.blood_group),
+                    udRow('alert-triangle', 'Allergies', user.allergies),
+                    udRow('heart-pulse', 'Conditions', user.medical_conditions),
+                    udRow('user-plus', 'Emergency Contact', user.emergency_contact_name),
+                    udRow('phone-call', 'Contact Phone', user.emergency_contact_phone),
+                ]);
+
+                if (user.is_good_samaritan) {
+                    html += udSection('Good Samaritan', [
+                        udRow('hand-heart', 'Profession', user.samaritan_profession),
+                        udRow('activity', 'Active', user.samaritan_active ? 'Yes' : 'No'),
+                    ]);
+                }
+
+                if (user.mama_care_active) {
+                    html += udSection('Mama Care', [
+                        udRow('baby', 'Due Date', user.pregnancy_due_date),
+                        udRow('alert-triangle', 'High Risk', user.pregnancy_high_risk ? 'Yes' : 'No'),
+                        udRow('hospital', 'Preferred Hospital', user.preferred_maternity_hospital),
+                        udRow('phone-call', 'OB/GYN Contact', user.obgyn_contact),
+                    ]);
+                }
+
+                if (extra && extra.type === 'responder') {
+                    html += udSection('Unit Info', [
+                        udRow('truck', 'Unit Type', extra.responder_type),
+                        udRow('hash', 'Vehicle Reg', extra.vehicle_reg),
+                        udRow('users', 'Capacity', extra.capacity),
+                        udRow('stethoscope', 'Specialty', extra.specialty),
+                        udRow('radio', 'On Duty', extra.is_on_duty ? 'Yes' : 'No'),
+                        udRow('check-circle', 'Available', extra.is_available ? 'Yes' : 'No'),
+                    ]);
+                } else if (extra && extra.type === 'hospital') {
+                    html += udSection('Hospital Info', [
+                        udRow('hospital', 'Hospital Name', extra.name),
+                        udRow('bed', 'Total Beds', extra.total_beds),
+                        udRow('bed-double', 'Available Beds', extra.available_beds),
+                        udRow('heart-pulse', 'ICU Beds', extra.icu_beds),
+                        udRow('phone', 'Contact Phone', extra.contact_phone),
+                        udRow('list', 'Specialties', Array.isArray(extra.specialties) ? extra.specialties.join(', ') : null),
+                    ]);
+                }
+
+                document.getElementById('udBody').innerHTML = html || '<div style="text-align:center;padding:20px;color:var(--grey);">No additional details on file.</div>';
+                lucide.createIcons();
+            })
+            .catch(() => {
+                document.getElementById('udBody').innerHTML = '<div style="text-align:center;padding:30px;color:var(--red);">Could not load user details.</div>';
+            });
+    }
+
+    function closeUserDetailsModal() {
+        document.getElementById('userDetailsModal').style.display = 'none';
+    }
+
+    document.getElementById('userDetailsModal').addEventListener('click', function(e) {
+        if (e.target === this) closeUserDetailsModal();
+    });
 
     // Client-side table filter
     function filterTable() {

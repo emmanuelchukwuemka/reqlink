@@ -126,11 +126,33 @@
     height: 32px;
     background: var(--red);
     border-radius: 50%;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.8rem;
     font-weight: 700;
+}
+
+/* Base topbar avatar -- each dashboard sets its own background color inline,
+   this just gives it the fixed circular box a profile-picture <img> needs. */
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.avatar img, .avatar-sm img, .account-avatar img, .profile-avatar-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 /* Dashboard Grid */

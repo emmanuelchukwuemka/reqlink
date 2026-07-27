@@ -99,7 +99,10 @@ class BlogController extends Controller
                 'required',
                 'file',
                 'max:20480',
-                'mimes:jpg,jpeg,png,webp,gif,bmp,avif,mp4,mov,webm,m4v,mp3,wav,ogg,m4a,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip',
+                // extensions: (not mimes:) -- mimes: sniffs real content type via php_fileinfo,
+                // which isn't enabled on this host and throws a fatal error instead of a
+                // validation error. extensions: checks the filename only, no fileinfo needed.
+                'extensions:jpg,jpeg,png,webp,gif,bmp,avif,mp4,mov,webm,m4v,mp3,wav,ogg,m4a,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip',
             ],
         ]);
 
@@ -108,7 +111,8 @@ class BlogController extends Controller
 
         return response()->json([
             'url' => $path,
-            'media_type' => $this->detectMediaCategory($file->getMimeType(), $file->getClientOriginalExtension()),
+            // getMimeType() also needs php_fileinfo -- skip it and detect by extension only.
+            'media_type' => $this->detectMediaCategory(null, $file->getClientOriginalExtension()),
             'file_name' => $file->getClientOriginalName(),
         ]);
     }
@@ -137,7 +141,9 @@ class BlogController extends Controller
             'excerpt' => ['nullable', 'string', 'max:500'],
             'content' => ['required', 'string'],
             'cover_image' => ['nullable', 'url', 'max:2048'],
-            'cover_image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],
+            // extensions: (not image:/mimes:) -- both sniff real content type via php_fileinfo,
+            // which isn't enabled on this host and throws a fatal error instead of a validation error.
+            'cover_image_file' => ['nullable', 'file', 'extensions:jpg,jpeg,png,webp,gif', 'max:5120'],
             'publish_mode' => ['nullable', 'in:now,draft,schedule'],
             'scheduled_at' => ['nullable', 'required_if:publish_mode,schedule', 'date', 'after:now'],
         ]);
@@ -266,9 +272,23 @@ class BlogController extends Controller
             return 'audio';
         }
 
-        return in_array(strtolower((string) $extension), ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'avif'], true)
-            ? 'image'
-            : 'file';
+        // $mimeType is null when called without php_fileinfo (not enabled on this host) --
+        // fall back to extension-based detection so the media picker still categorizes correctly.
+        $ext = strtolower((string) $extension);
+
+        if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'avif'], true)) {
+            return 'image';
+        }
+
+        if (in_array($ext, ['mp4', 'mov', 'webm', 'm4v'], true)) {
+            return 'video';
+        }
+
+        if (in_array($ext, ['mp3', 'wav', 'ogg', 'm4a'], true)) {
+            return 'audio';
+        }
+
+        return 'file';
     }
 
     protected function sanitizeHtml(string $html): string

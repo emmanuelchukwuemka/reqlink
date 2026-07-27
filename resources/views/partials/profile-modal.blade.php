@@ -4,8 +4,17 @@
 
         <div style="display:flex; align-items:center; justify-content:space-between; padding:24px 28px 0;">
             <div style="display:flex; align-items:center; gap:14px;">
-                <div id="profileModalAvatar" style="width:52px; height:52px; border-radius:50%; background:linear-gradient(45deg,#E50914,#ff4d4d); display:flex; align-items:center; justify-content:center; font-size:1.4rem; font-weight:900; color:#fff; flex-shrink:0;">
-                    {{ substr(Auth::user()->name, 0, 1) }}
+                <div id="profileModalAvatarWrap" style="position:relative; width:52px; height:52px; flex-shrink:0; cursor:pointer;" onclick="document.getElementById('pm_avatar_input').click()" title="Change profile picture">
+                    <div id="profileModalAvatar" style="width:52px; height:52px; border-radius:50%; overflow:hidden; background:linear-gradient(45deg,#E50914,#ff4d4d); display:flex; align-items:center; justify-content:center; font-size:1.4rem; font-weight:900; color:#fff;">
+                        @if(Auth::user()->avatar)
+                            <img src="{{ Auth::user()->avatar }}" alt="" style="width:100%; height:100%; object-fit:cover;">
+                        @else
+                            {{ substr(Auth::user()->name, 0, 1) }}
+                        @endif
+                    </div>
+                    <div style="position:absolute; bottom:-2px; right:-2px; width:20px; height:20px; border-radius:50%; background:#2563eb; border:2px solid #111; display:flex; align-items:center; justify-content:center;">
+                        <i data-lucide="camera" style="width:11px; height:11px; color:#fff;"></i>
+                    </div>
                 </div>
                 <div>
                     <div style="font-weight:700; font-size:1.05rem;">Edit Profile</div>
@@ -19,6 +28,7 @@
 
         <form id="profileModalForm" style="padding:20px 28px 28px;">
             @csrf
+            <input type="file" id="pm_avatar_input" name="avatar" accept="image/png,image/jpeg,image/webp" style="display:none;">
             <div style="margin-bottom:20px;">
                 <div style="font-size:0.7rem; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:.5px; margin-bottom:14px;">Basic Information</div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
@@ -86,6 +96,18 @@ function closeProfileModal() {
 document.getElementById('profileModal').addEventListener('click', function(e) {
     if (e.target === this) closeProfileModal();
 });
+if (typeof lucide !== 'undefined') lucide.createIcons();
+
+document.getElementById('pm_avatar_input').addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById('profileModalAvatar').innerHTML =
+            `<img src="${e.target.result}" alt="" style="width:100%;height:100%;object-fit:cover;">`;
+    };
+    reader.readAsDataURL(file);
+});
 document.getElementById('profileModalForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const btn = document.getElementById('profileModalBtn');
@@ -111,9 +133,16 @@ document.getElementById('profileModalForm').addEventListener('submit', async fun
             msg.style.display = 'block';
             // Update avatar initials and name if changed
             const newName = document.getElementById('pm_name').value.trim();
-            document.querySelectorAll('.avatar, .avatar-sm, #profileModalAvatar').forEach(el => {
+            document.querySelectorAll('.avatar, .avatar-sm, .account-avatar, .profile-avatar-circle, #profileModalAvatar').forEach(el => {
                 if (el.textContent.trim().length === 1) el.textContent = newName.charAt(0).toUpperCase();
             });
+            // Swap in the real uploaded picture everywhere an avatar circle appears
+            if (json.avatar_url) {
+                document.querySelectorAll('.avatar, .avatar-sm, .account-avatar, .profile-avatar-circle, #profileModalAvatar').forEach(el => {
+                    el.innerHTML = `<img src="${json.avatar_url}" alt="">`;
+                });
+            }
+            document.getElementById('pm_avatar_input').value = '';
             setTimeout(closeProfileModal, 1800);
         } else {
             const errors = json.errors ? Object.values(json.errors).flat().join(' ') : (json.message || 'Could not save. Please try again.');

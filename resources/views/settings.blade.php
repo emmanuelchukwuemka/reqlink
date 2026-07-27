@@ -9,7 +9,15 @@
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
     <script src="/js/theme.js"></script>
     <style>
-        .settings-layout { display: flex; gap: 28px; max-width: 960px; margin: 28px auto 0; }
+        .settings-layout { display: flex; gap: 28px; max-width: 1040px; margin: 28px 0 0; }
+
+        .theme-toggle {
+            background: var(--glass); border: 1px solid var(--glass-border); color: var(--grey);
+            cursor: pointer; padding: 10px; border-radius: 50%; width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s;
+        }
+        .theme-toggle:hover { background: rgba(255,255,255,0.08); color: var(--white); }
+        :root.light-mode .theme-toggle:hover { background: rgba(0,0,0,0.05); color: var(--black); }
 
         /* ── Left menu ── */
         .settings-menu {
@@ -104,7 +112,7 @@
         /* ── Avatar ── */
         .profile-avatar-wrap { display: flex; align-items: center; gap: 20px; margin-bottom: 24px; }
         .profile-avatar-circle {
-            width: 72px; height: 72px; border-radius: 50%;
+            width: 72px; height: 72px; border-radius: 50%; overflow: hidden;
             background: linear-gradient(45deg, var(--red), #ff4d4d);
             display: flex; align-items: center; justify-content: center;
             font-size: 1.8rem; font-weight: 900; color: #fff; flex-shrink: 0;
@@ -182,18 +190,30 @@
             {{-- ── PROFILE ── --}}
             <div id="panel-profile" class="settings-panel active">
                 <div class="settings-card">
-                    <div class="profile-avatar-wrap">
-                        <div class="profile-avatar-circle">{{ substr(Auth::user()->name, 0, 1) }}</div>
-                        <div>
-                            <div style="font-weight:700;font-size:1.05rem;">{{ Auth::user()->name }}</div>
-                            <div style="color:var(--grey);font-size:0.8rem;">{{ Auth::user()->email }}</div>
-                            <div style="color:var(--grey);font-size:0.75rem;margin-top:2px;">Member ID: RESQ-{{ Auth::user()->id }}-{{ date('Y') }}</div>
-                        </div>
-                    </div>
-                    <div class="toast" id="toast-profile"></div>
-                    <div class="settings-card-title"><i data-lucide="user"></i> Basic Information</div>
                     <form id="form-profile">
                         @csrf
+                        <input type="file" id="settings_avatar_input" name="avatar" accept="image/png,image/jpeg,image/webp" style="display:none;">
+                        <div class="profile-avatar-wrap">
+                            <div id="settingsAvatarWrap" style="position:relative; width:72px; height:72px; flex-shrink:0; cursor:pointer;" onclick="document.getElementById('settings_avatar_input').click()" title="Change profile picture">
+                                <div class="profile-avatar-circle" id="settingsAvatarCircle">
+                                    @if(Auth::user()->avatar)
+                                        <img src="{{ Auth::user()->avatar }}" alt="">
+                                    @else
+                                        {{ substr(Auth::user()->name, 0, 1) }}
+                                    @endif
+                                </div>
+                                <div style="position:absolute; bottom:0; right:0; width:24px; height:24px; border-radius:50%; background:#2563eb; border:2px solid var(--dark2); display:flex; align-items:center; justify-content:center;">
+                                    <i data-lucide="camera" style="width:12px; height:12px; color:#fff;"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-weight:700;font-size:1.05rem;">{{ Auth::user()->name }}</div>
+                                <div style="color:var(--grey);font-size:0.8rem;">{{ Auth::user()->email }}</div>
+                                <div style="color:var(--grey);font-size:0.75rem;margin-top:2px;">Member ID: RESQ-{{ Auth::user()->id }}-{{ date('Y') }}</div>
+                            </div>
+                        </div>
+                        <div class="toast" id="toast-profile"></div>
+                        <div class="settings-card-title"><i data-lucide="user"></i> Basic Information</div>
                         <div class="form-grid">
                             <div class="form-group">
                                 <label>Full Name</label>
@@ -417,6 +437,17 @@
 <script>
 lucide.createIcons();
 
+// ── Avatar upload preview ──
+document.getElementById('settings_avatar_input').addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById('settingsAvatarCircle').innerHTML = `<img src="${e.target.result}" alt="">`;
+    };
+    reader.readAsDataURL(file);
+});
+
 // ── Tab switching ──
 document.querySelectorAll('.settings-menu-item[data-panel]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -466,6 +497,12 @@ function submitSettings(formId, toastId, extraFields) {
     .then(json => {
         if (json.status) {
             toast.className = 'toast success'; toast.textContent = json.status;
+            if (json.avatar_url) {
+                document.querySelectorAll('.avatar, .avatar-sm, .account-avatar, .profile-avatar-circle, #profileModalAvatar').forEach(el => {
+                    el.innerHTML = `<img src="${json.avatar_url}" alt="">`;
+                });
+                document.getElementById('settings_avatar_input').value = '';
+            }
         } else {
             const errs = json.errors ? Object.values(json.errors).flat().join(' ') : (json.message || 'Could not save.');
             toast.className = 'toast error'; toast.textContent = errs;

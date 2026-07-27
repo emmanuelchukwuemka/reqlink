@@ -64,6 +64,7 @@ class EmergencyController extends Controller
                 'responder' => [
                     'name' => $nearestResponder->user->name,
                     'type' => $nearestResponder->responder_type,
+                    'phone' => $nearestResponder->user->phone,
                 ]
             ]);
         }
@@ -153,6 +154,7 @@ class EmergencyController extends Controller
                 $responderData = [
                     'name' => $responder->user->name,
                     'type' => $responder->responder_type,
+                    'phone' => $responder->user->phone,
                     'lat' => $responder->current_lat,
                     'lng' => $responder->current_lng,
                 ];

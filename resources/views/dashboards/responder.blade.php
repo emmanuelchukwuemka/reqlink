@@ -15,6 +15,49 @@
         .tab-pane { display: none; }
         .tab-pane.active { display: block; }
         .nav-badge { margin-left: auto; background: var(--red); color: #fff; font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 100px; }
+
+        /* My Unit tab — section headers, icon chips, forms, stats, account card */
+        .section-head-icon { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 22px; }
+        .section-head-sub { margin: 4px 0 0; font-size: 0.8rem; color: var(--grey); }
+        .icon-chip { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .icon-chip i { width: 20px; height: 20px; }
+        .icon-chip-red { background: rgba(229,9,20,0.12); color: var(--red); }
+        .icon-chip-blue { background: rgba(59,130,246,0.12); color: #3b82f6; }
+
+        .unit-form { display: flex; flex-direction: column; gap: 18px; }
+        .unit-form-group label { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--grey); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 800; margin-bottom: 8px; }
+        .unit-form-group input {
+            width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border);
+            padding: 12px 14px; border-radius: 10px; color: var(--white); font-size: 0.9rem; outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .unit-form-group input:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(229,9,20,0.1); }
+
+        .unit-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 18px; }
+        .unit-stat { background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 14px; padding: 16px 10px; text-align: center; }
+        .unit-stat i { width: 18px; height: 18px; margin-bottom: 8px; }
+        .unit-stat-value { font-size: 1.35rem; font-weight: 800; }
+        .unit-stat-label { font-size: 0.66rem; color: var(--grey); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 3px; }
+
+        .account-card-head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+        .account-avatar { width: 46px; height: 46px; border-radius: 50%; overflow: hidden; background: #22c55e; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; flex-shrink: 0; }
+        .account-detail-list { display: flex; flex-direction: column; gap: 10px; padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--glass-border); }
+        .account-detail { display: flex; align-items: center; gap: 10px; font-size: 0.86rem; color: var(--white); }
+        .account-detail i { color: var(--grey); flex-shrink: 0; }
+        .edit-settings-link {
+            display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;
+            padding: 11px 16px; border-radius: 10px; font-size: 0.82rem; font-weight: 700;
+            background: var(--glass); border: 1px solid var(--glass-border); color: var(--white);
+            transition: background 0.2s ease;
+        }
+        .edit-settings-link:hover { background: rgba(255,255,255,0.08); }
+        @media (max-width: 480px) { .unit-stats-grid { grid-template-columns: 1fr; } }
+
+        :root.light-mode .unit-form-group input,
+        :root.light-mode .unit-stat,
+        :root.light-mode .duty-status-container,
+        :root.light-mode .edit-settings-link { background: #ffffff; border-color: rgba(15, 23, 42, 0.1); }
+        :root.light-mode .account-detail-list { border-bottom-color: rgba(15, 23, 42, 0.1); }
         .mission-grid { display: grid; grid-template-columns: 1fr 350px; gap: 24px; }
         @media (max-width: 900px) { .mission-grid { grid-template-columns: 1fr; } }
         @media (max-width: 768px) { .top-bar { flex-wrap: wrap; gap: 8px; } .duty-status-container { order: 3; } }
@@ -41,17 +84,20 @@
         .theme-toggle:hover { background: var(--glass); color: var(--white); }
         :root.light-mode .theme-toggle:hover { background: rgba(0,0,0,0.05); color: var(--black); }
 
-        /* Duty Toggle */
-        .duty-status-container { display: flex; align-items: center; gap: 12px; background: var(--glass); padding: 6px 16px; border-radius: 100px; border: 1px solid var(--glass-border); }
-        .duty-toggle { position: relative; width: 44px; height: 22px; cursor: pointer; }
-        .duty-toggle input { opacity: 0; width: 0; height: 0; }
-        .duty-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--grey); transition: .4s; border-radius: 34px; }
-        .duty-slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .duty-slider { background-color: #22c55e; }
-        input:checked + .duty-slider:before { transform: translateX(22px); }
-        .duty-label { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--grey); }
-        input:checked ~ .duty-label-on { color: #22c55e; }
-        input:not(:checked) ~ .duty-label-off { color: var(--red); }
+        /* Duty Toggle — single dynamic label, compact pill */
+        .duty-status-container { display: flex; align-items: center; gap: 10px; background: var(--glass); padding: 7px 14px 7px 16px; border-radius: 100px; border: 1px solid var(--glass-border); cursor: pointer; white-space: nowrap; }
+        .duty-status-text { font-size: 0.74rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--red); transition: color 0.2s ease; }
+        .duty-status-text.is-on { color: #22c55e; }
+        .duty-toggle { position: relative; width: 38px; height: 20px; flex-shrink: 0; }
+        .duty-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+        .duty-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--grey); transition: .3s; border-radius: 34px; }
+        .duty-slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+        .duty-toggle input:checked + .duty-slider { background-color: #22c55e; }
+        .duty-toggle input:checked + .duty-slider:before { transform: translateX(18px); }
+
+        /* Request Backup button */
+        .backup-request-btn { display: flex; align-items: center; gap: 6px; background: rgba(245,158,11,0.12); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); padding: 8px 14px; border-radius: 100px; font-size: 0.78rem; font-weight: 800; cursor: pointer; white-space: nowrap; transition: background 0.2s ease; }
+        .backup-request-btn:hover { background: rgba(245,158,11,0.2); }
     </style>
     <script src="/js/theme.js"></script>
 </head>
@@ -69,6 +115,7 @@
     
     <nav class="sidebar-nav">
         <a class="nav-item active" data-tab="missions"><i data-lucide="layout-dashboard"></i> Missions <span class="nav-badge" id="missionsBadge" style="display:none;"></span></a>
+        <a class="nav-item" data-tab="livemap"><i data-lucide="map"></i> Live Map</a>
         <a class="nav-item" data-tab="ambulance"><i data-lucide="truck"></i> Ambulance</a>
 
         <a class="nav-item" data-tab="fire"><i data-lucide="flame"></i> Fire Services</a>
@@ -99,20 +146,19 @@
             <p style="color: var(--grey); font-size: 0.9rem;">Responding Unit: {{ Auth::user()->name }}</p>
         </div>
         
-        <div style="display: flex; align-items: center; gap: 20px;">
-            <button type="button" onclick="openBackupModal()" style="display:flex;align-items:center;gap:6px;background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);padding:8px 14px;border-radius:100px;font-size:0.78rem;font-weight:800;cursor:pointer;">
+        <div class="topbar-actions">
+            <button type="button" class="backup-request-btn" onclick="openBackupModal()">
                 <i data-lucide="radio-tower" style="width:14px;height:14px;"></i> Request Backup
             </button>
 
             <!-- Duty Toggle -->
-            <div class="duty-status-container">
-                <span class="duty-label duty-label-off" id="dutyText">OFF DUTY</span>
-                <label class="duty-toggle">
+            <label class="duty-status-container">
+                <span class="duty-status-text {{ $responder && $responder->is_on_duty ? 'is-on' : '' }}" id="dutyText">{{ $responder && $responder->is_on_duty ? 'On Duty' : 'Off Duty' }}</span>
+                <span class="duty-toggle">
                     <input type="checkbox" id="dutySwitch" {{ $responder && $responder->is_on_duty ? 'checked' : '' }} onchange="toggleDuty(this)">
                     <span class="duty-slider"></span>
-                </label>
-                <span class="duty-label duty-label-on">ON DUTY</span>
-            </div>
+                </span>
+            </label>
 
             @include('partials.lang-switcher')
             <button id="themeToggle" class="theme-toggle" aria-label="Toggle Dark Mode">
@@ -123,7 +169,13 @@
                     <span>{{ Auth::user()->name }}</span>
                     <small>Unit: {{ ucfirst(Auth::user()->role) }}</small>
                 </div>
-                <div class="avatar" style="background: #22c55e">{{ substr(Auth::user()->name, 0, 1) }}</div>
+                <div class="avatar" style="background: #22c55e">
+                    @if(Auth::user()->avatar)
+                        <img src="{{ Auth::user()->avatar }}" alt="">
+                    @else
+                        {{ substr(Auth::user()->name, 0, 1) }}
+                    @endif
+                </div>
             </div>
         </div>
     </header>
@@ -167,12 +219,38 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <div class="dash-card">
-                    <h3><i data-lucide="map-pin"></i> Coverage Area</h3>
-                    <div id="responderMap" style="height: 350px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--dark2);"></div>
+    <!-- LIVE MAP TAB -->
+    <div id="livemap" class="tab-pane">
+        <div class="dash-card">
+            <div class="section-head-icon" style="margin-bottom: 16px;">
+                <div class="icon-chip icon-chip-red"><i data-lucide="map-pin"></i></div>
+                <div>
+                    <h3 style="margin:0;">Live Map</h3>
+                    <p class="section-head-sub" id="liveMapSub">No active mission — showing your current location.</p>
                 </div>
             </div>
+
+            <div id="liveMapMissionPanel" style="display:none; background: rgba(229,9,20,0.06); border: 1px solid rgba(229,9,20,0.25); border-radius: 12px; padding: 14px 18px; margin-bottom: 16px;">
+                <p style="margin:0; font-weight:700;" id="liveMapPatientName">Patient: —</p>
+                <p style="margin:2px 0 0; font-size:0.8rem; color: var(--grey);" id="liveMapStatusText">Status: —</p>
+                <div style="display:flex; gap:10px; margin-top:12px; flex-wrap: wrap;">
+                    <a href="#" target="_blank" id="liveMapNavLink" style="display:flex; align-items:center; gap:6px; background:#2563eb; color:#fff; text-decoration:none; padding:10px 16px; border-radius:10px; font-weight:700; font-size:0.8rem;">
+                        <i data-lucide="navigation"></i> Navigate
+                    </a>
+                    <button onclick="markArrived()" id="liveMapArrivedBtn" style="display:flex; align-items:center; gap:6px; background: rgba(59,130,246,0.12); color: #3b82f6; border: 1px solid rgba(59,130,246,0.3); padding:10px 16px; border-radius:10px; font-weight:700; font-size:0.8rem; cursor:pointer;">
+                        <i data-lucide="map-pin-check"></i> Mark Arrived
+                    </button>
+                    <button onclick="completeMission()" style="display:flex; align-items:center; gap:6px; background:#22c55e; color:#fff; border:none; padding:10px 16px; border-radius:10px; font-weight:700; font-size:0.8rem; cursor:pointer;">
+                        <i data-lucide="check-circle-2"></i> Complete Mission
+                    </button>
+                </div>
+            </div>
+
+            <div id="responderMap" style="height: 65vh; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--dark2);"></div>
         </div>
     </div>
 
@@ -365,48 +443,72 @@
     <div id="profile" class="tab-pane">
         <div class="mission-grid">
             <div class="dash-card">
-                <h3><i data-lucide="id-card"></i> Unit Profile</h3>
-                <form id="profileForm" style="margin-top:20px; display:flex; flex-direction:column; gap:16px;">
+                <div class="section-head-icon">
+                    <span class="icon-chip icon-chip-red"><i data-lucide="id-card"></i></span>
                     <div>
-                        <label style="font-size:0.75rem; color:var(--grey); text-transform:uppercase; display:block; margin-bottom:6px;">Vehicle Registration</label>
-                        <input type="text" name="vehicle_reg" value="{{ $responder->vehicle_reg ?? '' }}" placeholder="e.g. LND-234-XY" style="width:100%; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); padding:12px; border-radius:8px; color:var(--white);">
+                        <h3 style="margin:0;">Unit Profile</h3>
+                        <p class="section-head-sub">Vehicle and capacity details shown to dispatch.</p>
                     </div>
-                    <div>
-                        <label style="font-size:0.75rem; color:var(--grey); text-transform:uppercase; display:block; margin-bottom:6px;">Capacity (patients/crew)</label>
-                        <input type="number" name="capacity" value="{{ $responder->capacity ?? '' }}" min="1" max="20" style="width:100%; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); padding:12px; border-radius:8px; color:var(--white);">
+                </div>
+                <form id="profileForm" class="unit-form">
+                    <div class="unit-form-group">
+                        <label><i data-lucide="truck" style="width:12px;height:12px;"></i> Vehicle Registration</label>
+                        <input type="text" name="vehicle_reg" value="{{ $responder->vehicle_reg ?? '' }}" placeholder="e.g. LND-234-XY">
                     </div>
-                    <button type="submit" class="btn-primary" style="padding:12px; border-radius:8px; font-weight:700; border:none;">Save</button>
+                    <div class="unit-form-group">
+                        <label><i data-lucide="users" style="width:12px;height:12px;"></i> Capacity (patients/crew)</label>
+                        <input type="number" name="capacity" value="{{ $responder->capacity ?? '' }}" min="1" max="20">
+                    </div>
+                    <button type="submit" class="btn-primary" style="padding:13px; border-radius:10px; font-weight:700; border:none;">Save Changes</button>
                     <div id="profileSaveMsg" style="display:none; padding:10px; border-radius:8px; font-size:0.82rem;"></div>
                 </form>
             </div>
 
             <div>
                 <div class="dash-card" style="margin-bottom:24px;">
-                    <h3><i data-lucide="activity"></i> Unit Stats</h3>
-                    <div class="stats-row" style="margin-top:15px;">
-                        <div class="stat-box">
-                            <h4 style="color: var(--red);">{{ $missionsDone }}</h4>
-                            <p>Completed</p>
+                    <div class="section-head-icon">
+                        <span class="icon-chip icon-chip-blue"><i data-lucide="activity"></i></span>
+                        <h3 style="margin:0;">Unit Stats</h3>
+                    </div>
+                    <div class="unit-stats-grid">
+                        <div class="unit-stat">
+                            <i data-lucide="check-circle-2" style="color: var(--red);"></i>
+                            <div class="unit-stat-value">{{ $missionsDone }}</div>
+                            <div class="unit-stat-label">Completed</div>
                         </div>
-                        <div class="stat-box">
-                            <h4 style="color: #f59e0b;">{{ $avgRating ?? '—' }}</h4>
-                            <p>Avg Rating</p>
+                        <div class="unit-stat">
+                            <i data-lucide="star" style="color: #f59e0b;"></i>
+                            <div class="unit-stat-value">{{ $avgRating ?? '—' }}</div>
+                            <div class="unit-stat-label">Avg Rating</div>
                         </div>
-                        <div class="stat-box">
-                            <h4 style="color: {{ $responder && $responder->is_on_duty ? '#22c55e' : 'var(--grey)' }};">{{ $responder && $responder->is_on_duty ? 'ON' : 'OFF' }}</h4>
-                            <p>Duty Status</p>
+                        <div class="unit-stat">
+                            <i data-lucide="{{ $responder && $responder->is_on_duty ? 'radio' : 'power-off' }}" style="color: {{ $responder && $responder->is_on_duty ? '#22c55e' : 'var(--grey)' }};"></i>
+                            <div class="unit-stat-value" style="color: {{ $responder && $responder->is_on_duty ? '#22c55e' : 'var(--grey)' }};">{{ $responder && $responder->is_on_duty ? 'On' : 'Off' }}</div>
+                            <div class="unit-stat-label">Duty Status</div>
                         </div>
                     </div>
                 </div>
                 <div class="dash-card">
-                    <h3><i data-lucide="user"></i> Account</h3>
-                    <div style="margin-top:15px; display:flex; flex-direction:column; gap:10px; font-size:0.85rem;">
-                        <p style="margin:0;"><strong>Name:</strong> {{ Auth::user()->name }}</p>
-                        <p style="margin:0;"><strong>Role:</strong> {{ ucfirst(Auth::user()->role) }}</p>
-                        <p style="margin:0;"><strong>Phone:</strong> {{ Auth::user()->phone ?? 'N/A' }}</p>
-                        <p style="margin:0;"><strong>Email:</strong> {{ Auth::user()->email ?? 'N/A' }}</p>
+                    <div class="account-card-head">
+                        <div class="account-avatar">
+                            @if(Auth::user()->avatar)
+                                <img src="{{ Auth::user()->avatar }}" alt="">
+                            @else
+                                {{ substr(Auth::user()->name, 0, 1) }}
+                            @endif
+                        </div>
+                        <div>
+                            <h3 style="margin:0; font-size:1rem;">{{ Auth::user()->name }}</h3>
+                            <p style="margin:2px 0 0; font-size:0.78rem; color:var(--grey);">{{ ucfirst(Auth::user()->role) }} Unit</p>
+                        </div>
                     </div>
-                    <a href="{{ route('settings') }}" style="display:inline-block; margin-top:16px; padding:10px 16px; border-radius:8px; text-decoration:none; font-size:0.82rem; background:var(--glass); border:1px solid var(--glass-border); color:var(--white);">Edit Full Profile in Settings</a>
+                    <div class="account-detail-list">
+                        <div class="account-detail"><i data-lucide="phone" style="width:14px;height:14px;"></i> {{ Auth::user()->phone ?? 'N/A' }}</div>
+                        <div class="account-detail"><i data-lucide="mail" style="width:14px;height:14px;"></i> {{ Auth::user()->email ?? 'N/A' }}</div>
+                    </div>
+                    <a href="{{ route('settings') }}" class="edit-settings-link">
+                        <i data-lucide="settings" style="width:14px;height:14px;"></i> Edit Full Profile in Settings
+                    </a>
                 </div>
             </div>
         </div>
@@ -633,10 +735,17 @@
 
             // Update Title
             document.getElementById('pageTitle').textContent = item.textContent.trim();
+
+            // Leaflet renders a blank/mis-sized map if initialized (or resized) while its
+            // container is display:none — nudge it once the tab-pane becomes visible.
+            if (tabId === 'livemap' && typeof responderMap !== 'undefined') {
+                setTimeout(() => responderMap.invalidateSize(), 50);
+            }
         });
     });
 
     let currentAlertId = null;
+    let activeMissionUuid = null;
     let modalOpen = false;
     const dismissedAlerts = new Set();
     const siren = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
@@ -655,6 +764,21 @@
                 badge.textContent = needsAction;
                 badge.style.display = needsAction > 0 ? 'inline-flex' : 'none';
 
+                // Keep the Live Map tab in sync even across a page reload mid-mission —
+                // acceptMission() only starts tracking in the live tab it was clicked from,
+                // so resync here from whatever the backend says is actually active.
+                const mine = data.find(e => ['enroute', 'arrived'].includes(e.status));
+                if (mine) {
+                    if (activeMissionUuid !== mine.uuid) {
+                        activeMissionUuid = mine.uuid;
+                        startMissionTracking(mine.uuid);
+                    }
+                    updateLiveMapPanel(mine);
+                } else if (activeMissionUuid) {
+                    activeMissionUuid = null;
+                    clearLiveMapPanel();
+                }
+
                 // Never yank the modal away from a responder actively reviewing it —
                 // whether that's a fresh alert or a mission they reopened via "View".
                 if (modalOpen) return;
@@ -664,6 +788,29 @@
                     showEmergency(next);
                 }
             });
+    }
+
+    function updateLiveMapPanel(mission) {
+        document.getElementById('liveMapSub').textContent = 'Tracking active mission.';
+        document.getElementById('liveMapMissionPanel').style.display = 'block';
+        document.getElementById('liveMapPatientName').textContent = `Patient: ${mission.user ? mission.user.name : 'Unknown'}`;
+        document.getElementById('liveMapStatusText').textContent = `Status: ${mission.status.toUpperCase()}`;
+
+        document.getElementById('liveMapNavLink').href =
+            `https://www.google.com/maps/dir/?api=1&destination=${mission.latitude},${mission.longitude}`;
+
+        const arrivedBtn = document.getElementById('liveMapArrivedBtn');
+        arrivedBtn.disabled = mission.status === 'arrived';
+        arrivedBtn.style.opacity = mission.status === 'arrived' ? '0.6' : '1';
+        arrivedBtn.innerHTML = mission.status === 'arrived'
+            ? '<i data-lucide="map-pin-check"></i> Arrived ✓'
+            : '<i data-lucide="map-pin-check"></i> Mark Arrived';
+        lucide.createIcons();
+    }
+
+    function clearLiveMapPanel() {
+        document.getElementById('liveMapMissionPanel').style.display = 'none';
+        document.getElementById('liveMapSub').textContent = 'No active mission — showing your current location.';
     }
 
     function renderMissionsList(emergencies) {
@@ -791,14 +938,16 @@
                 window.open(navLink.href, '_blank');
                 const acceptedUuid = currentAlertId;
                 closeAlert();
+                activeMissionUuid = acceptedUuid;
                 startMissionTracking(acceptedUuid);
             }
         });
     }
 
     function markArrived() {
-        if (!currentAlertId) return;
-        fetch(`/emergency/arrived/${currentAlertId}`, {
+        const uuid = currentAlertId || activeMissionUuid;
+        if (!uuid) return;
+        fetch(`/emergency/arrived/${uuid}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -812,6 +961,11 @@
                 arrivedBtn.disabled = true;
                 arrivedBtn.innerHTML = '<i data-lucide="map-pin-check" style="width:16px;height:16px;vertical-align:-3px;"></i> Arrived ✓';
                 arrivedBtn.style.opacity = '0.6';
+
+                const liveMapArrivedBtn = document.getElementById('liveMapArrivedBtn');
+                liveMapArrivedBtn.disabled = true;
+                liveMapArrivedBtn.innerHTML = '<i data-lucide="map-pin-check"></i> Arrived ✓';
+                liveMapArrivedBtn.style.opacity = '0.6';
                 lucide.createIcons();
             }
         })
@@ -819,10 +973,11 @@
     }
 
     function completeMission() {
-        if (!currentAlertId) return;
+        const uuid = currentAlertId || activeMissionUuid;
+        if (!uuid) return;
         if (!confirm('Complete this mission? This marks it resolved and frees you up for new dispatches.')) return;
 
-        fetch(`/emergency/resolve/${currentAlertId}`, {
+        fetch(`/emergency/resolve/${uuid}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -834,6 +989,8 @@
             if (data.success) {
                 alert('Mission completed. You are now available for new dispatches.');
                 closeAlert();
+                activeMissionUuid = null;
+                clearLiveMapPanel();
                 if (missionPolling) { clearInterval(missionPolling); missionPolling = null; }
                 if (userMarker) { responderMap.removeLayer(userMarker); userMarker = null; }
             }
@@ -907,12 +1064,23 @@
                         } else {
                             responderMap.setView(userPos, 15);
                         }
+
+                        const liveMapNavLink = document.getElementById('liveMapNavLink');
+                        if (liveMapNavLink) {
+                            liveMapNavLink.href = `https://www.google.com/maps/dir/?api=1&destination=${userPos[0]},${userPos[1]}`;
+                        }
                     }
+
+                    const liveMapStatusText = document.getElementById('liveMapStatusText');
+                    if (liveMapStatusText) liveMapStatusText.textContent = `Status: ${data.status.toUpperCase()}`;
 
                     if (data.status === 'resolved' || data.status === 'cancelled') {
                         clearInterval(missionPolling);
+                        missionPolling = null;
                         if (userMarker) responderMap.removeLayer(userMarker);
                         userMarker = null;
+                        activeMissionUuid = null;
+                        clearLiveMapPanel();
                         alert('Mission ended: ' + data.status);
                     }
                 });
@@ -964,7 +1132,8 @@
     function toggleDuty(checkbox) {
         const isOnDuty = checkbox.checked;
         const dutyText = document.getElementById('dutyText');
-        dutyText.textContent = isOnDuty ? 'ON DUTY' : 'OFF DUTY';
+        dutyText.textContent = isOnDuty ? 'On Duty' : 'Off Duty';
+        dutyText.classList.toggle('is-on', isOnDuty);
 
         fetch('{{ route("responder.toggle-duty") }}', {
             method: 'POST',
@@ -982,10 +1151,9 @@
         }
     }
 
-    // Auto-start tracking if already on duty
+    // Auto-start tracking if already on duty (label already rendered correctly server-side)
     if (document.getElementById('dutySwitch').checked) {
         startTracking();
-        document.getElementById('dutyText').textContent = 'ON DUTY';
     }
 
     setInterval(pollAlerts, 5000);
