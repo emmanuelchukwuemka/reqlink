@@ -15,6 +15,7 @@ class EmergencyController extends Controller
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'type' => 'nullable|string',
+            'preferred_hospital_id' => 'nullable|integer|exists:hospitals,id',
         ]);
 
         // 1. Resolve emergency type — seed row if seeder never ran on this environment
@@ -33,6 +34,7 @@ class EmergencyController extends Controller
             'longitude' => $request->longitude,
             'status' => 'pending',
             'priority' => 5,
+            'target_hospital_id' => $request->preferred_hospital_id,
         ]);
 
         // 2. Search for nearest ON-DUTY and AVAILABLE Responders
@@ -76,15 +78,19 @@ class EmergencyController extends Controller
             ->pluck('user_id')->toArray();
         \App\Services\WebPushService::sendToUsers($onDutyUserIds);
 
-        // 3. Fallback to nearest Hospital if no active mobile responders
-        $nearestHospital = DB::table('hospitals')
-            ->select('*')
-            ->selectRaw(
-                '(6371 * acos(cos(radians(?)) * cos(radians(lat)) * cos(radians(lng) - radians(?)) + sin(radians(?)) * sin(radians(lat)))) AS distance',
-                [$request->latitude, $request->longitude, $request->latitude]
-            )
-            ->orderBy('distance')
-            ->first();
+        // 3. Fallback to nearest Hospital if no active mobile responders. If the
+        // patient already picked a preferred hospital above, respect that choice
+        // instead of overriding it with the auto-picked nearest one.
+        $nearestHospital = $emergency->target_hospital_id
+            ? DB::table('hospitals')->where('id', $emergency->target_hospital_id)->first()
+            : DB::table('hospitals')
+                ->select('*')
+                ->selectRaw(
+                    '(6371 * acos(cos(radians(?)) * cos(radians(lat)) * cos(radians(lng) - radians(?)) + sin(radians(?)) * sin(radians(lat)))) AS distance',
+                    [$request->latitude, $request->longitude, $request->latitude]
+                )
+                ->orderBy('distance')
+                ->first();
 
         if ($nearestHospital) {
             $emergency->update([
@@ -144,8 +150,17 @@ class EmergencyController extends Controller
 
     public function getStatus($uuid)
     {
-        $emergency = Emergency::where('uuid', $uuid)->firstOrFail();
-        
+        $user = Auth::user();
+        $emergency = Emergency::with('targetHospital')->where('uuid', $uuid)->firstOrFail();
+
+        $isOwner = $emergency->user_id === $user->id;
+        $isAssignedResponder = $emergency->assigned_responder_id && \App\Domains\Responders\Models\Responder::where('user_id', $user->id)
+            ->where('id', $emergency->assigned_responder_id)->exists();
+
+        if (!$isOwner && !$isAssignedResponder && $user->role !== 'admin') {
+            abort(403);
+        }
+
         $responderData = null;
         if ($emergency->assigned_responder_id) {
             // Check if it's a Responder or Hospital
@@ -168,7 +183,48 @@ class EmergencyController extends Controller
             'user_location' => [
                 'lat' => $emergency->latitude,
                 'lng' => $emergency->longitude,
-            ]
+            ],
+            'target_hospital' => $emergency->targetHospital,
+            // The patient can change their hospital choice any time before pickup;
+            // once the responder marks arrival, the destination is locked in.
+            'hospital_choice_locked' => in_array($emergency->status, ['arrived', 'resolved', 'cancelled'], true),
+        ]);
+    }
+
+    public function chooseHospital(Request $request, $uuid)
+    {
+        $request->validate(['hospital_id' => 'required|integer|exists:hospitals,id']);
+
+        $user = Auth::user();
+        $emergency = Emergency::where('uuid', $uuid)->firstOrFail();
+
+        if ($emergency->user_id === $user->id) {
+            // Patient: can change their destination any time before the ambulance
+            // has actually picked them up.
+            if (in_array($emergency->status, ['arrived', 'resolved', 'cancelled'], true)) {
+                return response()->json(['success' => false, 'message' => 'This emergency has already reached the pickup stage; the hospital can no longer be changed.'], 422);
+            }
+        } else {
+            $responder = \App\Domains\Responders\Models\Responder::where('user_id', $user->id)->first();
+            $isAssignedResponder = $responder && $emergency->assigned_responder_id === $responder->id;
+
+            if (!$isAssignedResponder && $user->role !== 'admin') {
+                abort(403);
+            }
+
+            // Responder override: allowed up until the destination hospital has
+            // already accepted the patient (changing it after that would orphan
+            // an admission the hospital is already expecting).
+            if ($emergency->hospital_accepted_at || in_array($emergency->status, ['resolved', 'cancelled'], true)) {
+                return response()->json(['success' => false, 'message' => 'The destination hospital has already accepted this patient and can no longer be changed.'], 422);
+            }
+        }
+
+        $emergency->update(['target_hospital_id' => $request->hospital_id]);
+
+        return response()->json([
+            'success' => true,
+            'hospital' => \App\Domains\Responders\Models\Hospital::find($request->hospital_id),
         ]);
     }
 

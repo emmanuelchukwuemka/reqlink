@@ -150,6 +150,7 @@ Route::post('/user/toggle-mamacare', [DashboardController::class, 'toggleMamaCar
 Route::post('/user/update-mamacare-profile', [DashboardController::class, 'updateMamaCareProfile'])->middleware('auth');
 Route::post('/user/update-specialty', [DashboardController::class, 'updateSpecialty'])->middleware('auth');
 Route::post('/emergency/request-doctor-consult/{uuid}', [\App\Http\Controllers\EmergencyController::class, 'requestDoctorConsult'])->name('emergency.request-doctor-consult')->middleware('auth');
+Route::post('/emergency/{uuid}/choose-hospital', [\App\Http\Controllers\EmergencyController::class, 'chooseHospital'])->name('emergency.choose-hospital')->middleware('auth');
 Route::post('/emergency/doctor-notes/{uuid}', [DashboardController::class, 'saveDoctorNotes'])->name('doctor.notes.save')->middleware('auth');
 Route::post('/emergency/complete-consult/{uuid}', [DashboardController::class, 'completeConsult'])->name('doctor.consult.complete')->middleware('auth');
 // Public so the landing-page AI widget works for visitors who aren't logged in yet

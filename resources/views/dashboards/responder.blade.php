@@ -577,7 +577,19 @@
         <h2 id="alertHeading" style="font-size: 2rem; font-weight: 900; margin-bottom: 10px; color: var(--white);">CRITICAL ALERT</h2>
         <p id="alertUser" style="font-size: 1.1rem; color: var(--grey); margin-bottom: 5px;">Patient: John Doe</p>
         <p id="alertLoc" style="font-size: 0.9rem; color: var(--red); font-weight: 700; margin-bottom: 12px;">LOCATION: 1.2km away</p>
-        <p id="alertTargetHospital" style="display:none; font-size: 0.85rem; color: #3b82f6; font-weight: 700; margin-bottom: 20px;"></p>
+        <div style="text-align: left; margin-bottom: 20px;">
+            <label style="font-size: 0.75rem; color: var(--grey); text-transform: uppercase; display: block; margin-bottom: 6px;">Destination Hospital</label>
+            <div id="hospitalAcceptedNotice" style="display:none; font-size: 0.8rem; color: var(--grey); background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px;"></div>
+            <div id="hospitalSelectRow" style="display:flex; gap:8px;">
+                <select id="targetHospitalSelect" style="flex:1; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 8px; padding: 10px; color: var(--white); font-size: 0.85rem;">
+                    <option value="">Select a hospital…</option>
+                    @foreach($hospitals as $h)
+                    <option value="{{ $h->id }}">{{ $h->name }}</option>
+                    @endforeach
+                </select>
+                <button onclick="setTargetHospital()" style="padding: 8px 16px; font-size: 0.78rem; font-weight: 700; background: rgba(59,130,246,0.12); color: #3b82f6; border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; cursor: pointer; white-space: nowrap;">Set</button>
+            </div>
+        </div>
 
         <div style="background: var(--glass); border: 1px solid var(--glass-border); border-radius: 12px; padding: 20px; margin-bottom: 30px; text-align: left;">
             <p style="font-size: 0.75rem; color: var(--grey); margin-bottom: 5px; text-transform: uppercase;">Medical ID Summary</p>
@@ -847,12 +859,16 @@
         document.getElementById('alertMedical').textContent = `Blood: ${alert.user?.blood_group || 'N/A'} | Allergies: ${alert.user?.allergies || 'None'}`;
         document.getElementById('handoffNotes').value = alert.responder_notes || '';
 
-        const targetHospitalP = document.getElementById('alertTargetHospital');
-        if (alert.target_hospital) {
-            targetHospitalP.style.display = 'block';
-            targetHospitalP.textContent = `Routed to: ${alert.target_hospital.name}`;
+        const hospitalNotice = document.getElementById('hospitalAcceptedNotice');
+        const hospitalRow = document.getElementById('hospitalSelectRow');
+        if (alert.hospital_accepted_at) {
+            hospitalNotice.style.display = 'block';
+            hospitalNotice.textContent = `Locked in: ${alert.target_hospital ? alert.target_hospital.name : 'hospital'} has already accepted this patient.`;
+            hospitalRow.style.display = 'none';
         } else {
-            targetHospitalP.style.display = 'none';
+            hospitalNotice.style.display = 'none';
+            hospitalRow.style.display = 'flex';
+            document.getElementById('targetHospitalSelect').value = alert.target_hospital_id || '';
         }
 
         const mamaCareDiv = document.getElementById('alertMamaCare');
@@ -1012,6 +1028,32 @@
         .then(res => res.json())
         .then(data => {
             alert(data.success ? 'Handoff notes saved for the receiving hospital.' : 'Could not save notes.');
+        })
+        .catch(() => alert('Network error. Please try again.'));
+    }
+
+    function setTargetHospital() {
+        if (!currentAlertId) return;
+        const hospitalId = document.getElementById('targetHospitalSelect').value;
+        if (!hospitalId) {
+            alert('Please select a hospital first.');
+            return;
+        }
+        fetch(`/emergency/${currentAlertId}/choose-hospital`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ hospital_id: hospitalId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert(`Destination set to ${data.hospital.name}.`);
+            } else {
+                alert(data.message || 'Could not set destination hospital.');
+            }
         })
         .catch(() => alert('Network error. Please try again.'));
     }

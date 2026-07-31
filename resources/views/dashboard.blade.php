@@ -584,12 +584,34 @@
             </div>
         </div>
 
+        <div style="background: var(--glass); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+            <div>
+                <div style="font-size: 0.7rem; color: var(--grey); text-transform: uppercase; font-weight: 700;">Destination Hospital</div>
+                <div id="targetHospitalName" style="font-size: 0.85rem; color: var(--white); font-weight: 700;">Not selected</div>
+            </div>
+            <button id="chooseHospitalBtn" onclick="openHospitalPicker()" style="background: rgba(59,130,246,0.12); color: #3b82f6; border: 1px solid rgba(59,130,246,0.3); padding: 8px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; white-space: nowrap;">Choose</button>
+        </div>
+
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px;">
             <button id="callUnitBtn" onclick="callUnit()" class="btn-primary" style="padding: 10px; font-size: 0.75rem; background: #2563eb;">Call Unit</button>
             <button onclick="openEmergencyChat()" style="padding: 10px; font-size: 0.75rem; background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; cursor: pointer;">Chat</button>
             <button onclick="cancelEmergency()" style="padding: 10px; font-size: 0.75rem; background: rgba(255,255,255,0.05); color: var(--white); border: 1px solid var(--glass-border); border-radius: 8px; cursor: pointer;">Cancel</button>
         </div>
     </div>
+
+<!-- HOSPITAL PICKER MODAL -->
+<div id="hospitalPickerModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:7000; align-items:center; justify-content:center; backdrop-filter:blur(10px); padding:20px;">
+    <div style="background:var(--dark); border:1px solid var(--glass-border); width:100%; max-width:420px; max-height:80vh; border-radius:20px; padding:24px; overflow-y:auto;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+            <h3 style="margin:0; font-size:1.05rem; color:var(--white);">Choose Destination Hospital</h3>
+            <button onclick="closeHospitalPicker()" style="background:none; border:none; color:var(--grey); cursor:pointer; font-size:1.3rem;">&times;</button>
+        </div>
+        <button type="button" onclick="sortPickerByDistance()" style="width:100%; margin-bottom:14px; background: rgba(34,197,94,0.12); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); padding: 9px; border-radius: 10px; font-weight: 700; font-size: 0.8rem; cursor: pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+            <i data-lucide="locate-fixed" style="width:14px;height:14px;"></i> Sort by Nearest
+        </button>
+        <div id="hospitalPickerList"></div>
+    </div>
+</div>
 
 <!-- EMERGENCY CHAT WINDOW -->
 <div id="emergencyChat" style="display:none; position:fixed; bottom:110px; right:30px; width:340px; height:440px; background:var(--dark2); border:1px solid rgba(34,197,94,0.3); border-radius:20px; flex-direction:column; overflow:hidden; z-index:6000; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
@@ -1067,12 +1089,20 @@
         }
     }
 
+    let hospitalChoiceLocked = false;
+
     function updateLiveUI(data) {
         const overlay = document.getElementById('liveAlert');
         overlay.style.display = 'block';
-        
+
         document.getElementById('emergencyStatus').textContent = `Status: ${data.status.toUpperCase()}`;
-        
+
+        document.getElementById('targetHospitalName').textContent = data.target_hospital ? data.target_hospital.name : 'Not selected';
+        hospitalChoiceLocked = !!data.hospital_choice_locked;
+        const chooseBtn = document.getElementById('chooseHospitalBtn');
+        chooseBtn.textContent = data.target_hospital ? 'Change' : 'Choose';
+        chooseBtn.style.display = hospitalChoiceLocked ? 'none' : 'inline-block';
+
         if (data.responder) {
             document.getElementById('responderName').textContent = data.responder.name;
             document.getElementById('responderETA').textContent = `ETA: ${data.eta || '5'} mins`;
@@ -1099,6 +1129,75 @@
                 }
             }
         }
+    }
+
+    // ── Destination hospital picker ─────────────────────────────────────
+    @php
+        $pickerHospitalsData = $hospitals->map(fn($h) => ['id' => $h->id, 'name' => $h->name, 'lat' => $h->lat, 'lng' => $h->lng])->values();
+    @endphp
+    const pickerHospitals = @json($pickerHospitalsData);
+
+    function renderHospitalPickerList(hospitals) {
+        const list = document.getElementById('hospitalPickerList');
+        if (!hospitals.length) {
+            list.innerHTML = '<p style="color:var(--grey); text-align:center; padding:20px;">No hospitals registered yet.</p>';
+            return;
+        }
+        list.innerHTML = hospitals.map(h => `
+            <button type="button" onclick="chooseHospitalForEmergency(${h.id})" style="display:block; width:100%; text-align:left; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; color: var(--white); cursor:pointer; font-size: 0.85rem;">
+                <div style="font-weight:700;">${h.name}</div>
+                ${h.distance !== undefined ? `<div style="font-size:0.75rem; color:#22c55e; margin-top:2px;">${h.distance.toFixed(1)} km away</div>` : ''}
+            </button>
+        `).join('');
+    }
+
+    function openHospitalPicker() {
+        if (hospitalChoiceLocked) return;
+        if (!activeEmergencyUuid) return;
+        renderHospitalPickerList(pickerHospitals);
+        document.getElementById('hospitalPickerModal').style.display = 'flex';
+        lucide.createIcons();
+    }
+
+    function closeHospitalPicker() {
+        document.getElementById('hospitalPickerModal').style.display = 'none';
+    }
+
+    function sortPickerByDistance() {
+        if (!navigator.geolocation) {
+            alert('Location services are not available on this device.');
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(pos => {
+            const withDistance = pickerHospitals.map(h => ({
+                ...h,
+                distance: (!h.lat && !h.lng) ? Infinity : haversineKm(pos.coords.latitude, pos.coords.longitude, h.lat, h.lng),
+            })).sort((a, b) => a.distance - b.distance);
+            renderHospitalPickerList(withDistance);
+        }, () => alert('Could not get your location. Please enable location access and try again.'));
+    }
+
+    function chooseHospitalForEmergency(hospitalId) {
+        if (!activeEmergencyUuid) return;
+        fetch(`/emergency/${activeEmergencyUuid}/choose-hospital`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ hospital_id: hospitalId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('targetHospitalName').textContent = data.hospital.name;
+                document.getElementById('chooseHospitalBtn').textContent = 'Change';
+                closeHospitalPicker();
+            } else {
+                alert(data.message || 'Could not set destination hospital.');
+            }
+        })
+        .catch(() => alert('Network error. Please try again.'));
     }
 
     function stopPollingStatus() {
