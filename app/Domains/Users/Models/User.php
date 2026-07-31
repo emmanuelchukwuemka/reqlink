@@ -65,6 +65,11 @@ class User extends Authenticatable
         'obgyn_contact',
         'verification_rejected_reason',
         'verification_reviewed_at',
+        'bank_code',
+        'bank_name',
+        'account_number',
+        'account_name',
+        'paystack_recipient_code',
     ];
 
     /**
@@ -75,6 +80,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'account_number',
+        'paystack_recipient_code',
     ];
 
     /**

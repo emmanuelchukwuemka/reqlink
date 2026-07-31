@@ -331,6 +331,7 @@
             <h3><i data-lucide="wallet"></i> Wallet Balance</h3>
             <div style="margin-top: 16px; font-size: 2rem; font-weight: 800; color: #22c55e;">₦{{ number_format(Auth::user()->wallet_balance, 2) }}</div>
         </div>
+        @include('partials.wallet-withdraw')
         <div class="dash-card">
             <h3><i data-lucide="receipt"></i> Consultation Earnings History</h3>
             <div style="margin-top: 16px;">

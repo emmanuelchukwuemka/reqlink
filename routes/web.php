@@ -48,6 +48,10 @@ Route::get('/lang/{locale}', function ($locale) {
 Route::middleware(['auth'])->group(function () {
     Route::post('/wallet/fund', [\App\Http\Controllers\WalletController::class, 'initiate'])->name('wallet.fund');
     Route::get('/wallet/callback', [\App\Http\Controllers\WalletController::class, 'callback'])->name('wallet.callback');
+    Route::get('/wallet/banks', [\App\Http\Controllers\WalletController::class, 'banks'])->name('wallet.banks');
+    Route::post('/wallet/resolve-account', [\App\Http\Controllers\WalletController::class, 'resolveAccount'])->name('wallet.resolve-account');
+    Route::post('/wallet/bank-account', [\App\Http\Controllers\WalletController::class, 'saveBankAccount'])->name('wallet.bank-account');
+    Route::post('/wallet/withdraw', [\App\Http\Controllers\WalletController::class, 'requestWithdrawal'])->name('wallet.withdraw');
     Route::get('/map/live-data', [\App\Http\Controllers\DashboardController::class, 'liveMapData'])->name('map.live-data');
     Route::get('/admin/live-data', [\App\Http\Controllers\DashboardController::class, 'liveAdminData'])->name('admin.live-data');
     Route::post('/admin/dispatch', [\App\Http\Controllers\DashboardController::class, 'adminDispatch'])->name('admin.dispatch');

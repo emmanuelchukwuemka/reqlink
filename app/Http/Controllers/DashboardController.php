@@ -39,7 +39,12 @@ class DashboardController extends Controller
                     ->get();
                 $hospitalPatients = $hospital->hospitalPatients()->latest('admitted_at')->get();
                 $manualReservations = $hospital->manualReservations()->latest()->get();
-                return view('dashboards.hospital', compact('hospital', 'incomingEmergencies', 'hospitalEmergencies', 'bedReservationHistory', 'hospitalPatients', 'manualReservations'));
+                $walletTransactions = \App\Models\WalletTransaction::where('user_id', Auth::id())
+                    ->where('status', 'success')
+                    ->orderBy('created_at', 'desc')
+                    ->limit(20)
+                    ->get();
+                return view('dashboards.hospital', compact('hospital', 'incomingEmergencies', 'hospitalEmergencies', 'bedReservationHistory', 'hospitalPatients', 'manualReservations', 'walletTransactions'));
             case 'ambulance':
             case 'security':
             case 'fire':
@@ -425,26 +430,52 @@ class DashboardController extends Controller
         }
 
         $fee = 2000.00;
-        $userId = Auth::id();
+        $doctorId = Auth::id();
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($emergency, $userId, $fee) {
-            $user = \App\Domains\Users\Models\User::lockForUpdate()->find($userId);
-            $newBalance = $user->wallet_balance + $fee;
-            $user->wallet_balance = $newBalance;
-            $user->save();
+        $result = \Illuminate\Support\Facades\DB::transaction(function () use ($emergency, $doctorId, $fee) {
+            $patient = \App\Domains\Users\Models\User::lockForUpdate()->find($emergency->user_id);
+
+            if ($patient->wallet_balance < $fee) {
+                return ['success' => false, 'message' => 'Patient has insufficient wallet balance to cover the ₦' . number_format($fee, 2) . ' consultation fee.'];
+            }
+
+            $patientBalance = $patient->wallet_balance - $fee;
+            $patient->wallet_balance = $patientBalance;
+            $patient->save();
 
             \App\Models\WalletTransaction::create([
-                'user_id'       => $user->id,
+                'user_id'       => $patient->id,
+                'type'          => 'debit',
+                'amount'        => $fee,
+                'balance_after' => $patientBalance,
+                'reference'     => 'consult_' . $emergency->uuid,
+                'description'   => 'Doctor consultation fee',
+                'status'        => 'success',
+            ]);
+
+            $doctor = \App\Domains\Users\Models\User::lockForUpdate()->find($doctorId);
+            $doctorBalance = $doctor->wallet_balance + $fee;
+            $doctor->wallet_balance = $doctorBalance;
+            $doctor->save();
+
+            \App\Models\WalletTransaction::create([
+                'user_id'       => $doctor->id,
                 'type'          => 'credit',
                 'amount'        => $fee,
-                'balance_after' => $newBalance,
-                'reference'     => 'consult_' . $emergency->uuid,
+                'balance_after' => $doctorBalance,
+                'reference'     => 'consult_earn_' . $emergency->uuid,
                 'description'   => 'Consultation fee',
                 'status'        => 'success',
             ]);
 
             $emergency->update(['consult_fee_paid_at' => now()]);
+
+            return ['success' => true];
         });
+
+        if (!$result['success']) {
+            return response()->json($result, 422);
+        }
 
         return response()->json([
             'success' => true,

@@ -107,23 +107,44 @@ class HospitalController extends Controller
             ->where('target_hospital_id', $hospital->id)
             ->firstOrFail();
 
-        if ($emergency->admission_fee_paid_at) {
+        if ($emergency->status === 'resolved') {
             return response()->json(['success' => false, 'message' => 'This patient has already been discharged.'], 422);
         }
 
         $fee = 5000.00;
 
-        DB::transaction(function () use ($emergency, $hospital, $fee) {
+        // Discharge always proceeds regardless of payment -- a hospital must never be
+        // incentivized to hold up a patient's medical discharge over an app fee. Only
+        // the fee collection itself is conditional on the patient's wallet balance.
+        $feeCollected = DB::transaction(function () use ($emergency, $hospital, $fee) {
             $emergency->update([
                 'status' => 'resolved',
                 'resolved_at' => $emergency->resolved_at ?? now(),
-                'admission_fee_paid_at' => now(),
             ]);
             $emergency->freeAssignedResponder();
 
             if ($hospital->available_beds < $hospital->total_beds) {
                 $hospital->increment('available_beds');
             }
+
+            $patient = \App\Domains\Users\Models\User::lockForUpdate()->find($emergency->user_id);
+            if (!$patient || $patient->wallet_balance < $fee) {
+                return false;
+            }
+
+            $patientBalance = $patient->wallet_balance - $fee;
+            $patient->wallet_balance = $patientBalance;
+            $patient->save();
+
+            \App\Models\WalletTransaction::create([
+                'user_id'       => $patient->id,
+                'type'          => 'debit',
+                'amount'        => $fee,
+                'balance_after' => $patientBalance,
+                'reference'     => 'admission_fee_' . $emergency->uuid,
+                'description'   => 'Hospital admission fee',
+                'status'        => 'success',
+            ]);
 
             $hospitalUser = \App\Domains\Users\Models\User::lockForUpdate()->find($hospital->user_id);
             $newBalance = $hospitalUser->wallet_balance + $fee;
@@ -139,11 +160,17 @@ class HospitalController extends Controller
                 'description'   => 'Admission fee',
                 'status'        => 'success',
             ]);
+
+            $emergency->update(['admission_fee_paid_at' => now()]);
+
+            return true;
         });
 
         return response()->json([
             'success' => true,
-            'message' => 'Patient discharged. ₦' . number_format($fee, 2) . ' credited to your wallet.',
+            'message' => $feeCollected
+                ? 'Patient discharged. ₦' . number_format($fee, 2) . ' credited to your wallet.'
+                : 'Patient discharged. The ₦' . number_format($fee, 2) . ' admission fee could not be collected (patient has insufficient wallet balance).',
         ]);
     }
 

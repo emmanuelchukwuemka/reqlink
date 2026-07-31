@@ -114,6 +114,7 @@
         <a href="#" class="nav-item" data-tab="admissions"><i data-lucide="history"></i> Admissions</a>
         <a href="#" class="nav-item" data-tab="reservations"><i data-lucide="bed"></i> Reservations</a>
         <a href="#" class="nav-item" data-tab="maptab"><i data-lucide="map"></i> Map</a>
+        <a href="#" class="nav-item" data-tab="earnings"><i data-lucide="wallet"></i> Earnings</a>
         <a href="{{ route('settings') }}" class="nav-item"><i data-lucide="settings"></i> Settings</a>
     </nav>
 
@@ -700,6 +701,34 @@
                 </button>
             </div>
             <div id="map-full" style="height: 560px; border-radius: 15px; margin-top: 20px; border: 1px solid var(--glass-border); {{ $hospital->hasLocation() ? '' : 'display:none;' }}"></div>
+        </div>
+    </div>
+
+    <!-- EARNINGS TAB -->
+    <div id="earnings" class="tab-pane">
+        <div class="facility-card" style="margin-bottom: 24px;">
+            <h3><i data-lucide="wallet"></i> Wallet Balance</h3>
+            <div style="margin-top: 16px; font-size: 2rem; font-weight: 800; color: #22c55e;">₦{{ number_format(Auth::user()->wallet_balance, 2) }}</div>
+        </div>
+        @include('partials.wallet-withdraw')
+        <div class="facility-card" style="margin-top: 24px;">
+            <h3><i data-lucide="receipt"></i> Admission Fee History</h3>
+            <div style="margin-top: 16px;">
+                @forelse($walletTransactions as $tx)
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-top: 1px solid var(--glass-border);">
+                    <div>
+                        <h4 style="margin: 0; font-size: 0.9rem;">{{ $tx->description }}</h4>
+                        <p style="margin: 4px 0 0; font-size: 0.75rem; color: var(--grey);">{{ $tx->created_at->format('M d, Y g:i A') }}</p>
+                    </div>
+                    <span style="font-weight: 800; color: {{ $tx->type === 'credit' ? '#22c55e' : 'var(--red)' }};">{{ $tx->type === 'credit' ? '+' : '-' }}₦{{ number_format($tx->amount, 2) }}</span>
+                </div>
+                @empty
+                <div style="text-align: center; padding: 30px; opacity: 0.5;">
+                    <i data-lucide="receipt" style="width: 40px; height: 40px; margin-bottom: 10px;"></i>
+                    <p>No earnings yet.</p>
+                </div>
+                @endforelse
+            </div>
         </div>
     </div>
 </main>
