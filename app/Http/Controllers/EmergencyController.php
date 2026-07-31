@@ -233,7 +233,12 @@ class EmergencyController extends Controller
     public function saveResponderNotes(Request $request, $uuid)
     {
         $request->validate(['responder_notes' => 'nullable|string|max:2000']);
-        $emergency = Emergency::where('uuid', $uuid)->firstOrFail();
+
+        $responder = \App\Domains\Responders\Models\Responder::where('user_id', Auth::id())->firstOrFail();
+        $emergency = Emergency::where('uuid', $uuid)
+            ->where('assigned_responder_id', $responder->id)
+            ->firstOrFail();
+
         $emergency->update(['responder_notes' => $request->responder_notes]);
 
         return response()->json(['success' => true]);
@@ -241,7 +246,21 @@ class EmergencyController extends Controller
 
     public function requestDoctorConsult(Request $request, $uuid)
     {
-        $emergency = Emergency::where('uuid', $uuid)->firstOrFail();
+        $user = Auth::user();
+
+        $query = Emergency::where('uuid', $uuid);
+
+        if ($user->role === 'hospital') {
+            $hospital = \App\Domains\Responders\Models\Hospital::where('user_id', $user->id)->firstOrFail();
+            $query->where('target_hospital_id', $hospital->id);
+        } elseif (in_array($user->role, ['ambulance', 'fire', 'security'], true)) {
+            $responder = \App\Domains\Responders\Models\Responder::where('user_id', $user->id)->firstOrFail();
+            $query->where('assigned_responder_id', $responder->id);
+        } elseif ($user->role !== 'admin') {
+            abort(403);
+        }
+
+        $emergency = $query->firstOrFail();
 
         $emergency->update([
             'doctor_consult_requested_at' => now(),

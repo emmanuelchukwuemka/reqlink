@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class HospitalReservation extends Model
 {
-    protected $fillable = ['hospital_id', 'patient_name', 'bed_type', 'expected_at', 'notes', 'status'];
+    protected $fillable = ['hospital_id', 'patient_name', 'bed_type', 'bed_deducted', 'expected_at', 'notes', 'status'];
 
     protected $casts = ['expected_at' => 'datetime'];
 

@@ -92,7 +92,13 @@ class BackupRequestController extends Controller
 
     public function acknowledge($id)
     {
-        $backup = BackupRequest::findOrFail($id);
+        $responder = $this->currentResponder();
+
+        $backup = BackupRequest::where('id', $id)
+            ->where('responder_id', '!=', $responder->id)
+            ->whereHas('responder', fn ($q) => $q->where('responder_type', $responder->responder_type))
+            ->firstOrFail();
+
         $backup->update(['status' => 'acknowledged']);
 
         return response()->json(['success' => true]);

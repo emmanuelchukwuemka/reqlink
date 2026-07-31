@@ -184,21 +184,23 @@ class HospitalController extends Controller
             'notes' => 'nullable|string|max:1000',
         ]);
 
+        $bedField = $request->bed_type === 'icu' ? 'icu_beds' : 'available_beds';
+        $deducted = $hospital->{$bedField} > 0;
+
         HospitalPatient::create([
             'hospital_id' => $hospital->id,
             'name' => $request->name,
             'phone' => $request->phone,
             'reason' => $request->reason,
             'bed_type' => $request->bed_type,
+            'bed_deducted' => $deducted,
             'notes' => $request->notes,
             'status' => 'admitted',
             'admitted_at' => now(),
         ]);
 
-        if ($request->bed_type === 'icu') {
-            if ($hospital->icu_beds > 0) $hospital->decrement('icu_beds');
-        } else {
-            if ($hospital->available_beds > 0) $hospital->decrement('available_beds');
+        if ($deducted) {
+            $hospital->decrement($bedField);
         }
 
         return redirect()->back()->with('success', 'Patient added.');
@@ -215,10 +217,8 @@ class HospitalController extends Controller
 
         $patient->update(['status' => 'discharged', 'discharged_at' => now()]);
 
-        if ($patient->bed_type === 'icu') {
-            if ($hospital->icu_beds < $hospital->total_beds) $hospital->increment('icu_beds');
-        } else {
-            if ($hospital->available_beds < $hospital->total_beds) $hospital->increment('available_beds');
+        if ($patient->bed_deducted) {
+            $hospital->increment($patient->bed_type === 'icu' ? 'icu_beds' : 'available_beds');
         }
 
         return response()->json(['success' => true, 'message' => 'Patient discharged.']);
@@ -229,12 +229,8 @@ class HospitalController extends Controller
         $hospital = Hospital::where('user_id', Auth::id())->firstOrFail();
         $patient = HospitalPatient::where('hospital_id', $hospital->id)->findOrFail($id);
 
-        if ($patient->status === 'admitted') {
-            if ($patient->bed_type === 'icu') {
-                if ($hospital->icu_beds < $hospital->total_beds) $hospital->increment('icu_beds');
-            } else {
-                if ($hospital->available_beds < $hospital->total_beds) $hospital->increment('available_beds');
-            }
+        if ($patient->status === 'admitted' && $patient->bed_deducted) {
+            $hospital->increment($patient->bed_type === 'icu' ? 'icu_beds' : 'available_beds');
         }
 
         $patient->delete();
@@ -255,19 +251,21 @@ class HospitalController extends Controller
             'notes' => 'nullable|string|max:1000',
         ]);
 
+        $bedField = $request->bed_type === 'icu' ? 'icu_beds' : 'available_beds';
+        $deducted = $hospital->{$bedField} > 0;
+
         HospitalReservation::create([
             'hospital_id' => $hospital->id,
             'patient_name' => $request->patient_name,
             'bed_type' => $request->bed_type,
+            'bed_deducted' => $deducted,
             'expected_at' => $request->expected_at,
             'notes' => $request->notes,
             'status' => 'reserved',
         ]);
 
-        if ($request->bed_type === 'icu') {
-            if ($hospital->icu_beds > 0) $hospital->decrement('icu_beds');
-        } else {
-            if ($hospital->available_beds > 0) $hospital->decrement('available_beds');
+        if ($deducted) {
+            $hospital->decrement($bedField);
         }
 
         return redirect()->back()->with('success', 'Bed reserved.');
@@ -284,10 +282,8 @@ class HospitalController extends Controller
 
         $reservation->update(['status' => 'cancelled']);
 
-        if ($reservation->bed_type === 'icu') {
-            if ($hospital->icu_beds < $hospital->total_beds) $hospital->increment('icu_beds');
-        } else {
-            if ($hospital->available_beds < $hospital->total_beds) $hospital->increment('available_beds');
+        if ($reservation->bed_deducted) {
+            $hospital->increment($reservation->bed_type === 'icu' ? 'icu_beds' : 'available_beds');
         }
 
         return response()->json(['success' => true]);
@@ -307,12 +303,16 @@ class HospitalController extends Controller
                 'hospital_id' => $reservation->hospital_id,
                 'name' => $reservation->patient_name,
                 'bed_type' => $reservation->bed_type,
+                'bed_deducted' => $reservation->bed_deducted,
                 'notes' => $reservation->notes,
                 'status' => 'admitted',
                 'admitted_at' => now(),
             ]);
 
-            $reservation->update(['status' => 'admitted']);
+            // Ownership of the bed-count deduction transfers to the new patient record above
+            // (its bed_deducted carries the flag forward) -- clear it here so a later
+            // cancelReservation-style path can never double-increment for the same bed.
+            $reservation->update(['status' => 'admitted', 'bed_deducted' => false]);
         });
 
         return response()->json(['success' => true, 'message' => 'Reservation admitted as a patient.']);

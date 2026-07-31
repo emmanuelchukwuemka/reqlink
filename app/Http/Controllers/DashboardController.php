@@ -327,8 +327,12 @@ class DashboardController extends Controller
 
     public function toggleUserStatus($id)
     {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+
         $user = \App\Domains\Users\Models\User::findOrFail($id);
-        
+
         if ($user->id === Auth::id()) {
             return redirect()->back()->with('error', 'You cannot suspend your own account.');
         }
@@ -391,8 +395,14 @@ class DashboardController extends Controller
 
     public function saveDoctorNotes(Request $request, $uuid)
     {
+        if (Auth::user()->role !== 'doctor') {
+            abort(403);
+        }
+
         $request->validate(['doctor_notes' => 'nullable|string|max:5000']);
-        $emergency = \App\Domains\Emergencies\Models\Emergency::where('uuid', $uuid)->firstOrFail();
+        $emergency = \App\Domains\Emergencies\Models\Emergency::where('uuid', $uuid)
+            ->whereNotNull('doctor_consult_requested_at')
+            ->firstOrFail();
         $emergency->update(['doctor_notes' => $request->doctor_notes]);
 
         return response()->json(['success' => true]);
@@ -400,7 +410,15 @@ class DashboardController extends Controller
 
     public function completeConsult($uuid)
     {
+        if (Auth::user()->role !== 'doctor') {
+            abort(403);
+        }
+
         $emergency = \App\Domains\Emergencies\Models\Emergency::where('uuid', $uuid)->firstOrFail();
+
+        if (!$emergency->doctor_consult_requested_at) {
+            return response()->json(['success' => false, 'message' => 'No consult was requested for this emergency.'], 422);
+        }
 
         if ($emergency->consult_fee_paid_at) {
             return response()->json(['success' => false, 'message' => 'This consult has already been marked complete.'], 422);
@@ -450,6 +468,10 @@ class DashboardController extends Controller
 
     public function updateUserRole(Request $request, $id)
     {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+
         $request->validate(['role' => 'required|in:civilian,ambulance,fire,security,hospital,admin']);
         $user = \App\Domains\Users\Models\User::findOrFail($id);
         if ($user->id === Auth::id()) {
@@ -464,6 +486,10 @@ class DashboardController extends Controller
 
     public function exportUsers()
     {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+
         $users = \App\Domains\Users\Models\User::orderBy('created_at', 'desc')->get();
 
         return response()->streamDownload(function () use ($users) {
@@ -486,6 +512,10 @@ class DashboardController extends Controller
 
     public function bulkUserAction(Request $request)
     {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+
         $request->validate([
             'user_ids' => 'required|array|min:1',
             'user_ids.*' => 'integer|exists:users,id',
