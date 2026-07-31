@@ -52,6 +52,14 @@
         }
         @keyframes slide-up { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
+        /* Hospital search */
+        .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+        .filter-bar input, .filter-bar select { background: var(--glass); border: 1px solid var(--glass-border); color: var(--white); padding: 9px 14px; border-radius: 10px; font-size: 0.82rem; outline: none; }
+        .filter-bar input { flex: 1; min-width: 200px; }
+        .filter-bar input::placeholder { color: var(--grey); }
+        .filter-bar input:focus, .filter-bar select:focus { border-color: var(--red); }
+        :root.light-mode .filter-bar select option { background: #fff; color: #111; }
+
         @media (max-width: 600px) {
             .live-alert-overlay {
                 width: calc(100vw - 40px) !important;
@@ -284,22 +292,54 @@
     </div>
 
     <!-- HOSPITALS TAB -->
+    @php
+        $hospitalSpecialties = collect($hospitals)->flatMap(fn($h) => $h->specialties ?? [])->filter()->unique()->sort()->values();
+    @endphp
     <div id="hospitals" class="tab-pane">
         <div class="dash-card">
             <h3><i data-lucide="hospital"></i> Medical Facilities</h3>
-            <div class="hospitals-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+
+            <div class="filter-bar">
+                <input type="text" id="hospitalSearch" placeholder="Search hospitals by name…" oninput="filterHospitals()">
+                @if($hospitalSpecialties->isNotEmpty())
+                <select id="hospitalSpecialtyFilter" onchange="filterHospitals()">
+                    <option value="">All Specialties</option>
+                    @foreach($hospitalSpecialties as $spec)
+                    <option value="{{ \Illuminate\Support\Str::lower($spec) }}">{{ $spec }}</option>
+                    @endforeach
+                </select>
+                @endif
+                <button type="button" class="mini-btn" onclick="findNearestHospitals()" id="nearestHospitalBtn" style="background: rgba(34,197,94,0.12); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); border-radius: 10px; padding: 9px 14px; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                    <i data-lucide="locate-fixed" style="width:14px;height:14px;"></i> Find Nearest
+                </button>
+            </div>
+
+            <p id="hospitalEmptyState" style="display:none; color: var(--grey); text-align:center; padding: 30px;">No hospitals match your search.</p>
+
+            <div class="hospitals-grid" id="hospitalsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
                 @forelse($hospitals as $hospital)
-                <div class="sub-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px;">
+                <div class="sub-card hospital-card"
+                     data-name="{{ \Illuminate\Support\Str::lower($hospital->name) }}"
+                     data-specialties="{{ \Illuminate\Support\Str::lower(implode(',', $hospital->specialties ?? [])) }}"
+                     data-lat="{{ $hospital->lat }}"
+                     data-lng="{{ $hospital->lng }}"
+                     style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px;">
                     <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
                         <div style="width: 45px; height: 45px; background: rgba(34, 197, 94, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #22c55e;">
                             <i data-lucide="hospital"></i>
                         </div>
                         <div>
                             <h4 style="margin: 0;">{{ $hospital->name }}</h4>
-                            <small style="color: var(--grey);">Verified Hospital</small>
+                            <small style="color: var(--grey);" class="hospital-distance">Verified Hospital</small>
                         </div>
                     </div>
-                    <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 0.85rem; border-radius: 8px;">View Details</button>
+                    <div id="hospitalDetails{{ $hospital->id }}" style="display:none; margin-bottom:12px; padding:12px; background:rgba(255,255,255,0.03); border-radius:10px; font-size:0.8rem; color:var(--grey);">
+                        <p style="margin:0 0 4px;"><strong style="color:var(--white);">Beds:</strong> {{ $hospital->available_beds ?? 0 }} available / {{ $hospital->total_beds ?? 0 }} total</p>
+                        <p style="margin:0 0 4px;"><strong style="color:var(--white);">ICU Beds:</strong> {{ $hospital->icu_beds ?? 0 }}</p>
+                        <p style="margin:0 0 4px;"><strong style="color:var(--white);">Specialties:</strong> {{ !empty($hospital->specialties) ? implode(', ', $hospital->specialties) : 'Not listed' }}</p>
+                        <p style="margin:0;"><strong style="color:var(--white);">Contact:</strong> {{ $hospital->contact_phone ?? 'N/A' }}</p>
+                    </div>
+                    <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 0.85rem; border-radius: 8px;" onclick="toggleHospitalDetails({{ $hospital->id }})">View Details</button>
                 </div>
                 @empty
                 <p>No hospitals registered yet.</p>
@@ -633,6 +673,85 @@
             }
         });
     });
+
+    // ── Hospital search ─────────────────────────────────────────────────
+    function filterHospitals() {
+        const q = document.getElementById('hospitalSearch').value.trim().toLowerCase();
+        const specialtyEl = document.getElementById('hospitalSpecialtyFilter');
+        const specialty = specialtyEl ? specialtyEl.value : '';
+        const cards = document.querySelectorAll('#hospitalsGrid .hospital-card');
+        let visible = 0;
+
+        cards.forEach(card => {
+            const matchesName = !q || card.dataset.name.includes(q);
+            const matchesSpecialty = !specialty || card.dataset.specialties.split(',').includes(specialty);
+            const show = matchesName && matchesSpecialty;
+            card.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+
+        document.getElementById('hospitalEmptyState').style.display = visible === 0 ? 'block' : 'none';
+    }
+
+    function toggleHospitalDetails(id) {
+        const el = document.getElementById('hospitalDetails' + id);
+        if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function haversineKm(lat1, lng1, lat2, lng2) {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLng = (lng2 - lng1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function findNearestHospitals() {
+        const btn = document.getElementById('nearestHospitalBtn');
+        if (!navigator.geolocation) {
+            alert('Location services are not available on this device.');
+            return;
+        }
+
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = 'Locating…';
+
+        navigator.geolocation.getCurrentPosition(pos => {
+            const userLat = pos.coords.latitude;
+            const userLng = pos.coords.longitude;
+            const grid = document.getElementById('hospitalsGrid');
+            const cards = Array.from(grid.querySelectorAll('.hospital-card'));
+
+            cards.forEach(card => {
+                const lat = parseFloat(card.dataset.lat);
+                const lng = parseFloat(card.dataset.lng);
+                const distanceEl = card.querySelector('.hospital-distance');
+                // (0, 0) is the "location not set" default for new hospital registrations
+                if (!lat && !lng) {
+                    card.dataset.distance = Infinity;
+                    if (distanceEl) distanceEl.textContent = 'Location not set';
+                    return;
+                }
+                const dist = haversineKm(userLat, userLng, lat, lng);
+                card.dataset.distance = dist;
+                if (distanceEl) distanceEl.textContent = dist.toFixed(1) + ' km away';
+            });
+
+            cards.sort((a, b) => parseFloat(a.dataset.distance) - parseFloat(b.dataset.distance));
+            cards.forEach(card => grid.appendChild(card));
+
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+            lucide.createIcons();
+        }, () => {
+            alert('Could not get your location. Please enable location access and try again.');
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+            lucide.createIcons();
+        });
+    }
 
     // Map Initialization
     let map = L.map('map').setView([6.5244, 3.3792], 13);
