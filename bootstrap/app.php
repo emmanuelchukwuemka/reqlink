@@ -15,6 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Trust all proxies — required for Render (SSL terminated at load balancer)
         $middleware->trustProxies(at: '*');
+        // Logout is also available via GET for the navigation link.  Do not let an
+        // expired page token turn a logout request into a 419 response.
+        $middleware->validateCsrfTokens(except: [
+            'logout',
+        ]);
         $middleware->web(append: [
             \App\Http\Middleware\CheckSuspension::class,
             \App\Http\Middleware\SetLocale::class,

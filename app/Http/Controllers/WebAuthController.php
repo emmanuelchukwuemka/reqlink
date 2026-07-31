@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class WebAuthController extends Controller
@@ -135,9 +136,11 @@ class WebAuthController extends Controller
         try {
             $user->sendPasswordResetNotification($code);
         } catch (\Symfony\Component\Mailer\Exception\TransportExceptionInterface $e) {
+            Log::error('Password reset email transport failure: ' . $e->getMessage());
             DB::table('password_reset_tokens')->where('email', $request->email)->delete();
             return back()->withErrors(['email' => 'Failed to send email. Please check the mail server configuration in the .env file.']);
         } catch (\Exception $e) {
+            Log::error('Password reset email failure: ' . $e->getMessage());
             DB::table('password_reset_tokens')->where('email', $request->email)->delete();
             return back()->withErrors(['email' => 'Failed to send email due to a server error.']);
         }
