@@ -1400,6 +1400,7 @@
     lucide.createIcons();
 </script>
 <script src="/js/chat.js"></script>
+<meta name="vapid-public-key" content="{{ config('services.vapid.public_key') }}">
 <script src="/js/pwa.js" defer></script>
 <script>
     // ── Emergency Real-Time Chat ──────────────────────────────────────

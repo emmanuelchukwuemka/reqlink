@@ -994,6 +994,7 @@
         .catch(() => { btn.disabled = false; btn.textContent = original; });
     }
 </script>
+<meta name="vapid-public-key" content="{{ config('services.vapid.public_key') }}">
 <script src="/js/pwa.js" defer></script>
 @include('partials.profile-modal')
 </body>

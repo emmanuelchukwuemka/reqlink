@@ -36,16 +36,13 @@
         reg.pushManager.getSubscription().then(existing => {
             if (existing) return; // already subscribed on this device
 
-            fetch('/push/vapid-public-key')
-                .then(res => res.json())
-                .then(({ key }) => {
-                    if (!key) return; // VAPID not configured server-side
+            const key = (document.querySelector('meta[name="vapid-public-key"]') || {}).content;
+            if (!key) return; // VAPID not configured server-side
 
-                    return reg.pushManager.subscribe({
-                        userVisibleOnly: true,
-                        applicationServerKey: urlBase64ToUint8Array(key)
-                    });
-                })
+            reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(key)
+            })
                 .then(sub => {
                     if (!sub) return;
                     const json = sub.toJSON();

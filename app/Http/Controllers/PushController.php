@@ -9,11 +9,6 @@ use Illuminate\Support\Facades\Auth;
 
 class PushController extends Controller
 {
-    public function vapidPublicKey()
-    {
-        return response()->json(['key' => config('services.vapid.public_key')]);
-    }
-
     public function subscribe(Request $request)
     {
         $request->validate([

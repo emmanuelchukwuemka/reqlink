@@ -79,6 +79,7 @@
     </div>
 </div>
 
+<meta name="vapid-public-key" content="{{ config('services.vapid.public_key') }}">
 <script src="/js/pwa.js" defer></script>
 <script>
     lucide.createIcons();

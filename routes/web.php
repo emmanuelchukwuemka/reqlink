@@ -71,7 +71,6 @@ Route::middleware(['auth'])->group(function () {
     // Push subscriptions
     Route::post('/push/subscribe', [\App\Http\Controllers\PushController::class, 'subscribe'])->name('push.subscribe');
     Route::post('/push/unsubscribe', [\App\Http\Controllers\PushController::class, 'unsubscribe'])->name('push.unsubscribe');
-    Route::get('/push/vapid-public-key', [\App\Http\Controllers\PushController::class, 'vapidPublicKey'])->name('push.vapid-key');
 
     Route::post('/responder/toggle-duty', [ResponderController::class, 'toggleDuty'])->name('responder.toggle-duty');
     Route::post('/responder/update-location', [ResponderController::class, 'updateLocation'])->name('responder.update-location');

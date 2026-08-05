@@ -1,4 +1,4 @@
-const CACHE = 'resqlink-v1';
+const CACHE = 'resqlink-v2';
 
 const PRECACHE = [
     '/',
