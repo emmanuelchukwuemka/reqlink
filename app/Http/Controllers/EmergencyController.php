@@ -58,6 +58,12 @@ class EmergencyController extends Controller
             $nearestResponder->update(['is_available' => false]);
 
             \App\Services\WebPushService::sendToUsers([$nearestResponder->user_id]);
+            \App\Services\ExpoPushService::sendToUsers(
+                [$nearestResponder->user_id],
+                'New Emergency Assigned',
+                'You have been dispatched to a new emergency.',
+                ['uuid' => $emergency->uuid, 'type' => 'emergency_assigned']
+            );
 
             return response()->json([
                 'message' => 'Emergency alert received. ' . ucfirst($nearestResponder->responder_type) . ' unit dispatched.',
@@ -77,6 +83,12 @@ class EmergencyController extends Controller
         $onDutyUserIds = \App\Domains\Responders\Models\Responder::where('is_on_duty', true)
             ->pluck('user_id')->toArray();
         \App\Services\WebPushService::sendToUsers($onDutyUserIds);
+        \App\Services\ExpoPushService::sendToUsers(
+            $onDutyUserIds,
+            'Emergency Alert',
+            'A new emergency needs a responder nearby.',
+            ['uuid' => $emergency->uuid, 'type' => 'emergency_broadcast']
+        );
 
         // 3. Fallback to nearest Hospital if no active mobile responders. If the
         // patient already picked a preferred hospital above, respect that choice
@@ -107,6 +119,12 @@ class EmergencyController extends Controller
                 $hospitalRecord = \App\Domains\Responders\Models\Hospital::find($nearestHospital->id);
                 if ($hospitalRecord && $hospitalRecord->user) {
                     $hospitalRecord->user->notify(new \App\Notifications\NewEmergencyRoutedToHospital($emergency));
+                    \App\Services\ExpoPushService::sendToUsers(
+                        [$hospitalRecord->user_id],
+                        'Incoming Patient',
+                        'A patient is being routed to your facility.',
+                        ['uuid' => $emergency->uuid, 'type' => 'hospital_routed']
+                    );
                 }
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::warning('Failed to send hospital emergency-routed notification: ' . $e->getMessage());

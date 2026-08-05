@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Review;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ReviewController extends Controller
 {
@@ -13,6 +14,34 @@ class ReviewController extends Controller
     public function index()
     {
         //
+    }
+
+    /**
+     * The caller's own submitted reviews — for a mobile "my reviews" list.
+     */
+    public function mine()
+    {
+        return response()->json(
+            Review::where('user_id', Auth::id())->latest()->get()
+        );
+    }
+
+    /**
+     * A responder's reviews + average rating, for the mobile app to show
+     * before/after a mission (rating badge on the mission/alert screens).
+     */
+    public function forResponder($responderId)
+    {
+        $reviews = Review::where('responder_id', $responderId)
+            ->with('user:id,name')
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'average_rating' => round($reviews->avg('rating') ?? 0, 1),
+            'count' => $reviews->count(),
+            'reviews' => $reviews,
+        ]);
     }
 
     /**

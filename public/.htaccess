@@ -17,9 +17,23 @@
     # Force HTTPS — geolocation, microphone access, and the Web Speech API
     # (SOS trigger, panic-evidence recording, AI voice assistant) are all
     # blocked by browsers on insecure origins, so plain http:// visitors
-    # silently lose those features with no error shown.
+    # silently lose those features with no error shown. Exempt /api/* — it's
+    # a JSON API for the React Native app, not a browser context, so none of
+    # those Web API restrictions apply; this also lets local (XAMPP) mobile
+    # development hit the API over plain HTTP without a self-signed-cert
+    # trust dance on the test device/emulator.
     RewriteCond %{HTTPS} off
     RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    # THE_REQUEST (the client's original request line, e.g. "POST /api/login
+    # HTTP/1.1") on purpose, not REQUEST_URI: the front-controller rule below
+    # internally rewrites the URI to index.php and mod_rewrite then re-runs
+    # this whole block, so REQUEST_URI stops containing "/api/" on that
+    # second pass and the exemption would stop matching. THE_REQUEST never
+    # changes across internal rewrites. Unanchored substring match (not
+    # "starts with") because production's DocumentRoot is this public/
+    # folder directly (/api/...) but a local XAMPP htdocs checkout sits at a
+    # subfolder (/reqlink/public/api/...).
+    RewriteCond %{THE_REQUEST} !/api/
     RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
     # Handle Authorization Header

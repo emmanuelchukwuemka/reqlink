@@ -37,6 +37,10 @@ Route::post('/wallet/webhook', [\App\Http\Controllers\WalletController::class, '
     ->name('wallet.webhook')
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 
+// Landing page for the mobile app's Paystack WebView checkout — public, no session required
+Route::get('/wallet/callback-mobile', [\App\Http\Controllers\WalletController::class, 'callbackMobile'])
+    ->name('wallet.callback-mobile');
+
 // Language switcher (public)
 Route::get('/lang/{locale}', function ($locale) {
     if (in_array($locale, ['en', 'yo', 'ha', 'ig'])) {

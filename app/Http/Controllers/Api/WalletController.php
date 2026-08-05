@@ -1,122 +1,96 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use App\Domains\Users\Models\User;
+use App\Http\Controllers\Controller;
 use App\Models\WalletTransaction;
 use App\Services\PaystackService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class WalletController extends Controller
 {
-    private string $paystackSecret;
     protected PaystackService $paystack;
 
     public function __construct(PaystackService $paystack)
     {
-        $this->paystackSecret = config('services.paystack.secret');
         $this->paystack = $paystack;
     }
 
+    /**
+     * Returns the Paystack authorization_url instead of redirecting — the
+     * mobile app opens it in a WebView and watches for the callback-mobile
+     * URL. The webhook (routes/web.php, public, signature-verified) remains
+     * the only thing that actually credits the wallet.
+     */
     public function initiate(Request $request)
     {
-        $request->validate([
-            'amount' => 'required|numeric|min:100',
-        ]);
+        $request->validate(['amount' => 'required|numeric|min:100']);
 
-        $user      = Auth::user();
-        $amountKobo = (int) ($request->amount * 100); // Paystack uses kobo
-        $reference  = 'RQL-' . strtoupper(uniqid());
+        $user = Auth::user();
+        $amountKobo = (int) ($request->amount * 100);
+        $reference = 'RQL-' . strtoupper(uniqid());
 
-        // Create pending transaction
         WalletTransaction::create([
-            'user_id'      => $user->id,
-            'type'         => 'credit',
-            'amount'       => $request->amount,
-            'balance_after'=> $user->wallet_balance + $request->amount,
-            'reference'    => $reference,
-            'description'  => 'Wallet top-up via Paystack',
-            'status'       => 'pending',
+            'user_id' => $user->id,
+            'type' => 'credit',
+            'amount' => $request->amount,
+            'balance_after' => $user->wallet_balance + $request->amount,
+            'reference' => $reference,
+            'description' => 'Wallet top-up via Paystack',
+            'status' => 'pending',
         ]);
 
         $response = $this->paystack->post('/transaction/initialize', [
-            'email'     => $user->email ?? $user->phone . '@resqlink.app',
-            'amount'    => $amountKobo,
+            'email' => $user->email ?? $user->phone . '@resqlink.app',
+            'amount' => $amountKobo,
             'reference' => $reference,
-            'callback_url' => route('wallet.callback'),
-            'metadata'  => ['user_id' => $user->id],
+            'callback_url' => route('wallet.callback-mobile'),
+            'metadata' => ['user_id' => $user->id],
         ]);
 
         if (!$response || !$response['status']) {
-            return back()->withErrors(['amount' => 'Could not connect to payment gateway. Try again.']);
+            return response()->json(['success' => false, 'message' => 'Could not connect to payment gateway. Try again.'], 502);
         }
 
-        return redirect($response['data']['authorization_url']);
-    }
-
-    public function callback(Request $request)
-    {
-        $reference = $request->query('reference') ?? $request->query('trxref');
-
-        if (!$reference) {
-            return redirect()->route('dashboard')->withErrors(['wallet' => 'Invalid payment reference.']);
-        }
-
-        $response = $this->paystack->get("/transaction/verify/{$reference}");
-
-        if (!$response || !$response['status'] || $response['data']['status'] !== 'success') {
-            WalletTransaction::where('reference', $reference)->update(['status' => 'failed']);
-            return redirect()->route('dashboard')->withErrors(['wallet' => 'Payment verification failed.']);
-        }
-
-        $this->creditWallet($reference);
-
-        return redirect()->route('dashboard')->with('wallet_success', 'Wallet funded successfully!');
-    }
-
-    /**
-     * Landing page for the mobile WebView checkout flow. A Sanctum-token
-     * mobile client has no session cookie, so it can never satisfy the
-     * `auth` middleware on the normal `callback()` route above — this is a
-     * public, no-op page the app's WebView recognizes by URL and closes.
-     * Crediting the wallet always happens via the signed webhook, never here.
-     */
-    public function callbackMobile(Request $request)
-    {
         return response()->json([
-            'message' => 'Payment flow complete. You can return to the app.',
-            'reference' => $request->query('reference') ?? $request->query('trxref'),
+            'success' => true,
+            'authorization_url' => $response['data']['authorization_url'],
+            'reference' => $reference,
         ]);
     }
 
-    public function webhook(Request $request)
+    /**
+     * The mobile app polls this after the WebView checkout closes, since it
+     * has no other way to know whether the webhook has landed yet.
+     */
+    public function transactionStatus($reference)
     {
-        $signature = $request->header('x-paystack-signature');
-        $payload   = $request->getContent();
+        $transaction = WalletTransaction::where('reference', $reference)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
 
-        if (hash_hmac('sha512', $payload, $this->paystackSecret) !== $signature) {
-            return response('Unauthorized', 401);
-        }
-
-        $event = json_decode($payload, true);
-
-        if ($event['event'] === 'charge.success') {
-            $this->creditWallet($event['data']['reference']);
-        } elseif ($event['event'] === 'transfer.success') {
-            $this->settleWithdrawal($event['data']['reference'], 'success');
-        } elseif (in_array($event['event'], ['transfer.failed', 'transfer.reversed'], true)) {
-            $this->settleWithdrawal($event['data']['reference'], 'failed');
-        }
-
-        return response('OK', 200);
+        return response()->json([
+            'status' => $transaction->status,
+            'amount' => $transaction->amount,
+        ]);
     }
 
-    // ── Bank account + withdrawals ──────────────────────────────────────
+    public function transactions(Request $request)
+    {
+        $transactions = WalletTransaction::where('user_id', Auth::id())
+            ->latest()
+            ->paginate(20);
+
+        return response()->json($transactions);
+    }
 
     public function banks()
     {
-        $banks = \Illuminate\Support\Facades\Cache::remember('paystack_banks_ng', now()->addDay(), function () {
+        $banks = Cache::remember('paystack_banks_ng', now()->addDay(), function () {
             $response = $this->paystack->get('/bank?country=nigeria&currency=NGN');
             return ($response && $response['status']) ? $response['data'] : [];
         });
@@ -196,11 +170,9 @@ class WalletController extends Controller
 
         $reference = 'RQL-WD-' . strtoupper(uniqid());
 
-        // Debit up front so the balance can't be spent twice while the transfer is
-        // in flight; settleWithdrawal() re-credits if Paystack later reports failure.
         $newBalance = null;
         DB::transaction(function () use ($user, $request, $reference, &$newBalance) {
-            $lockedUser = \App\Domains\Users\Models\User::lockForUpdate()->find($user->id);
+            $lockedUser = User::lockForUpdate()->find($user->id);
 
             if ($request->amount > $lockedUser->wallet_balance) {
                 abort(422, 'Insufficient wallet balance.');
@@ -245,7 +217,7 @@ class WalletController extends Controller
                 ->lockForUpdate()
                 ->first();
 
-            if (!$tx) return; // already settled or not a withdrawal we know about
+            if (!$tx) return;
 
             if ($outcome === 'success') {
                 $tx->status = 'success';
@@ -253,8 +225,7 @@ class WalletController extends Controller
                 return;
             }
 
-            // Transfer failed/reversed on Paystack's side -- refund the wallet.
-            $user = \App\Domains\Users\Models\User::lockForUpdate()->find($tx->user_id);
+            $user = User::lockForUpdate()->find($tx->user_id);
             $refundedBalance = $user->wallet_balance + $tx->amount;
             $user->wallet_balance = $refundedBalance;
             $user->save();
@@ -263,27 +234,4 @@ class WalletController extends Controller
             $tx->save();
         });
     }
-
-    private function creditWallet(string $reference): void
-    {
-        DB::transaction(function () use ($reference) {
-            $tx = WalletTransaction::where('reference', $reference)
-                ->where('status', 'pending')
-                ->lockForUpdate()
-                ->first();
-
-            if (!$tx) return; // already processed
-
-            $user = \App\Domains\Users\Models\User::lockForUpdate()->find($tx->user_id);
-            $newBalance = $user->wallet_balance + $tx->amount;
-
-            $user->wallet_balance = $newBalance;
-            $user->save();
-
-            $tx->status       = 'success';
-            $tx->balance_after = $newBalance;
-            $tx->save();
-        });
-    }
-
 }
