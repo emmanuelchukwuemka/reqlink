@@ -830,28 +830,40 @@
     addSatelliteToggle(responderMap, rTileLayer);
 
     function startTracking() {
-        if ("geolocation" in navigator) {
-            trackingInterval = setInterval(() => {
-                navigator.geolocation.getCurrentPosition(position => {
-                    const { latitude, longitude } = position.coords;
-
-                    if (!responderMarker) {
-                        responderMarker = L.marker([latitude, longitude]).addTo(responderMap).bindPopup('Your Location');
-                    } else {
-                        responderMarker.setLatLng([latitude, longitude]);
-                    }
-
-                    fetch('{{ route("responder.update-location") }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        },
-                        body: JSON.stringify({ latitude, longitude })
-                    });
-                });
-            }, 10000);
+        if (!("geolocation" in navigator)) {
+            alert('Geolocation is not supported on this device/browser.');
+            return;
         }
+
+        const updatePosition = () => {
+            navigator.geolocation.getCurrentPosition(position => {
+                const { latitude, longitude } = position.coords;
+
+                if (!responderMarker) {
+                    responderMarker = L.marker([latitude, longitude]).addTo(responderMap).bindPopup('Your Location');
+                    responderMap.setView([latitude, longitude], 15);
+                } else {
+                    responderMarker.setLatLng([latitude, longitude]);
+                }
+
+                fetch('{{ route("responder.update-location") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({ latitude, longitude })
+                });
+            }, error => {
+                console.warn('[ResQLink] Geolocation error:', error.message);
+                if (error.code === error.PERMISSION_DENIED) {
+                    alert('Location access is blocked. Enable location permissions for this site so your position can be shared live.');
+                }
+            }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+        };
+
+        updatePosition(); // fire immediately instead of waiting 10s for the first interval tick
+        trackingInterval = setInterval(updatePosition, 10000);
     }
 
     function stopTracking() {
